@@ -34,7 +34,8 @@
     <application
         android:name=".EnlaceApp"
         android:allowBackup="false"
-        android:icon="@android:drawable/ic_dialog_alert"
+        android:icon="@mipmap/ic_lanzador"
+        android:roundIcon="@mipmap/ic_lanzador"
         android:label="@string/app_nombre"
         android:networkSecurityConfig="@xml/seguridad_red"
         android:supportsRtl="true"

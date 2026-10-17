@@ -19,6 +19,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.enlace.app.R
+import com.enlace.app.presentacion.componentes.PantallaConBarra
 import com.enlace.app.datos.DatosMapa
 import com.enlace.app.dominio.Punto
 import com.enlace.app.dominio.UnidadRepositorio
@@ -93,7 +94,7 @@ class MapaUnidadViewModel @Inject constructor(
 @Composable
 fun PantallaMapaUnidad(alVolver: () -> Unit, viewModel: MapaUnidadViewModel = hiltViewModel()) {
     val ui by viewModel.ui.collectAsStateWithLifecycle()
-    Scaffold { relleno ->
+    PantallaConBarra(stringResource(R.string.panorama_titulo), alVolver) { relleno ->
         Column(Modifier.fillMaxSize().padding(relleno)) {
             MapaEnlace(
                 estilo = ui.estilo,
@@ -112,9 +113,6 @@ fun PantallaMapaUnidad(alVolver: () -> Unit, viewModel: MapaUnidadViewModel = hi
                         stringResource(if (ui.cargando) R.string.panorama_cargando else R.string.panorama_actualizar),
                         style = MaterialTheme.typography.titleMedium,
                     )
-                }
-                TextButton(onClick = alVolver, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
-                    Text(stringResource(R.string.volver))
                 }
             }
         }

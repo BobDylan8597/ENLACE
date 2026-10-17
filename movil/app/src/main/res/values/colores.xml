@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Paleta de ENLACE (el resto de la interfaz usa presentacion/tema/Tema.kt) -->
+<resources>
+    <color name="marca_noche">#173C56</color>
+    <color name="marca_turquesa">#29AEAD</color>
+</resources>

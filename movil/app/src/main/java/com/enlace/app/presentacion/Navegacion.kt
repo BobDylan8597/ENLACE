@@ -165,8 +165,14 @@ fun NavegacionEnlace(arranque: ArranqueViewModel = hiltViewModel()) {
                 PantallaConfiguracion(alContinuar = { if (!nav.popBackStack()) nav.avanzarA(RutaModo) })
             }
             composable<RutaModo> {
-                PantallaModo(alElegir = { modo ->
-                    nav.avanzarA(if (modo == Modo.UNIDAD) RutaActivarUnidad else RutaConsentimiento)
+                PantallaModo(alElegir = { modo, yaConfigurado ->
+                    nav.avanzarA(
+                        when {
+                            modo == Modo.UNIDAD -> RutaActivarUnidad
+                            yaConfigurado -> RutaInicio
+                            else -> RutaConsentimiento
+                        },
+                    )
                 })
             }
             composable<RutaConsentimiento> {

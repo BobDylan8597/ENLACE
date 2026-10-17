@@ -30,6 +30,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.enlace.app.R
+import com.enlace.app.presentacion.componentes.PantallaConBarra
 import com.enlace.app.TEXTO_CONDICION
 import com.enlace.app.dominio.AjustesRepositorio
 import com.enlace.app.dominio.Condicion
@@ -72,7 +73,10 @@ class PerfilViewModel @Inject constructor(private val ajustes: AjustesRepositori
 fun PantallaPerfil(alVolver: () -> Unit, inicial: Boolean = false, viewModel: PerfilViewModel = hiltViewModel()) {
     val perfil by viewModel.perfil.collectAsStateWithLifecycle()
 
-    Scaffold { relleno ->
+    PantallaConBarra(
+        stringResource(if (inicial) R.string.perfil_inicial_titulo else R.string.perfil_titulo),
+        if (inicial) null else alVolver,
+    ) { relleno ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -81,11 +85,6 @@ fun PantallaPerfil(alVolver: () -> Unit, inicial: Boolean = false, viewModel: Pe
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            // U3: la primera vez es opcional y se puede omitir
-            Text(
-                stringResource(if (inicial) R.string.perfil_inicial_titulo else R.string.perfil_titulo),
-                style = MaterialTheme.typography.headlineSmall,
-            )
             Text(stringResource(R.string.perfil_explicacion), style = MaterialTheme.typography.bodyLarge)
             OutlinedTextField(
                 value = perfil.nombre,
@@ -143,8 +142,11 @@ fun PantallaPerfil(alVolver: () -> Unit, inicial: Boolean = false, viewModel: Pe
                 )
             }
             BotonPrincipal(stringResource(R.string.guardar), { viewModel.guardar(alVolver) })
-            TextButton(onClick = alVolver, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
-                Text(stringResource(if (inicial) R.string.perfil_omitir else R.string.volver))
+            // U3: la primera vez es opcional y se puede omitir
+            if (inicial) {
+                TextButton(onClick = alVolver, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                    Text(stringResource(R.string.perfil_omitir))
+                }
             }
         }
     }

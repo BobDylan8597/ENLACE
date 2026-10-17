@@ -25,6 +25,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.enlace.app.R
+import com.enlace.app.presentacion.componentes.PantallaConBarra
 import com.enlace.app.datos.GestorAlertas
 import com.enlace.app.presentacion.componentes.BotonPrincipal
 import com.enlace.app.presentacion.tema.ColoresEnlace
@@ -57,7 +58,7 @@ fun PantallaQueHacer(alPedirAyuda: () -> Unit, alVolver: () -> Unit, viewModel: 
             else -> R.array.consejos_general
         },
     )
-    Scaffold { relleno ->
+    PantallaConBarra(stringResource(R.string.que_hacer_titulo), alVolver) { relleno ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -66,7 +67,6 @@ fun PantallaQueHacer(alPedirAyuda: () -> Unit, alVolver: () -> Unit, viewModel: 
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            Text(stringResource(R.string.que_hacer_titulo), style = MaterialTheme.typography.headlineSmall)
             consejos.forEachIndexed { i, consejo ->
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text("${i + 1}", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black, color = ColoresEnlace.accion)
@@ -75,9 +75,6 @@ fun PantallaQueHacer(alPedirAyuda: () -> Unit, alVolver: () -> Unit, viewModel: 
             }
             Text(stringResource(R.string.que_hacer_albergues), style = MaterialTheme.typography.bodyMedium)
             BotonPrincipal(stringResource(R.string.ayuda_boton), alPedirAyuda, color = ColoresEnlace.actuar)
-            TextButton(onClick = alVolver, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
-                Text(stringResource(R.string.volver))
-            }
         }
     }
 }

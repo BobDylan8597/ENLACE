@@ -58,7 +58,10 @@
     <string name="inicio_privacidad">Privacidad</string>
     <string name="inicio_servidor">Conexión</string>
     <string name="inicio_alerta_activa">Hay una alerta activa</string>
-    <string name="inicio_ver_alerta">Ver alerta</string>
+    <string name="inicio_ver_alerta">Toca para ver qué hacer</string>
+    <string name="inicio_seccion_acciones">Acciones</string>
+    <string name="inicio_seccion_ajustes">Tu cuenta y ajustes</string>
+    <string name="inicio_ayuda_detalle">Funciona aunque no haya internet</string>
     <string name="configuracion_preparando">Preparando datos para usar sin conexión…</string>
     <string name="configuracion_sin_datos">No se pudieron descargar los datos de la zona. Prueba de nuevo.</string>
 

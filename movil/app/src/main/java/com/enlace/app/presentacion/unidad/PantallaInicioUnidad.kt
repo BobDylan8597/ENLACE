@@ -60,7 +60,10 @@ import com.enlace.app.dominio.UnidadRepositorio
 import com.enlace.app.dominio.minutosRedondeados
 import com.enlace.app.dominio.ordenarPanorama
 import com.enlace.app.presentacion.componentes.AvisoInicioAutomatico
+import com.enlace.app.presentacion.componentes.EncabezadoMarca
 import com.enlace.app.presentacion.componentes.IndicadorConexion
+import com.enlace.app.presentacion.componentes.TarjetaAccion
+import com.enlace.app.presentacion.tema.MarcaEnlace
 import com.enlace.app.presentacion.tema.ColoresEnlace
 import com.enlace.app.servicio.ServicioAlertas
 import com.enlace.app.ubicacion.ProveedorUbicacion
@@ -164,27 +167,17 @@ fun PantallaInicioUnidad(
     }
     LaunchedEffect(Unit) { pedirPermisos.launch(viewModel.permisos) }
 
-    Scaffold { relleno ->
+    Scaffold(containerColor = MaterialTheme.colorScheme.background) { relleno ->
+      Column(Modifier.fillMaxSize().padding(bottom = relleno.calculateBottomPadding())) {
+        // Encabezado fijo: logo, conexión y el equipo con su estado
+        EncabezadoMarca(conexion, subtitulo = stringResource(R.string.unidad_modo)) {
+            TarjetaEquipo(equipo, asignacion)
+        }
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(relleno),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(24.dp),
+            modifier = Modifier.weight(1f),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(20.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            item {
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                    Column(Modifier.weight(1f)) {
-                        Text(
-                            stringResource(R.string.app_nombre),
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Black,
-                            color = ColoresEnlace.accion,
-                        )
-                        Text(stringResource(R.string.unidad_modo), style = MaterialTheme.typography.labelLarge)
-                    }
-                    IndicadorConexion(conexion)
-                }
-            }
-            item { TarjetaEquipo(equipo, asignacion) }
             item { AvisoInicioAutomatico() }
             if (!pantallaCompleta && Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
                 item {
@@ -220,23 +213,19 @@ fun PantallaInicioUnidad(
                     )
                 }
             }
-            item { FilaMula(mensajes, alVerMula) }
             item {
-                OutlinedButton(onClick = alVerMapa, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
-                    Icon(painterResource(R.drawable.ic_ubicacion), contentDescription = null, modifier = Modifier.size(20.dp))
-                    Text(
-                        stringResource(R.string.mapa_ver),
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(start = 8.dp),
-                    )
-                }
-                OutlinedButton(onClick = alEvaluar, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
-                    Text(stringResource(R.string.evaluacion_boton), style = MaterialTheme.typography.titleMedium)
-                }
-                OutlinedButton(onClick = alVerBloqueos, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
-                    Text(stringResource(R.string.bloqueos_cercanos_titulo), style = MaterialTheme.typography.titleMedium)
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        TarjetaAccion(R.drawable.ic_ubicacion, stringResource(R.string.mapa_ver), ColoresEnlace.accion, alVerMapa, Modifier.weight(1f))
+                        TarjetaAccion(R.drawable.ic_equipo, stringResource(R.string.evaluacion_boton), MaterialTheme.colorScheme.secondary, alEvaluar, Modifier.weight(1f))
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        TarjetaAccion(R.drawable.ic_alerta, stringResource(R.string.bloqueos_cercanos_titulo), ColoresEnlace.explorar, alVerBloqueos, Modifier.weight(1f))
+                        TarjetaAccion(R.drawable.ic_red_cercana, stringResource(R.string.mula_titulo), ColoresEnlace.estable, alVerMula, Modifier.weight(1f))
+                    }
                 }
             }
+            item { FilaMula(mensajes, alVerMula) }
             seccionesPanorama(panorama, alActualizar = viewModel::actualizar)
             item {
                 TextButton(onClick = alAbrirConexion, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
@@ -255,6 +244,7 @@ fun PantallaInicioUnidad(
                 }
             }
         }
+      }
     }
 }
 
@@ -321,7 +311,11 @@ private fun androidx.compose.foundation.lazy.LazyListScope.seccionesPanorama(
 @Composable
 private fun TarjetaEquipo(equipo: EquipoUnidad?, asignacion: AsignacionUnidad?) {
     val enRuta = asignacion != null
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f), contentColor = Color.White),
+        shape = MaterialTheme.shapes.large,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
         Row(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -330,14 +324,14 @@ private fun TarjetaEquipo(equipo: EquipoUnidad?, asignacion: AsignacionUnidad?) 
             Icon(
                 painterResource(if (enRuta) R.drawable.ic_equipo else R.drawable.ic_bien),
                 contentDescription = null,
-                tint = if (enRuta) ColoresEnlace.accion else ColoresEnlace.estable,
+                tint = if (enRuta) MarcaEnlace.turquesa else Color(0xFF7BD88F),
                 modifier = Modifier.size(32.dp),
             )
             Column {
-                Text(equipo?.nombre.orEmpty(), style = MaterialTheme.typography.titleLarge)
+                Text(equipo?.nombre.orEmpty(), style = MaterialTheme.typography.titleLarge, color = Color.White)
                 Text(
                     stringResource(if (enRuta) R.string.unidad_en_ruta else R.string.unidad_disponible),
-                    color = if (enRuta) ColoresEnlace.accion else ColoresEnlace.estable,
+                    color = if (enRuta) MarcaEnlace.turquesa else Color(0xFF7BD88F),
                     style = MaterialTheme.typography.titleSmall,
                 )
             }

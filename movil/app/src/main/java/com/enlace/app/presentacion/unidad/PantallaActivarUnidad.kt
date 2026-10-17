@@ -27,6 +27,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.enlace.app.R
+import com.enlace.app.presentacion.componentes.PantallaConBarra
 import com.enlace.app.dominio.AjustesRepositorio
 import com.enlace.app.dominio.EquipoUnidad
 import com.enlace.app.dominio.Modo
@@ -100,7 +101,7 @@ fun PantallaActivarUnidad(
     val ui by viewModel.ui.collectAsStateWithLifecycle()
     val contexto = LocalContext.current
 
-    Scaffold { relleno ->
+    PantallaConBarra(stringResource(R.string.unidad_activar_titulo), alVolver) { relleno ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -109,7 +110,6 @@ fun PantallaActivarUnidad(
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Text(stringResource(R.string.unidad_activar_titulo), style = MaterialTheme.typography.headlineSmall)
             Text(stringResource(R.string.unidad_activar_explicacion), style = MaterialTheme.typography.bodyLarge)
             OutlinedTextField(
                 value = ui.clave,
@@ -148,9 +148,6 @@ fun PantallaActivarUnidad(
                     },
                     habilitado = ui.elegido != null,
                 )
-            }
-            TextButton(onClick = alVolver, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
-                Text(stringResource(R.string.volver))
             }
         }
     }

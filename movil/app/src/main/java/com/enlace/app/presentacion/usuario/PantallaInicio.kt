@@ -1,6 +1,14 @@
 package com.enlace.app.presentacion.usuario
 
 import android.Manifest
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.shape.CircleShape
+import com.enlace.app.presentacion.componentes.EncabezadoMarca
+import com.enlace.app.presentacion.componentes.FilaAjuste
+import com.enlace.app.presentacion.componentes.TarjetaAccion
+import com.enlace.app.presentacion.tema.EstiloSeccion
+import com.enlace.app.presentacion.tema.MarcaEnlace
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -102,81 +110,117 @@ fun PantallaInicio(
     }
     LaunchedEffect(Unit) { pedirPermisos.launch(viewModel.permisos) }
 
-    Scaffold { relleno ->
+    Scaffold(containerColor = MaterialTheme.colorScheme.background) { relleno ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(relleno).verticalScroll(rememberScrollState()).padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = relleno.calculateBottomPadding())
+                .verticalScroll(rememberScrollState()),
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    stringResource(R.string.app_nombre),
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Black,
-                    color = ColoresEnlace.accion,
-                    modifier = Modifier.weight(1f),
-                )
-                IndicadorConexion(conexion)
-            }
-            AvisoInicioAutomatico()
-            alerta?.let { activa ->
-                Card(
-                    onClick = alAbrirAlerta,
-                    colors = CardDefaults.cardColors(containerColor = ColoresEnlace.actuar),
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Row(
-                        modifier = Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        Icon(
-                            painterResource(R.drawable.ic_alerta),
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(32.dp),
-                        )
-                        Column {
-                            Text(textoAlerta(contexto, activa.alerta), color = Color.White, style = MaterialTheme.typography.titleLarge)
-                            Text(stringResource(R.string.inicio_ver_alerta), color = Color.White)
-                        }
-                    }
-                }
-            } ?: Card(modifier = Modifier.fillMaxWidth()) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    Icon(
-                        painterResource(R.drawable.ic_bien),
-                        contentDescription = null,
-                        tint = ColoresEnlace.estable,
-                        modifier = Modifier.size(32.dp),
+            EncabezadoMarca(conexion) {
+                // Estado de la emergencia, dentro del encabezado
+                alerta?.let { activa ->
+                    EstadoAlerta(
+                        icono = R.drawable.ic_alerta,
+                        titulo = textoAlerta(contexto, activa.alerta),
+                        detalle = stringResource(R.string.inicio_ver_alerta),
+                        fondo = ColoresEnlace.actuar,
+                        alTocar = alAbrirAlerta,
                     )
-                    Column {
-                        Text(stringResource(R.string.inicio_sin_alerta), style = MaterialTheme.typography.titleLarge)
-                        Text(stringResource(R.string.inicio_sin_alerta_detalle), style = MaterialTheme.typography.bodyMedium)
-                    }
-                }
+                } ?: EstadoAlerta(
+                    icono = R.drawable.ic_bien,
+                    titulo = stringResource(R.string.inicio_sin_alerta),
+                    detalle = stringResource(R.string.inicio_sin_alerta_detalle),
+                    fondo = Color.White.copy(alpha = 0.1f),
+                    alTocar = null,
+                )
             }
-            // Sin alerta activa también se puede pedir ayuda: alimenta la propuesta comunitaria
-            BotonPrincipal(stringResource(R.string.ayuda_boton), alPedirAyuda, color = ColoresEnlace.actuar)
-            BotonSecundario(R.drawable.ic_alerta, stringResource(R.string.bloqueo_boton), alReportarBloqueo)
-            BotonSecundario(R.drawable.ic_ubicacion, stringResource(R.string.mapa_ver), alVerMapa)
-            BotonSecundario(R.drawable.ic_alerta, stringResource(R.string.bloqueos_cercanos_titulo), alVerBloqueos)
-            BotonSecundario(R.drawable.ic_equipo, stringResource(R.string.seguimiento_titulo), alVerSeguimiento)
-            BotonSecundario(R.drawable.ic_persona, stringResource(R.string.inicio_perfil), alAbrirPerfil)
-            BotonSecundario(R.drawable.ic_candado, stringResource(R.string.inicio_privacidad), alAbrirPrivacidad)
-            BotonSecundario(R.drawable.ic_senal, stringResource(R.string.inicio_servidor), alAbrirConexion)
-            BotonSecundario(R.drawable.ic_equipo, stringResource(R.string.inicio_modo_unidad), alModoUnidad)
+            Column(
+                modifier = Modifier.padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
+            ) {
+                AvisoInicioAutomatico()
+                // Sin alerta activa también se puede pedir ayuda: alimenta la propuesta comunitaria
+                BotonAyuda(alPedirAyuda)
+                Text(stringResource(R.string.inicio_seccion_acciones).uppercase(), style = EstiloSeccion, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    TarjetaAccion(R.drawable.ic_alerta, stringResource(R.string.bloqueo_boton), ColoresEnlace.explorar, alReportarBloqueo, Modifier.weight(1f))
+                    TarjetaAccion(R.drawable.ic_ubicacion, stringResource(R.string.mapa_ver), ColoresEnlace.accion, alVerMapa, Modifier.weight(1f))
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    TarjetaAccion(R.drawable.ic_red_cercana, stringResource(R.string.bloqueos_cercanos_titulo), MaterialTheme.colorScheme.secondary, alVerBloqueos, Modifier.weight(1f))
+                    TarjetaAccion(R.drawable.ic_equipo, stringResource(R.string.seguimiento_titulo), ColoresEnlace.estable, alVerSeguimiento, Modifier.weight(1f))
+                }
+                Text(
+                    stringResource(R.string.inicio_seccion_ajustes).uppercase(),
+                    style = EstiloSeccion,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 6.dp),
+                )
+                FilaAjuste(R.drawable.ic_persona, stringResource(R.string.inicio_perfil), alAbrirPerfil)
+                FilaAjuste(R.drawable.ic_candado, stringResource(R.string.inicio_privacidad), alAbrirPrivacidad)
+                FilaAjuste(R.drawable.ic_senal, stringResource(R.string.inicio_servidor), alAbrirConexion)
+                FilaAjuste(R.drawable.ic_equipo, stringResource(R.string.inicio_modo_unidad), alModoUnidad)
+            }
         }
     }
 }
 
+/** Estado de la emergencia dentro del encabezado azul noche. */
 @Composable
-private fun BotonSecundario(icono: Int, texto: String, alTocar: () -> Unit) {
-    OutlinedButton(onClick = alTocar, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
-        Icon(painterResource(icono), contentDescription = null, modifier = Modifier.size(20.dp))
-        Text(texto, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 8.dp))
+private fun EstadoAlerta(icono: Int, titulo: String, detalle: String, fondo: Color, alTocar: (() -> Unit)?) {
+    val contenido: @Composable () -> Unit = {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            Box(
+                Modifier.size(44.dp).background(Color.White.copy(alpha = 0.16f), MaterialTheme.shapes.small),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(painterResource(icono), contentDescription = null, tint = Color.White, modifier = Modifier.size(26.dp))
+            }
+            Column(Modifier.weight(1f)) {
+                Text(titulo, color = Color.White, style = MaterialTheme.typography.titleMedium)
+                Text(detalle, color = Color.White.copy(alpha = 0.8f), style = MaterialTheme.typography.bodyMedium)
+            }
+            if (alTocar != null) Text("›", color = Color.White, style = MaterialTheme.typography.headlineSmall)
+        }
+    }
+    val colores = CardDefaults.cardColors(containerColor = fondo)
+    if (alTocar != null) {
+        Card(onClick = alTocar, colors = colores, shape = MaterialTheme.shapes.large, modifier = Modifier.fillMaxWidth()) { contenido() }
+    } else {
+        Card(colors = colores, shape = MaterialTheme.shapes.large, modifier = Modifier.fillMaxWidth()) { contenido() }
+    }
+}
+
+/** "Necesito ayuda": el botón más importante de la app, grande y rojo (sección 16). */
+@Composable
+private fun BotonAyuda(alTocar: () -> Unit) {
+    Card(
+        onClick = alTocar,
+        shape = MaterialTheme.shapes.extraLarge,
+        colors = CardDefaults.cardColors(containerColor = ColoresEnlace.actuar),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        modifier = Modifier.fillMaxWidth().heightIn(min = 96.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(20.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Box(
+                Modifier.size(56.dp).background(Color.White.copy(alpha = 0.18f), CircleShape),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(painterResource(R.drawable.ic_alerta), contentDescription = null, tint = Color.White, modifier = Modifier.size(30.dp))
+            }
+            Column {
+                Text(stringResource(R.string.ayuda_boton), color = Color.White, style = MaterialTheme.typography.headlineSmall)
+                Text(stringResource(R.string.inicio_ayuda_detalle), color = Color.White.copy(alpha = 0.85f), style = MaterialTheme.typography.bodyMedium)
+            }
+        }
     }
 }

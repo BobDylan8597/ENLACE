@@ -24,6 +24,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.enlace.app.R
+import com.enlace.app.presentacion.componentes.PantallaConBarra
 import com.enlace.app.TEXTO_NECESIDAD
 import com.enlace.app.dominio.DatosEvaluacion
 import com.enlace.app.dominio.Necesidad
@@ -92,7 +93,7 @@ fun PantallaEvaluacion(alVolver: () -> Unit, viewModel: EvaluacionViewModel = hi
     }
     val datos = ui.datos
 
-    Scaffold { relleno ->
+    PantallaConBarra(stringResource(R.string.evaluacion_titulo), alVolver) { relleno ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -101,7 +102,6 @@ fun PantallaEvaluacion(alVolver: () -> Unit, viewModel: EvaluacionViewModel = hi
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text(stringResource(R.string.evaluacion_titulo), style = MaterialTheme.typography.headlineSmall)
             Text(stringResource(R.string.evaluacion_nivel), style = MaterialTheme.typography.titleMedium)
             NivelDano.entries.forEach { nivel ->
                 val (titulo, detalle) = TEXTO_NIVEL_DANO.getValue(nivel)
@@ -140,9 +140,6 @@ fun PantallaEvaluacion(alVolver: () -> Unit, viewModel: EvaluacionViewModel = hi
                 habilitado = datos.nivel != null && !ui.enviando,
                 color = ColoresEnlace.accion,
             )
-            TextButton(onClick = alVolver, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
-                Text(stringResource(R.string.volver))
-            }
         }
     }
 }

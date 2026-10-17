@@ -19,6 +19,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.enlace.app.R
+import com.enlace.app.presentacion.componentes.PantallaConBarra
 import com.enlace.app.TEXTO_BLOQUEO
 import com.enlace.app.dominio.ReportesRepositorio
 import com.enlace.app.dominio.ResultadoEnvio
@@ -68,7 +69,7 @@ class BloqueoViewModel @Inject constructor(private val reportes: ReportesReposit
 fun PantallaBloqueo(alVolver: () -> Unit, viewModel: BloqueoViewModel = hiltViewModel()) {
     val ui by viewModel.ui.collectAsStateWithLifecycle()
 
-    Scaffold { relleno ->
+    PantallaConBarra(stringResource(R.string.bloqueo_titulo), alVolver) { relleno ->
         val resultado = ui.resultado
         if (resultado != null) {
             Column(Modifier.padding(relleno)) {
@@ -80,7 +81,7 @@ fun PantallaBloqueo(alVolver: () -> Unit, viewModel: BloqueoViewModel = hiltView
                     alVolver = alVolver,
                 )
             }
-            return@Scaffold
+            return@PantallaConBarra
         }
         Column(
             modifier = Modifier
@@ -90,7 +91,6 @@ fun PantallaBloqueo(alVolver: () -> Unit, viewModel: BloqueoViewModel = hiltView
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text(stringResource(R.string.bloqueo_titulo), style = MaterialTheme.typography.headlineSmall)
             Text(stringResource(R.string.bloqueo_donde), style = MaterialTheme.typography.bodyLarge)
             Text(stringResource(R.string.bloqueo_tipo), style = MaterialTheme.typography.titleMedium)
             TipoBloqueo.entries.forEach { tipo ->

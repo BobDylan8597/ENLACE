@@ -23,6 +23,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.enlace.app.R
+import com.enlace.app.presentacion.componentes.PantallaConBarra
 import com.enlace.app.TEXTO_NECESIDAD
 import com.enlace.app.dominio.AjustesRepositorio
 import com.enlace.app.dominio.DatosPedido
@@ -87,7 +88,7 @@ fun PantallaPedirAyuda(
 ) {
     val ui by viewModel.ui.collectAsStateWithLifecycle()
 
-    Scaffold { relleno ->
+    PantallaConBarra(stringResource(R.string.ayuda_titulo), alVolver) { relleno ->
         val resultado = ui.resultado
         if (resultado != null) {
             Column(Modifier.padding(relleno)) {
@@ -100,7 +101,7 @@ fun PantallaPedirAyuda(
                     alVerSeguimiento = alVerSeguimiento,
                 )
             }
-            return@Scaffold
+            return@PantallaConBarra
         }
         Column(
             modifier = Modifier
@@ -110,7 +111,6 @@ fun PantallaPedirAyuda(
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Text(stringResource(R.string.ayuda_titulo), style = MaterialTheme.typography.headlineSmall)
             Text(stringResource(R.string.ayuda_explicacion), style = MaterialTheme.typography.bodyMedium)
             val datos = ui.datos
             Contador(stringResource(R.string.ayuda_personas), datos.personas, { n -> viewModel.cambiar { it.copy(personas = n) } }, minimo = 1)

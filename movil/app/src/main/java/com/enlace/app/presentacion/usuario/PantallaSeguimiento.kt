@@ -29,6 +29,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.enlace.app.R
+import com.enlace.app.presentacion.componentes.PantallaConBarra
 import com.enlace.app.TEXTO_BLOQUEO
 import com.enlace.app.datos.Outbox
 import com.enlace.app.datos.local.MensajeSaliente
@@ -84,12 +85,11 @@ fun PantallaSeguimiento(alVolver: () -> Unit, viewModel: SeguimientoViewModel = 
         }
     }
 
-    Scaffold { relleno ->
+    PantallaConBarra(stringResource(R.string.seguimiento_titulo), alVolver) { relleno ->
         Column(
             modifier = Modifier.fillMaxSize().padding(relleno).padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Text(stringResource(R.string.seguimiento_titulo), style = MaterialTheme.typography.headlineSmall)
             if (pedidos.isEmpty() && bloqueos.isEmpty()) {
                 Text(stringResource(R.string.seguimiento_vacio), style = MaterialTheme.typography.bodyLarge)
             }
@@ -103,7 +103,6 @@ fun PantallaSeguimiento(alVolver: () -> Unit, viewModel: SeguimientoViewModel = 
                 }
                 items(bloqueos, key = { it.first.idMensaje }) { (mensaje, tipo) -> FilaBloqueoPropio(mensaje, tipo) }
             }
-            TextButton(onClick = alVolver) { Text(stringResource(R.string.envio_volver_inicio)) }
         }
     }
 }

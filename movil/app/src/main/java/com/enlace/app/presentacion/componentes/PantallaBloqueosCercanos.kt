@@ -31,6 +31,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.enlace.app.R
+import com.enlace.app.presentacion.componentes.PantallaConBarra
 import com.enlace.app.TEXTO_BLOQUEO
 import com.enlace.app.datos.BloqueoCercano
 import com.enlace.app.datos.BloqueosCercanos
@@ -96,13 +97,8 @@ fun PantallaBloqueosCercanos(
     viewModel: BloqueosCercanosViewModel = hiltViewModel(),
 ) {
     val ui by viewModel.ui.collectAsStateWithLifecycle()
-    Scaffold { relleno ->
+    PantallaConBarra(stringResource(R.string.bloqueos_cercanos_titulo), alVolver) { relleno ->
         Column(Modifier.fillMaxSize().padding(relleno).padding(horizontal = 24.dp)) {
-            Text(
-                stringResource(R.string.bloqueos_cercanos_titulo),
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.padding(top = 24.dp),
-            )
             Text(
                 stringResource(if (comoBrigada) R.string.bloqueos_cercanos_brigada else R.string.bloqueos_cercanos_comunidad),
                 style = MaterialTheme.typography.bodyLarge,
@@ -121,9 +117,6 @@ fun PantallaBloqueosCercanos(
                         viewModel.decidir(bloqueo.id, decision, comoBrigada)
                     }
                 }
-            }
-            TextButton(onClick = alVolver, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
-                Text(stringResource(R.string.volver))
             }
         }
     }

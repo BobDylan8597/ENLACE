@@ -24,21 +24,23 @@ import com.enlace.app.dominio.Modo
 import com.enlace.app.presentacion.componentes.BotonPrincipal
 import com.enlace.app.presentacion.componentes.OpcionElegible
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ModoViewModel @Inject constructor(private val ajustes: AjustesRepositorio) : ViewModel() {
-    fun elegir(modo: Modo, alGuardar: () -> Unit) {
+    /** `yaConfigurado`: la persona ya eligió su privacidad antes (vuelve del modo unidad). */
+    fun elegir(modo: Modo, alGuardar: (yaConfigurado: Boolean) -> Unit) {
         viewModelScope.launch {
             ajustes.guardarModo(modo)
-            alGuardar()
+            alGuardar(ajustes.consentimiento.first() != null)
         }
     }
 }
 
 @Composable
-fun PantallaModo(alElegir: (Modo) -> Unit, viewModel: ModoViewModel = hiltViewModel()) {
+fun PantallaModo(alElegir: (Modo, Boolean) -> Unit, viewModel: ModoViewModel = hiltViewModel()) {
     var modo by rememberSaveable { mutableStateOf(Modo.USUARIO) }
     Scaffold { relleno ->
         Column(
@@ -58,7 +60,7 @@ fun PantallaModo(alElegir: (Modo) -> Unit, viewModel: ModoViewModel = hiltViewMo
                 elegida = modo == Modo.UNIDAD,
                 alElegir = { modo = Modo.UNIDAD },
             )
-            BotonPrincipal(stringResource(R.string.continuar), { viewModel.elegir(modo) { alElegir(modo) } })
+            BotonPrincipal(stringResource(R.string.continuar), { viewModel.elegir(modo) { yaConfigurado -> alElegir(modo, yaConfigurado) } })
         }
     }
 }

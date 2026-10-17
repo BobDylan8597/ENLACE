@@ -28,6 +28,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.enlace.app.R
+import com.enlace.app.presentacion.componentes.PantallaConBarra
 import com.enlace.app.datos.Outbox
 import com.enlace.app.datos.local.MensajeSaliente
 import com.enlace.app.dominio.TipoMensaje
@@ -60,9 +61,8 @@ class MulaViewModel @Inject constructor(private val outbox: Outbox) : ViewModel(
 fun PantallaMula(alVolver: () -> Unit, viewModel: MulaViewModel = hiltViewModel()) {
     val pendientes by viewModel.pendientes.collectAsStateWithLifecycle()
     var resultado by remember { mutableStateOf<Boolean?>(null) }
-    Scaffold { relleno ->
+    PantallaConBarra(stringResource(R.string.mula_titulo), alVolver) { relleno ->
         Column(Modifier.fillMaxSize().padding(relleno).padding(horizontal = 24.dp)) {
-            Text(stringResource(R.string.mula_titulo), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(top = 24.dp))
             Text(stringResource(R.string.mula_explicacion), style = MaterialTheme.typography.bodyLarge)
             Text(
                 if (pendientes.isEmpty()) stringResource(R.string.mula_vacia)
@@ -97,9 +97,6 @@ fun PantallaMula(alVolver: () -> Unit, viewModel: MulaViewModel = hiltViewModel(
             }
             if (pendientes.isNotEmpty()) {
                 BotonPrincipal(stringResource(R.string.mula_entregar), { viewModel.entregar { resultado = it } }, color = ColoresEnlace.accion)
-            }
-            TextButton(onClick = alVolver, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
-                Text(stringResource(R.string.volver))
             }
         }
     }
