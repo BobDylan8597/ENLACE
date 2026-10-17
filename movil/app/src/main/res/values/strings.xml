@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Textos en español, en oración, cortos y sin tecnicismos (CLAUDE.md, sección 16).
+     Para portugués: res/values-pt/strings.xml con las mismas claves. -->
+<resources>
+    <string name="app_nombre">ENLACE</string>
+
+    <string name="configuracion_titulo">Conectar con ENLACE</string>
+    <string name="configuracion_ayuda">Escribe la dirección que muestra el centro de coordinación, por ejemplo 192.168.1.10:8000</string>
+    <string name="configuracion_direccion">Dirección del servidor</string>
+    <string name="configuracion_probar">Probar conexión</string>
+    <string name="configuracion_probando">Probando…</string>
+    <string name="configuracion_conectado">Conectado a ENLACE · %1$s, %2$s</string>
+    <string name="configuracion_direccion_invalida">La dirección no es válida</string>
+    <string name="configuracion_sin_respuesta">El servidor no responde. Revisa que estés en la misma red Wi-Fi.</string>
+</resources>
