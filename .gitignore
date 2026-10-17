@@ -1,0 +1,80 @@
+# ── Sistema operativo y editores ──────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.iml
+
+# ── Secretos y configuración local ────────────────────────
+.env
+.env.*
+!.env.ejemplo
+*.pem
+*.key
+# Claves Ed25519 de firma de alertas: nunca se versionan
+servidor/claves/
+
+# ── Python (servidor/, preparacion/) ──────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.ipynb_checkpoints/
+
+# Bases de datos y archivos generados por el servidor
+*.sqlite
+*.sqlite3
+*.db
+servidor/salida/
+# Caché de OSMnx (grafos descargados)
+cache/
+
+# ── Node / React + Vite (web/) ────────────────────────────
+node_modules/
+web/dist/
+.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.local
+
+# Tiles OSM locales: pesados, se generan con preparacion/
+web/public/tiles/
+
+# ── Android / Kotlin (movil/, receptor-sms/) ──────────────
+.gradle/
+**/build/
+local.properties
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+*.jks
+*.keystore
+google-services.json
+.kotlin/
+
+# ── Datos pesados de preparación ──────────────────────────
+*.pbf
+*.osm
+preparacion/descargas/
