@@ -21,6 +21,9 @@ const es = {
     alerta: 'Emitir alerta',
     equipos: 'Equipos',
     manual: 'Reporte manual',
+    asignaciones: 'Asignaciones',
+    bloqueos: 'Bloqueos',
+    paquete: 'Primera hora',
     salir: 'Salir',
   },
 
@@ -254,6 +257,47 @@ const es = {
     enviar: 'Enviar reporte',
     enviado: 'Reporte registrado',
     repetido: 'Este reporte ya estaba registrado',
+  },
+
+  asignaciones: {
+    titulo: 'Asignaciones en curso',
+    explicacion: 'Equipos en camino o trabajando en una zona. Se cierran cuando la unidad marca la zona atendida.',
+    enCamino: 'En curso',
+    decidida: (quien, cuando) => `Decidida por ${quien ?? 'el centro'} · ${cuando}`,
+    sinRuta: 'Sin ruta por calles con los bloqueos actuales',
+    verPedido: 'Ver el pedido',
+    vacio: 'No hay asignaciones en curso.',
+  },
+
+  bloqueos: {
+    titulo: 'Calles bloqueadas',
+    explicacion:
+      'Reportes de la comunidad y de las brigadas. Confirmar un bloqueo lo saca de las rutas; descartarlo las restaura.',
+    aPie: 'se puede pasar a pie',
+    reportes: (n) => `${n} ${n === 1 ? 'reporte' : 'reportes'}`,
+    porBrigada: 'confirmado por una brigada',
+    sinCalle: 'lejos de las calles: no cambia rutas',
+    confirmar: 'Confirmar',
+    descartar: 'Descartar',
+    vacio: 'No hay bloqueos activos.',
+  },
+
+  paquete: {
+    titulo: 'Paquete de primera hora',
+    explicacion:
+      'Una hoja para imprimir o compartir con los organismos: qué pasó, dónde actuar primero y con qué equipos.',
+    imprimir: 'Imprimir',
+    sinEvento: 'No hay una emergencia activa.',
+    resumen: (personas, criticos, zonas) =>
+      `Unas ${personas.toLocaleString('es')} personas afectadas según el modelo, ${criticos} personas vulnerables sin responder, ${zonas} zonas en el área afectada.`,
+    zonas: 'Zonas por prioridad',
+    zona: 'Zona',
+    categoria: 'Situación',
+    primerasAcciones: 'Primeras acciones recomendadas',
+    sinRecomendaciones: 'Sin recomendaciones pendientes.',
+    equipos: (disponibles, total) => `Equipos: ${disponibles} disponibles de ${total}`,
+    pie: (fecha) =>
+      `Generado por ENLACE el ${fecha}. Estimaciones del modelo corregidas con los reportes recibidos: la decisión final es siempre humana.`,
   },
 
   comun: {

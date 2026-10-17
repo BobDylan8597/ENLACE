@@ -9,6 +9,9 @@ import Ingreso from './componentes/Ingreso.jsx'
 import CentroReportes from './paginas/CentroReportes.jsx'
 import EmitirAlerta from './paginas/EmitirAlerta.jsx'
 import Equipos from './paginas/Equipos.jsx'
+import Asignaciones from './paginas/Asignaciones.jsx'
+import Bloqueos from './paginas/Bloqueos.jsx'
+import PaqueteHora from './paginas/PaqueteHora.jsx'
 import ReporteManual from './paginas/ReporteManual.jsx'
 import Tablero from './paginas/Tablero.jsx'
 import { t, usarIdioma } from './textos/index.js'
@@ -24,6 +27,9 @@ const PAGINAS = {
   ),
   equipos: ({ ciudad }) => <Equipos ciudad={ciudad} />,
   manual: ({ ciudad }) => <ReporteManual ciudad={ciudad} />,
+  asignaciones: () => <Asignaciones />,
+  bloqueos: () => <Bloqueos />,
+  paquete: ({ ciudad, evento }) => <PaqueteHora ciudad={ciudad} evento={evento} />,
 }
 
 function Consola({ ciudad, alSalir }) {

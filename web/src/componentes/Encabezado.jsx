@@ -8,8 +8,11 @@ const SECCIONES = [
   ['reportes', 'lista', 'reportes'],
   ['mapa', 'mapa', 'tablero'],
   ['alerta', 'alerta', 'alerta'],
+  ['asignaciones', 'ruta', 'asignaciones'],
+  ['bloqueos', 'bloqueo', 'bloqueos'],
   ['equipos', 'equipo', 'equipos'],
   ['manual', 'mas', 'manual'],
+  ['paquete', 'lista', 'paquete'],
 ]
 
 export default function Encabezado({ seccion, evento, ciudad, alSalir }) {
