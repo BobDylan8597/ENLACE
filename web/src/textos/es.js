@@ -143,7 +143,9 @@ const es = {
     capas: 'Capas',
     capa: {
       celdas: 'Zonas por prioridad',
-      checkins: 'Check-ins',
+      criticos: 'Población crítica',
+      personas: 'Personas ubicadas',
+      checkins: 'Check-ins por zona',
       ayuda: 'Pedidos de ayuda',
       equipos: 'Equipos',
       bloqueos: 'Bloqueos',
@@ -151,6 +153,15 @@ const es = {
     },
     sinMapa: 'Sin mapa base: ejecutar la preparación de la ciudad',
     leyenda: 'Leyenda',
+    conVulnerables: 'Hogar con personas que necesitan atención especial',
+    privacidadPersonas:
+      'Solo aparecen quienes eligieron compartir su ubicación exacta. Se borra al cerrar la emergencia.',
+  },
+
+  estadoPersona: {
+    sin_respuesta: 'Sin respuesta',
+    ayuda: 'Pidió ayuda',
+    bien: 'Está bien',
   },
 
   celda: {
@@ -165,6 +176,15 @@ const es = {
     ultimaAtencion: 'Última atención',
     nunca: 'Aún no atendida',
     totales: (c) => `${c.bien} bien · ${c.ayuda} piden ayuda · ${c.sin_respuesta} sin respuesta`,
+    personas: 'Personas en la zona (informadas)',
+    vulnerables: 'Necesitan atención especial',
+    criticos: 'Población crítica',
+    poblacion: (c) =>
+      `${c.criticos} ${c.criticos === 1 ? 'persona vulnerable' : 'personas vulnerables'} sin responder o pidiendo ayuda · ` +
+      `${c.personas} personas informadas`,
+    hogar: (u) =>
+      `${u.personas} ${u.personas === 1 ? 'persona' : 'personas'}` +
+      (u.vulnerables > 0 ? ` · ${u.vulnerables} con atención especial` : ''),
   },
 
   alerta: {

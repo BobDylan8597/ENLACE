@@ -30,6 +30,9 @@ export default function DetalleCelda({ idH3 }) {
     [t.celda.vulnerabilidad, porcentaje(c.vulnerabilidad)],
     [t.celda.reportes, c.reportes],
     [t.celda.checkins, t.celda.totales(c.checkins)],
+    [t.celda.personas, c.checkins.personas],
+    [t.celda.vulnerables, c.checkins.vulnerables],
+    [t.celda.criticos, c.checkins.criticos],
     [t.celda.ultimaAtencion, c.ultima_atencion ? tiempoRelativo(c.ultima_atencion) : t.celda.nunca],
   ]
   const infraestructura = Object.keys(c.infraestructura_critica ?? {})

@@ -38,10 +38,20 @@ export function capaCeldas(celdas, alElegir, seleccionada = null) {
   )
 }
 
+// Check-ins de la celda (cada persona una vez, sea cual sea su estado)
+export function totalCheckins(c) {
+  return c.sin_respuesta + c.bien + c.ayuda
+}
+
+// Intensidad del relleno según la población crítica: crece rápido al principio y se satura
+export function intensidadCritica(criticos, escala = 10) {
+  return criticos <= 0 ? 0 : 0.15 + 0.55 * (1 - Math.exp(-criticos / escala))
+}
+
 export function capaCheckins(celdas) {
   return L.layerGroup(
     celdas
-      .map((celda) => ({ celda, total: Object.values(celda.checkins).reduce((a, b) => a + b, 0) }))
+      .map((celda) => ({ celda, total: totalCheckins(celda.checkins) }))
       .filter(({ total }) => total > 0)
       .map(({ celda, total }) => {
         const piden = celda.checkins.ayuda / total
@@ -54,6 +64,69 @@ export function capaCheckins(celdas) {
           interactive: true,
         }).bindTooltip(escapar(t.celda.totales(celda.checkins)))
       }),
+  )
+}
+
+// Población crítica: vulnerables (adulto mayor, niños, embarazo, discapacidad…) que no
+// respondieron o pidieron ayuda. Hexágono más intenso y el número escrito encima.
+export function capaPoblacionCritica(celdas, alElegir) {
+  const conCriticos = celdas.filter((c) => c.checkins.criticos > 0)
+  return L.layerGroup([
+    ...conCriticos.map((celda) =>
+      L.polygon(cellToBoundary(celda.id_h3), {
+        color: ESTILOS.actuar.color,
+        weight: 1,
+        fillColor: ESTILOS.actuar.color,
+        fillOpacity: intensidadCritica(celda.checkins.criticos),
+      })
+        .bindTooltip(
+          `<strong>${escapar(celda.nombre_zona)}</strong><br>${escapar(t.celda.poblacion(celda.checkins))}`,
+          { sticky: true },
+        )
+        .on('click', () => alElegir(celda.id_h3)),
+    ),
+    ...conCriticos.map((celda) =>
+      L.marker(cellToLatLng(celda.id_h3), {
+        interactive: false,
+        icon: L.divIcon({
+          className: '',
+          html: `<span class="marca-critica">⚠ ${escapar(celda.checkins.criticos)}</span>`,
+          iconSize: [44, 22],
+          iconAnchor: [22, 11],
+        }),
+      }),
+    ),
+  ])
+}
+
+// Símbolo de cada estado: el color nunca va solo (daltonismo)
+const PERSONA = {
+  sin_respuesta: { estilo: ESTILOS.sin_datos, simbolo: '?' },
+  bien: { estilo: ESTILOS.estable, simbolo: '✓' },
+  ayuda: { estilo: ESTILOS.actuar, simbolo: '!' },
+}
+
+export function estiloPersona(estado) {
+  return PERSONA[estado] ?? PERSONA.sin_respuesta
+}
+
+// Personas que eligieron compartir su ubicación exacta durante la emergencia
+export function capaPersonas(ubicaciones) {
+  return L.layerGroup(
+    ubicaciones.map((u) => {
+      const { estilo, simbolo } = estiloPersona(u.estado)
+      const vulnerable = u.vulnerables > 0 ? ' marca-persona--vulnerable' : ''
+      return L.marker([u.lat, u.lon], {
+        icon: L.divIcon({
+          className: '',
+          html: `<span class="marca-persona${vulnerable}" style="background:${estilo.color}">${simbolo}</span>`,
+          iconSize: [18, 18],
+          iconAnchor: [9, 9],
+        }),
+      }).bindTooltip(
+        `<strong>${escapar(t.estadoPersona[u.estado])}</strong><br>${escapar(t.celda.hogar(u))}`,
+      )
+    }),
   )
 }
 

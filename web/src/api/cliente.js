@@ -105,6 +105,8 @@ export const api = {
   equipos: () => pedir('GET', '/equipos'),
   registrarEquipo: (equipo) => pedir('POST', '/equipos', equipo),
   bloqueos: () => pedir('GET', '/bloqueos'),
+  // Puntos de quienes eligieron compartir su ubicación exacta durante la emergencia
+  ubicaciones: () => pedir('GET', '/ubicaciones'),
   // Para comprobar la clave sin efectos: una ruta de administrador de solo lectura
   comprobarClave: () => pedir('GET', '/equipos'),
 }

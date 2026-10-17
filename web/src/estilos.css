@@ -53,6 +53,39 @@ body {
   outline: 3px solid var(--color-explorar);
 }
 
+.marca-critica {
+  display: flex;
+  height: 22px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: white;
+  color: var(--color-actuar);
+  font-size: 12px;
+  font-weight: 800;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.4);
+}
+
+.marca-persona {
+  display: inline-flex;
+  height: 18px;
+  width: 18px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+  border-radius: 9999px;
+  color: white;
+  font-size: 11px;
+  font-weight: 900;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.5);
+}
+
+/* Hogar con personas vulnerables: anillo oscuro alrededor */
+.marca-persona--vulnerable {
+  outline: 2px solid #111827;
+}
+
 .marca-bloqueo {
   display: flex;
   height: 24px;

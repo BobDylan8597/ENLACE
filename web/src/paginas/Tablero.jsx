@@ -11,12 +11,17 @@ import {
   capaCheckins,
   capaEquipos,
   capaPedidosDeAyuda,
+  capaPersonas,
+  capaPoblacionCritica,
   capaRutas,
+  estiloPersona,
 } from '../util/capasMapa.js'
 import { navegar } from '../util/useRutaHash.js'
 import DetalleCelda from './DetalleCelda.jsx'
 
-const CAPAS = ['celdas', 'checkins', 'ayuda', 'equipos', 'bloqueos', 'rutas']
+const CAPAS = ['celdas', 'criticos', 'personas', 'checkins', 'ayuda', 'equipos', 'bloqueos', 'rutas']
+// Las capas más detalladas empiezan apagadas para no tapar las zonas
+const APAGADAS = ['checkins']
 
 // Muestra una capa en el mapa mientras esté activa y sus datos existan
 function useCapa(mapa, visible, datos, crear) {
@@ -30,16 +35,24 @@ function useCapa(mapa, visible, datos, crear) {
 const elegirCelda = (id) => navegar('mapa', id)
 const elegirReporte = (id) => navegar('reportes', id)
 const crearAyuda = (datos) => capaPedidosDeAyuda(datos, elegirReporte)
+const crearCriticos = (datos) => capaPoblacionCritica(datos, elegirCelda)
 
 // A4: tablero con mapa por capas
 export default function Tablero({ ciudad, evento, parametro }) {
   const [mapa, setMapa] = useState(null)
-  const [visibles, setVisibles] = useState(Object.fromEntries(CAPAS.map((c) => [c, true])))
+  const [visibles, setVisibles] = useState(
+    Object.fromEntries(CAPAS.map((c) => [c, !APAGADAS.includes(c)])),
+  )
 
   const celdas = useDatos(api.celdas, [evento?.id], ['celda_actualizada', 'evento_emitido'])
   const ayuda = useDatos(() => api.reportes({ tipo: 'ayuda' }), [evento?.id], [
     'reporte_recibido',
     'asignacion_cambiada',
+  ])
+  const personas = useDatos(api.ubicaciones, [evento?.id], [
+    'checkin_recibido',
+    'evento_emitido',
+    'evento_cerrado',
   ])
   const equipos = useDatos(api.equipos, [], ['asignacion_cambiada'])
   const bloqueos = useDatos(api.bloqueos, [], ['bloqueo_cambiado'])
@@ -52,7 +65,9 @@ export default function Tablero({ ciudad, evento, parametro }) {
 
   // Sin evento, las zonas no tienen estimación: no se dibujan
   useCapa(mapa, visibles.celdas && evento, celdas.datos, crearCeldas)
+  useCapa(mapa, visibles.criticos && evento, celdas.datos, crearCriticos)
   useCapa(mapa, visibles.checkins && evento, celdas.datos, capaCheckins)
+  useCapa(mapa, visibles.personas && evento, personas.datos, capaPersonas)
   useCapa(mapa, visibles.ayuda, ayuda.datos, crearAyuda)
   useCapa(mapa, visibles.bloqueos, bloqueos.datos, capaBloqueos)
   useCapa(mapa, visibles.rutas, rutas.datos, capaRutas)
@@ -97,6 +112,26 @@ export default function Tablero({ ciudad, evento, parametro }) {
                   </li>
                 ))}
               </ul>
+              <h3 className="mt-4 mb-2 text-sm font-semibold">{t.tablero.capa.personas}</h3>
+              <ul className="space-y-2 text-sm">
+                {['sin_respuesta', 'ayuda', 'bien'].map((estado) => (
+                  <li key={estado} className="flex items-center gap-2">
+                    <span
+                      className="marca-persona"
+                      style={{ background: estiloPersona(estado).estilo.color }}
+                      aria-hidden="true"
+                    >
+                      {estiloPersona(estado).simbolo}
+                    </span>
+                    {t.estadoPersona[estado]}
+                  </li>
+                ))}
+                <li className="flex items-center gap-2">
+                  <span className="marca-persona marca-persona--vulnerable bg-gray-400" aria-hidden="true" />
+                  {t.tablero.conVulnerables}
+                </li>
+              </ul>
+              <p className="mt-2 text-xs text-gray-500">{t.tablero.privacidadPersonas}</p>
             </section>
           </div>
         )}

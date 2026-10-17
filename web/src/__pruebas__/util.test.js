@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { escapar, iniciales } from '../util/capasMapa.js'
+import { escapar, estiloPersona, iniciales, intensidadCritica, totalCheckins } from '../util/capasMapa.js'
 import { estiloCategoria, estiloPrioridad, ESTILOS } from '../util/colores.js'
 import { distancia, resumenReporte, tiempoRelativo } from '../util/formato.js'
 import { nuevoId } from '../util/identificadores.js'
@@ -64,5 +64,24 @@ describe('identificadores y navegación', () => {
   it('lee la sección y el parámetro del hash', () => {
     expect(leerRuta('')).toEqual({ seccion: 'reportes', parametro: null })
     expect(leerRuta('#/mapa/88283082bffffff')).toEqual({ seccion: 'mapa', parametro: '88283082bffffff' })
+  })
+})
+
+describe('población y personas ubicadas', () => {
+  it('cuenta cada check-in una vez (sin sumar los conteos del hogar)', () => {
+    const c = { sin_respuesta: 2, bien: 3, ayuda: 1, personas: 14, vulnerables: 4, criticos: 2 }
+    expect(totalCheckins(c)).toBe(6)
+  })
+
+  it('la intensidad crece con la población crítica y se satura', () => {
+    expect(intensidadCritica(0)).toBe(0)
+    expect(intensidadCritica(2)).toBeLessThan(intensidadCritica(10))
+    expect(intensidadCritica(1000)).toBeCloseTo(0.7)
+  })
+
+  it('cada estado tiene color y símbolo', () => {
+    expect(estiloPersona('ayuda').estilo).toBe(ESTILOS.actuar)
+    expect(estiloPersona('bien').simbolo).toBe('✓')
+    expect(estiloPersona('otro').estilo).toBe(ESTILOS.sin_datos)
   })
 })
