@@ -5,6 +5,7 @@ import { useDatos } from '../api/useDatos.js'
 import AvisoEstado from '../componentes/AvisoEstado.jsx'
 import Boton from '../componentes/Boton.jsx'
 import Icono from '../componentes/Icono.jsx'
+import EncabezadoPagina from '../componentes/EncabezadoPagina.jsx'
 import { t } from '../textos/index.js'
 import { estiloBloqueo } from '../util/colores.js'
 import { tiempoRelativo } from '../util/formato.js'
@@ -35,16 +36,15 @@ export default function Bloqueos() {
 
   const activos = (bloqueos.datos ?? []).filter((b) => b.estado !== 'descartado')
   return (
-    <div className="mx-auto h-full max-w-5xl space-y-6 overflow-y-auto p-5">
-      <h1 className="text-xl font-bold">{t.bloqueos.titulo}</h1>
-      <p className="text-gray-600">{t.bloqueos.explicacion}</p>
+    <div className="mx-auto h-full max-w-6xl space-y-5 overflow-y-auto p-5 lg:p-8">
+      <EncabezadoPagina titulo={t.bloqueos.titulo} detalle={t.bloqueos.explicacion} />
       {error && <p className="font-medium text-actuar">{error}</p>}
       {activos.length ? (
         <ul className="space-y-3">
           {activos.map((b) => {
             const estilo = estiloBloqueo(b.estado)
             return (
-              <li key={b.id} className="flex flex-wrap items-center gap-3 rounded-xl bg-white p-4 shadow-sm">
+              <li key={b.id} className="tarjeta flex flex-wrap items-center gap-3 p-5">
                 <span
                   className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-sm font-medium ${estilo.clase}`}
                 >
@@ -56,7 +56,7 @@ export default function Bloqueos() {
                     {t.tipoBloqueo[b.tipo]}
                     {b.alcance === 'solo_a_pie' && ` · ${t.bloqueos.aPie}`}
                   </p>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-slate-600">
                     {t.bloqueos.reportes(b.confirmaciones)}
                     {b.confirmado_por_brigada && ` · ${t.bloqueos.porBrigada}`} ·{' '}
                     {tiempoRelativo(b.actualizado)}

@@ -3,6 +3,7 @@ import { useDatos } from '../api/useDatos.js'
 import AvisoEstado from '../componentes/AvisoEstado.jsx'
 import FormularioEquipo from '../componentes/FormularioEquipo.jsx'
 import Icono from '../componentes/Icono.jsx'
+import EncabezadoPagina from '../componentes/EncabezadoPagina.jsx'
 import { t } from '../textos/index.js'
 
 const ESTILO_ESTADO = {
@@ -17,12 +18,12 @@ export default function Equipos({ ciudad }) {
   const equipos = useDatos(api.equipos, [], ['asignacion_cambiada'])
 
   return (
-    <div className="mx-auto h-full max-w-5xl space-y-6 overflow-y-auto p-5">
-      <h1 className="text-xl font-bold">{t.equipos.titulo}</h1>
+    <div className="mx-auto h-full max-w-6xl space-y-5 overflow-y-auto p-5 lg:p-8">
+      <EncabezadoPagina titulo={t.equipos.titulo} detalle={t.equipos.detalle} />
       {equipos.datos?.length ? (
-        <div className="overflow-x-auto rounded-xl bg-white shadow-sm">
+        <div className="tarjeta overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="border-b border-gray-200 text-sm text-gray-600">
+            <thead className="border-b border-slate-200 bg-slate-50 text-xs font-semibold tracking-wider text-slate-500 uppercase">
               <tr>
                 <th className="px-4 py-2">{t.equipos.nombre}</th>
                 <th className="px-4 py-2">{t.equipos.organismo}</th>
@@ -32,8 +33,8 @@ export default function Equipos({ ciudad }) {
             </thead>
             <tbody>
               {equipos.datos.map((e) => (
-                <tr key={e.id} className="border-b border-gray-100 last:border-0">
-                  <td className="px-4 py-3 font-medium">{e.nombre}</td>
+                <tr key={e.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                  <td className="px-4 py-3 font-semibold text-noche">{e.nombre}</td>
                   <td className="px-4 py-3">{e.organismo}</td>
                   <td className="px-4 py-3">{e.capacidades.map((c) => t.capacidad[c]).join(', ')}</td>
                   <td className="px-4 py-3">

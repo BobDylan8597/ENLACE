@@ -43,7 +43,7 @@ export default function FormularioAlerta({ ciudad, alEmitir }) {
 
   if (revisando) {
     return (
-      <section className="space-y-3 rounded-xl border-2 border-actuar bg-white p-5">
+      <section className="tarjeta space-y-3 border-2 border-actuar p-6">
         <h2 className="text-lg font-bold">{t.alerta.confirmarTitulo}</h2>
         <p className="text-xl font-semibold text-actuar">
           {t.tipoEvento[tipo]}
@@ -67,7 +67,7 @@ export default function FormularioAlerta({ ciudad, alEmitir }) {
 
   return (
     <form
-      className="space-y-4 rounded-xl bg-white p-5 shadow-sm"
+      className="tarjeta space-y-4 p-6"
       onSubmit={(e) => {
         e.preventDefault()
         setRevisando(true)

@@ -21,7 +21,7 @@ export default function EventoActivo({ evento, alCerrar }) {
   }
 
   return (
-    <section className="space-y-3 rounded-xl border-2 border-actuar bg-actuar-suave p-5">
+    <section className="space-y-3 rounded-2xl border-2 border-actuar/40 bg-actuar-suave p-6 shadow-sm">
       <h2 className="flex items-center gap-2 text-lg font-bold text-actuar">
         <Icono nombre="alerta" />
         {t.evento.activo(t.tipoEvento[evento.tipo], evento.magnitud)}
@@ -31,7 +31,7 @@ export default function EventoActivo({ evento, alCerrar }) {
       </p>
       {error && <p className="text-actuar">{error}</p>}
       {confirmando ? (
-        <div className="space-y-2 rounded-lg bg-white p-3">
+        <div className="space-y-2 rounded-xl bg-white p-4">
           <p>{t.alerta.confirmarCierre}</p>
           <div className="flex gap-2">
             <Boton variante="peligro" onClick={cerrar}>

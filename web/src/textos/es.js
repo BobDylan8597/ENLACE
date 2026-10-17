@@ -7,6 +7,14 @@ const es = {
 
   ingreso: {
     titulo: 'Ingresar al centro de coordinación',
+    detalle: 'Para operadores y coordinadores de los organismos de respuesta.',
+    lema: 'Decidir cuando todavía no se ve nada, y corregir con cada dato que llega.',
+    puntos: [
+      'Alertas firmadas que llegan aunque se caiga internet',
+      'Prioridades por zona desde el primer minuto',
+      'Equipos asignados con ruta y explicación de cada decisión',
+    ],
+    pie: 'Rally Latinoamericano de Innovación · Reto 09',
     clave: 'Clave de acceso',
     nombre: 'Tu nombre',
     nombreAyuda: 'Queda registrado en cada decisión que tomes',
@@ -25,6 +33,8 @@ const es = {
     bloqueos: 'Bloqueos',
     paquete: 'Primera hora',
     salir: 'Salir',
+    operador: 'Operador',
+    grupos: { operacion: 'Operación', coordinacion: 'Coordinación' },
   },
 
   conexion: {
@@ -93,8 +103,16 @@ const es = {
     otro: 'Otro',
   },
 
+  indicadores: {
+    afectadas: 'Personas afectadas',
+    criticos: 'Vulnerables sin responder',
+    pedidos: 'Pedidos sin asignar',
+    equipos: 'Equipos disponibles',
+  },
+
   reportes: {
     titulo: 'Centro de reportes',
+    detalle: 'Pedidos y evaluaciones ordenados por prioridad. Elige uno para ver el equipo sugerido.',
     vacio: 'No hay reportes por ahora',
     sinEvento: 'Cuando haya una alerta activa, los reportes aparecerán aquí por prioridad',
     filtros: { todos: 'Todos', estado: 'Estado', tipo: 'Tipo', origen: 'Origen' },
@@ -106,6 +124,7 @@ const es = {
     puntoExacto: 'Ubicación exacta',
     actualizado: 'Información nueva',
     seleccionar: 'Elige un reporte para ver el detalle',
+    bandeja: 'Bandeja',
   },
 
   detalle: {
@@ -202,6 +221,7 @@ const es = {
 
   alerta: {
     titulo: 'Emitir alerta',
+    detalle: 'Siempre con confirmación humana. La alerta sale firmada: los celulares descartan cualquier otra.',
     activa: 'Ya hay una alerta activa',
     tipo: 'Tipo de evento',
     magnitud: 'Magnitud',
@@ -228,6 +248,7 @@ const es = {
 
   equipos: {
     titulo: 'Equipos',
+    detalle: 'Equipos de respuesta registrados, sus capacidades y si están disponibles.',
     nuevo: 'Registrar equipo',
     nombre: 'Nombre',
     organismo: 'Organismo',

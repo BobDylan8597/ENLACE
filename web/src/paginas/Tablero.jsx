@@ -83,12 +83,12 @@ export default function Tablero({ ciudad, evento, parametro }) {
           </p>
         )}
       </div>
-      <aside className="min-h-0 overflow-y-auto border-l border-gray-200 bg-white">
+      <aside className="min-h-0 overflow-y-auto border-l border-slate-200 bg-white shadow-[-4px_0_12px_rgba(15,42,61,0.04)]">
         {parametro ? (
           <DetalleCelda idH3={parametro} />
         ) : (
           <div className="space-y-5 p-5">
-            <h1 className="text-lg font-bold">{t.tablero.titulo}</h1>
+            <h1 className="text-xl font-bold tracking-tight text-noche">{t.tablero.titulo}</h1>
             <fieldset>
               <legend className="mb-2 font-semibold">{t.tablero.capas}</legend>
               {CAPAS.map((capa) => (

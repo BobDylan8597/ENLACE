@@ -4,6 +4,7 @@ import { api } from '../api/cliente.js'
 import Boton from '../componentes/Boton.jsx'
 import CampoFormulario, { ENTRADA } from '../componentes/CampoFormulario.jsx'
 import SelectorUbicacion from '../componentes/SelectorUbicacion.jsx'
+import EncabezadoPagina from '../componentes/EncabezadoPagina.jsx'
 import { t } from '../textos/index.js'
 import { nuevoId } from '../util/identificadores.js'
 import { navegar } from '../util/useRutaHash.js'
@@ -75,12 +76,9 @@ export default function ReporteManual({ ciudad }) {
   }
 
   return (
-    <div className="mx-auto h-full max-w-4xl overflow-y-auto p-5">
-      <form onSubmit={enviar} className="space-y-4 rounded-xl bg-white p-5 shadow-sm">
-        <div>
-          <h1 className="text-xl font-bold">{t.manual.titulo}</h1>
-          <p className="text-gray-600">{t.manual.ayuda}</p>
-        </div>
+    <div className="mx-auto h-full max-w-4xl space-y-5 overflow-y-auto p-5 lg:p-8">
+      <EncabezadoPagina titulo={t.manual.titulo} detalle={t.manual.ayuda} />
+      <form onSubmit={enviar} className="tarjeta space-y-4 p-6">
         <div className="grid gap-3 sm:grid-cols-2">
           <CampoFormulario etiqueta={t.manual.origen}>
             <select value={origen} onChange={(e) => setOrigen(e.target.value)} className={ENTRADA}>

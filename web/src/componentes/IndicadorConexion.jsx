@@ -12,7 +12,7 @@ export default function IndicadorConexion() {
   }
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium ${estilos[estado]}`}
+      className={`inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 text-sm font-semibold ${estilos[estado]}`}
       role="status"
     >
       <Icono nombre={estado === 'conectado' ? 'senal' : 'sinSenal'} className="size-4" />

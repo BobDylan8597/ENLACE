@@ -6,7 +6,7 @@ export const ESTILOS = {
   explorar: { color: '#b45309', suave: '#fef3c7', clase: 'text-explorar bg-explorar-suave', icono: 'explorar' },
   estable: { color: '#2e7d32', suave: '#e8f5e9', clase: 'text-estable bg-estable-suave', icono: 'bien' },
   sin_datos: { color: '#6b7280', suave: '#f3f4f6', clase: 'text-sin-datos bg-sin-datos-suave', icono: 'pregunta' },
-  accion: { color: '#1d4ed8', suave: '#dbeafe', clase: 'text-accion bg-accion-suave', icono: 'equipo' },
+  accion: { color: '#1a7d7c', suave: '#e0f2f1', clase: 'text-accion bg-accion-suave', icono: 'equipo' },
 }
 
 // "Explorar después" (poco impacto y poca información) se ve como "sin datos"

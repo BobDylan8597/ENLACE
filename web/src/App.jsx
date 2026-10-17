@@ -4,7 +4,8 @@ import { api, borrarClave, leerClave } from './api/cliente.js'
 import { TiempoRealProveedor } from './api/TiempoReal.jsx'
 import { useDatos } from './api/useDatos.js'
 import AvisoEstado from './componentes/AvisoEstado.jsx'
-import Encabezado from './componentes/Encabezado.jsx'
+import BarraLateral from './componentes/BarraLateral.jsx'
+import BarraSuperior from './componentes/BarraSuperior.jsx'
 import Ingreso from './componentes/Ingreso.jsx'
 import CentroReportes from './paginas/CentroReportes.jsx'
 import EmitirAlerta from './paginas/EmitirAlerta.jsx'
@@ -37,16 +38,19 @@ function Consola({ ciudad, alSalir }) {
   const evento = useDatos(api.eventoActivo, [], ['evento_emitido', 'evento_cerrado'])
   const Pagina = PAGINAS[seccion] ?? PAGINAS.reportes
   return (
-    <div className="flex h-full flex-col">
-      <Encabezado seccion={seccion} evento={evento.datos} ciudad={ciudad} alSalir={alSalir} />
-      <main className="min-h-0 flex-1">
-        <Pagina
-          ciudad={ciudad}
-          evento={evento.datos}
-          parametro={parametro}
-          recargarEvento={evento.recargar}
-        />
-      </main>
+    <div className="flex h-full flex-col lg:flex-row">
+      <BarraLateral seccion={seccion} ciudad={ciudad} alSalir={alSalir} />
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <BarraSuperior evento={evento.datos} alSalir={alSalir} />
+        <main className="min-h-0 flex-1">
+          <Pagina
+            ciudad={ciudad}
+            evento={evento.datos}
+            parametro={parametro}
+            recargarEvento={evento.recargar}
+          />
+        </main>
+      </div>
     </div>
   )
 }

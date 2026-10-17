@@ -10,22 +10,23 @@ export default function FilaReporte({ reporte, seleccionado, ahora, alElegir }) 
         type="button"
         onClick={() => alElegir(reporte.id_mensaje)}
         aria-current={seleccionado ? 'true' : undefined}
-        className={`flex w-full items-start gap-3 border-b border-gray-200 px-4 py-3 text-left hover:bg-gray-50 ${
-          seleccionado ? 'bg-accion-suave' : 'bg-white'
+        className={`relative flex w-full items-start gap-3 border-b border-slate-100 px-5 py-3.5 text-left transition hover:bg-slate-50 ${
+          seleccionado ? 'bg-marca-suave/70' : 'bg-white'
         }`}
       >
+        {seleccionado && <span className="absolute inset-y-0 left-0 w-1 bg-marca" aria-hidden="true" />}
         <InsigniaPrioridad valor={reporte.prioridad} />
         <span className="min-w-0 flex-1">
           <span className="flex flex-wrap items-baseline gap-x-2">
-            <span className="font-semibold">{reporte.nombre_zona || reporte.id_h3}</span>
-            <span className="text-sm text-gray-500">
+            <span className="font-semibold text-noche">{reporte.nombre_zona || reporte.id_h3}</span>
+            <span className="text-sm text-slate-500">
               {t.tipoReporte[reporte.tipo]} · {t.origen[reporte.origen]} ·{' '}
               {tiempoRelativo(reporte.hora, ahora)}
             </span>
           </span>
-          <span className="block truncate text-gray-800">{resumenReporte(reporte)}</span>
+          <span className="block truncate text-slate-700">{resumenReporte(reporte)}</span>
           <span className="mt-1 flex flex-wrap gap-2 text-xs">
-            <span className="rounded bg-gray-100 px-1.5 py-0.5 text-gray-700">
+            <span className="rounded-md bg-slate-100 px-1.5 py-0.5 font-medium text-slate-700">
               {t.estadoReporte[reporte.estado]}
             </span>
             {reporte.actualizado_en && (

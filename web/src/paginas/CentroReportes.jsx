@@ -3,7 +3,9 @@ import { useEffect, useState } from 'react'
 import { api } from '../api/cliente.js'
 import { useDatos } from '../api/useDatos.js'
 import AvisoEstado from '../componentes/AvisoEstado.jsx'
+import EncabezadoPagina from '../componentes/EncabezadoPagina.jsx'
 import FilaReporte from '../componentes/FilaReporte.jsx'
+import Indicadores from '../componentes/Indicadores.jsx'
 import { REFRESCO_RELOJ_MS } from '../configuracion.js'
 import { t } from '../textos/index.js'
 import { navegar } from '../util/useRutaHash.js'
@@ -33,20 +35,27 @@ export default function CentroReportes({ evento, seleccionado }) {
   }, [])
 
   return (
-    <div className="grid h-full min-h-0 grid-cols-1 lg:grid-cols-[minmax(24rem,1fr)_minmax(26rem,32rem)]">
-      <section className="flex min-h-0 flex-col border-r border-gray-200">
-        <div className="flex flex-wrap items-end gap-3 border-b border-gray-200 bg-white px-4 py-3">
-          <h1 className="mr-auto text-lg font-bold">
-            {t.reportes.titulo}
-            {bandeja.datos && <span className="ml-2 text-gray-500"> ({bandeja.datos.length})</span>}
-          </h1>
+    <div className="flex h-full min-h-0 flex-col gap-4 overflow-y-auto p-5 lg:overflow-hidden">
+      <EncabezadoPagina titulo={t.reportes.titulo} detalle={t.reportes.detalle} />
+      <Indicadores evento={evento} />
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-[minmax(24rem,1fr)_minmax(26rem,32rem)]">
+      <section className="tarjeta flex min-h-[28rem] flex-col overflow-hidden lg:min-h-0">
+        <div className="flex flex-wrap items-end gap-3 border-b border-slate-200 px-5 py-3">
+          <h2 className="mr-auto text-lg font-semibold text-noche">
+            {t.reportes.bandeja}
+            {bandeja.datos && (
+              <span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-sm font-semibold text-slate-600">
+                {bandeja.datos.length}
+              </span>
+            )}
+          </h2>
           {FILTROS.map(([campo, valores, textos]) => (
             <label key={campo} className="text-sm">
-              <span className="block text-gray-600">{t.reportes.filtros[campo]}</span>
+              <span className="block text-xs font-semibold text-slate-500">{t.reportes.filtros[campo]}</span>
               <select
                 value={filtros[campo] ?? ''}
                 onChange={(e) => setFiltros({ ...filtros, [campo]: e.target.value || undefined })}
-                className="min-h-11 rounded-lg border border-gray-300 bg-white px-2"
+                className="mt-1 min-h-10 rounded-xl border border-slate-300 bg-white px-2 focus:border-marca focus:ring-4 focus:ring-marca/20 focus:outline-none"
               >
                 <option value="">{t.reportes.filtros.todos}</option>
                 {valores.map((v) => (
@@ -83,13 +92,14 @@ export default function CentroReportes({ evento, seleccionado }) {
           )}
         </div>
       </section>
-      <aside className="min-h-0 overflow-y-auto bg-white">
+      <aside className="tarjeta min-h-0 overflow-y-auto">
         {seleccionado ? (
           <DetalleReporte id={seleccionado} />
         ) : (
           <AvisoEstado vacio={t.reportes.seleccionar} />
         )}
       </aside>
+      </div>
     </div>
   )
 }

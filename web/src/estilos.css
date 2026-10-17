@@ -1,7 +1,21 @@
 @import 'tailwindcss';
+@import '@fontsource-variable/inter';
 
-/* Colores con significado fijo (CLAUDE.md, sección 16). Siempre acompañados de ícono o texto. */
+/* Identidad de ENLACE: turquesa, azul noche y durazno (paleta oficial).
+   Colores con significado fijo (CLAUDE.md, sección 16), siempre con ícono o texto:
+   rojo actuar · ámbar explorar · verde estable · gris sin datos · turquesa acción, brigadas y rutas.
+   El turquesa del logo (#29aead) no alcanza contraste de texto sobre blanco (2,6:1): botones y
+   textos usan el turquesa oscuro (4,9:1); el del logo queda para marca, íconos y realces. */
 @theme {
+  --color-marca: #29aead;
+  --color-marca-oscuro: #1a7d7c;
+  --color-marca-suave: #e3f5f4;
+  --color-noche: #173c56;
+  --color-noche-claro: #22506f;
+  --color-noche-oscuro: #0f2a3d;
+  --color-durazno: #f0a262;
+  --color-durazno-suave: #fdf0e4;
+
   --color-actuar: #c62828;          /* rojo: actuar / pedir ayuda */
   --color-actuar-suave: #fdecea;
   --color-explorar: #b45309;        /* ámbar: explorar / sin confirmar */
@@ -10,9 +24,20 @@
   --color-estable-suave: #e8f5e9;
   --color-sin-datos: #6b7280;       /* gris: sin datos */
   --color-sin-datos-suave: #f3f4f6;
-  --color-accion: #1d4ed8;          /* azul: acción principal, brigadas, rutas */
-  --color-accion-suave: #dbeafe;
-  --font-sans: system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --color-accion: #1a7d7c;          /* turquesa: acción principal, brigadas, rutas */
+  --color-accion-suave: #e0f2f1;
+
+  --font-sans: 'Inter Variable', system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+@layer components {
+  /* Superficie básica: tarjetas, paneles y listas */
+  .tarjeta {
+    @apply rounded-2xl border border-slate-200 bg-white shadow-sm;
+  }
+  .etiqueta-seccion {
+    @apply text-xs font-semibold tracking-wider text-slate-500 uppercase;
+  }
 }
 
 html,
@@ -22,7 +47,13 @@ body,
 }
 
 body {
-  @apply bg-gray-50 text-gray-900 antialiased;
+  @apply bg-slate-100 text-slate-900 antialiased;
+  font-feature-settings: 'cv11', 'ss01';
+}
+
+/* Casillas, opciones y barras del navegador con el turquesa de la marca */
+:root {
+  accent-color: var(--color-marca-oscuro);
 }
 
 /* El mapa ocupa todo su contenedor */
