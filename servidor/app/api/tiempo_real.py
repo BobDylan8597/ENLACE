@@ -19,7 +19,7 @@ from typing import Any
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, status
 
 from app.activacion.emisor import contenido_alerta
-from app.api.dependencias import FirmadorDep, SesionDep
+from app.api.dependencias import FirmadorDep, SesionDep, es_brigada
 from app.config import obtener_config
 from app.eventos.bus import BusEventos, Datos, Tema, bus
 from app.modelos.enums import DecisionAsignacion
@@ -123,7 +123,14 @@ async def ws_admin(ws: WebSocket, clave: str = "") -> None:
 
 
 @router.websocket("/ws/movil/{id_movil}")
-async def ws_movil(ws: WebSocket, id_movil: str, sesion: SesionDep, firmador: FirmadorDep) -> None:
+async def ws_movil(
+    ws: WebSocket, id_movil: str, sesion: SesionDep, firmador: FirmadorDep, clave: str = ""
+) -> None:
+    # Las asignaciones (con puntos exactos de personas) solo las recibe una unidad con su clave
+    if id_movil.startswith(PREFIJO_EQUIPO) and not es_brigada(obtener_config(), clave):
+        sesion.close()
+        await ws.close(code=status.WS_1008_POLICY_VIOLATION)
+        return
     # La app que se conecta tarde recibe igual la alerta firmada vigente
     evento = evento_activo(sesion)
     alerta = firmador.firmar(contenido_alerta(evento)).como_dict() if evento else None

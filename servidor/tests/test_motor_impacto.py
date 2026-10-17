@@ -82,3 +82,18 @@ def test_evento_sin_modelo_parte_de_impacto_cero() -> None:
     otro = DatosEvento(TipoEvento.otro, LAT, LON, HORA)
     modelo = obtener_modelo(TipoEvento.otro, obtener_config().amenazas)
     assert fraccion_inicial(otro, _celda(), modelo) == 0.0
+
+
+def test_celdas_en_radio_cubre_todo_el_circulo() -> None:
+    from app.motor.geo import celdas_en_radio, distancia_km
+
+    radio = 5.0
+    celdas = set(celdas_en_radio(LAT, LON, radio, 8))
+    # Ninguna celda con centro dentro del radio puede faltar (se revisa con un disco grande)
+    centro = h3.latlng_to_cell(LAT, LON, 8)
+    esperadas = {
+        c
+        for c in h3.grid_disk(centro, 20)
+        if distancia_km(LAT, LON, *h3.cell_to_latlng(c)) <= radio
+    }
+    assert celdas == esperadas

@@ -15,7 +15,14 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.activacion.fuentes.fuente_comunitaria import detectar_propuestas
-from app.api.dependencias import Admin, AhoraDep, CiudadDep, ConfigDep, SesionDep
+from app.api.dependencias import (
+    Admin,
+    AhoraDep,
+    CiudadDep,
+    ConfigDep,
+    PrivilegiadoDep,
+    SesionDep,
+)
 from app.api.formato_sms import SmsInvalido, interpretar_sms
 from app.api.vistas import (
     asignacion_salida,
@@ -64,7 +71,12 @@ class _Preparado:
     identidad: IdentidadEntrada | None
 
 
-def _preparar(entrada: ReporteEntrada, ahora: datetime, config: Configuracion) -> _Preparado:
+def _preparar(
+    entrada: ReporteEntrada, ahora: datetime, config: Configuracion, privilegiado: bool
+) -> _Preparado:
+    if entrada.origen is OrigenReporte.brigada and not privilegiado:
+        # Pesa 1.0 en el motor: solo una brigada (con su clave) puede enviarlo
+        raise ValueError("Un reporte de brigada requiere la clave de brigada")
     if entrada.saltos_nearby > config.nearby.saltos_max:
         raise ValueError(f"Superó el límite de {config.nearby.saltos_max} saltos")
     punto = (entrada.lat, entrada.lon) if entrada.lat is not None else None
@@ -136,6 +148,7 @@ def procesar_reportes(
     ahora: datetime,
     config: Configuracion,
     ciudad: Ciudad,
+    privilegiado: bool = False,
 ) -> ResultadoReportes:
     preparados: list[_Preparado] = []
     rechazados: list[Rechazo] = []
@@ -145,7 +158,7 @@ def procesar_reportes(
             entrada = (
                 item if isinstance(item, ReporteEntrada) else ReporteEntrada.model_validate(item)
             )
-            preparados.append(_preparar(entrada, ahora, config))
+            preparados.append(_preparar(entrada, ahora, config, privilegiado))
         except (ValidationError, ValueError) as error:
             detalle = (
                 "; ".join(e["msg"] for e in error.errors())
@@ -198,13 +211,14 @@ def recibir_reportes(
     ahora: AhoraDep,
     config: ConfigDep,
     ciudad: CiudadDep,
+    privilegiado: PrivilegiadoDep,
 ) -> ResultadoReportes:
     """Uno o varios reportes. Cada uno se valida por separado: un mensaje dañado en el lote de
     una mula de datos no impide recibir los demás."""
     items: list[dict[str, Any] | ReporteEntrada] = list(
         cuerpo if isinstance(cuerpo, list) else [cuerpo]
     )
-    return procesar_reportes(sesion, items, ahora, config, ciudad)
+    return procesar_reportes(sesion, items, ahora, config, ciudad, privilegiado)
 
 
 def _evento_consultado(sesion: Session, id_evento: int | None) -> Evento | None:

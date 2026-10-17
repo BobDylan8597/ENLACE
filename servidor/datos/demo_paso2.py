@@ -99,7 +99,7 @@ def main() -> None:
         cambio = cliente.post(
             "/bloqueos",
             {"lat": blat, "lon": blon, "tipo": "derrumbe", **campos},
-            admin=campos.get("origen") == "brigada",
+            brigada=campos.get("origen") == "brigada",
         )
         bloqueo = cambio["bloqueo"]
         print(

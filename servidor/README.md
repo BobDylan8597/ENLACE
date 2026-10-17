@@ -60,9 +60,16 @@ suma 1. La **ciudad activa** se elige en `[ciudad] activa`: cada ciudad es una c
 | POST | `/equipos/{id}/ubicacion` | Posición de la unidad mientras navega (solo equipos, nunca ciudadanos) |
 | GET | `/asignaciones?activas=true` | Asignaciones en curso con su ruta (tablero) |
 | GET | `/ciudad` · `/mapa/base.pmtiles` | Ciudad activa y su mapa base local, leído por rangos HTTP |
+| GET | `/celdas/geometria` | Forma de las celdas de la zona: el celular calcula su celda sin enviar coordenadas |
 
-Las rutas del administrador piden la cabecera `X-Clave-Admin` (en `/ws/admin`, el parámetro
-`?clave=`). Es una clave fija para la demo; en producción, autenticación por usuario y nivel.
+Claves fijas para la demo (en producción, autenticación por usuario y nivel):
+
+- **Administrador** (`X-Clave-Admin`; en `/ws/admin`, `?clave=`): panel web, decisiones, equipos.
+- **Brigada** (`X-Clave-Brigada`; en `/ws/movil/equipo-<n>`, `?clave=`): lo que hace una unidad.
+  Reportes con `origen: "brigada"` (pesan 1.0 en el motor), confirmar o descartar bloqueos,
+  posición del equipo, zona atendida y recibir asignaciones. Va en los celulares de las unidades:
+  si uno se pierde, no expone el panel. La clave de administrador también sirve donde se pide la
+  de brigada.
 
 ## Campos agregados al modelo de datos (sección 7)
 

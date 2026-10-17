@@ -20,3 +20,17 @@ def distancia_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
 
 def centro_celda(id_h3: str) -> tuple[float, float]:
     return h3.cell_to_latlng(id_h3)
+
+
+def celdas_en_radio(lat: float, lon: float, radio_km: float, resolucion: int) -> list[str]:
+    """Celdas h3 cuyo centro está a `radio_km` o menos del punto."""
+    # Distancia entre centros vecinos: √3 × arista. Un anillo k cubre al menos k·paso·√3/2
+    # (en la dirección de las esquinas del hexágono): hay que llegar a radio_km por ese lado
+    paso_km = h3.average_hexagon_edge_length(resolucion, unit="km") * math.sqrt(3)
+    anillos = math.ceil(radio_km / (paso_km * math.sqrt(3) / 2)) + 1
+    centro = h3.latlng_to_cell(lat, lon, resolucion)
+    return sorted(
+        c
+        for c in h3.grid_disk(centro, anillos)
+        if distancia_km(lat, lon, *h3.cell_to_latlng(c)) <= radio_km
+    )

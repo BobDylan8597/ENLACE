@@ -7,10 +7,12 @@ from starlette.testclient import WebSocketTestSession
 from starlette.websockets import WebSocketDisconnect
 
 from app.activacion.firma import verificar
+from app.config import obtener_config
 from tests.conftest import Entorno
 from tests.test_api import ADMIN, SISMO, _ayuda
 
 CLAVE = ADMIN["X-Clave-Admin"]
+CLAVE_BRIGADA = obtener_config().servidor.clave_brigada
 
 
 def _esperar(ws: WebSocketTestSession, tipo: str, intentos: int = 20) -> dict[str, Any]:
@@ -53,7 +55,7 @@ def test_unidad_y_ciudadano_reciben_la_asignacion(entorno: Entorno) -> None:
         for r in entorno.cliente.get("/recomendaciones", headers=ADMIN).json()
         if r["id_reporte"] == pedido["id_mensaje"]
     )
-    unidad = f"/ws/movil/equipo-{recomendacion['id_equipo']}"
+    unidad = f"/ws/movil/equipo-{recomendacion['id_equipo']}?clave={CLAVE_BRIGADA}"
     ciudadano = f"/ws/movil/{pedido['id_anonimo']}"
     with entorno.cliente.websocket_connect(unidad) as ws_unidad:
         with entorno.cliente.websocket_connect(ciudadano) as ws_ciudadano:
@@ -67,3 +69,11 @@ def test_unidad_y_ciudadano_reciben_la_asignacion(entorno: Entorno) -> None:
             assert asignacion["destino"] == {"lat": 12.74, "lon": -86.25}
             aviso = _esperar(ws_ciudadano, "ayuda_en_camino")
             assert aviso["equipo"] == recomendacion["nombre_equipo"]
+
+
+def test_websocket_de_unidad_exige_clave_de_brigada(entorno: Entorno) -> None:
+    with pytest.raises(WebSocketDisconnect):
+        with entorno.cliente.websocket_connect("/ws/movil/equipo-1") as ws:
+            ws.receive_json()
+    with entorno.cliente.websocket_connect(f"/ws/movil/equipo-1?clave={CLAVE_BRIGADA}"):
+        pass

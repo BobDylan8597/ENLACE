@@ -2,14 +2,12 @@
 
 from __future__ import annotations
 
-import secrets
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Header, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, Query, status
 
-from app.api.dependencias import AhoraDep, ConfigDep, RedDep, SesionDep
+from app.api.dependencias import AhoraDep, ConfigDep, PrivilegiadoDep, RedDep, SesionDep
 from app.api.vistas import asignacion_salida
-from app.config import Configuracion
 from app.eventos.bus import Tema, bus
 from app.modelos.esquemas import BloqueoEntrada, BloqueoSalida, CambioBloqueoSalida
 from app.modelos.tablas import Bloqueo
@@ -26,10 +24,6 @@ from app.rutas.servicio import (
 )
 
 router = APIRouter(tags=["rutas"])
-
-
-def _es_admin(config: Configuracion, clave: str | None) -> bool:
-    return clave is not None and secrets.compare_digest(clave, config.servidor.clave_admin)
 
 
 def _salida(bloqueo: Bloqueo) -> BloqueoSalida:
@@ -57,12 +51,12 @@ def bloqueo(
     ahora: AhoraDep,
     config: ConfigDep,
     red: RedDep,
-    x_clave_admin: Annotated[str | None, Header()] = None,
+    privilegiado: PrivilegiadoDep,
 ) -> CambioBloqueoSalida:
     """Cualquier persona puede reportar o confirmar. Una confirmación de brigada (o de un
     operador) confirma el bloqueo de inmediato; descartarlo exige la clave."""
-    privilegiado = entrada.origen != "app" or entrada.accion == "descartar"
-    if privilegiado and not _es_admin(config, x_clave_admin):
+    requiere_clave = entrada.origen != "app" or entrada.accion == "descartar"
+    if requiere_clave and not privilegiado:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Hace falta la clave de brigada")
     try:
         cambio = registrar_bloqueo(

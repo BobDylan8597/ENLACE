@@ -5,19 +5,24 @@ from __future__ import annotations
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import select
 
-from app.api.dependencias import Admin, SesionDep
+from app.api.dependencias import Admin, Brigada, SesionDep
 from app.modelos.esquemas import EquipoEntrada, EquipoSalida, UbicacionEquipoEntrada
 from app.modelos.tablas import Equipo
 
-router = APIRouter(tags=["equipos"], dependencies=[Admin])
+router = APIRouter(tags=["equipos"])
 
 
-@router.get("/equipos", response_model=list[EquipoSalida])
+@router.get("/equipos", dependencies=[Admin], response_model=list[EquipoSalida])
 def listar(sesion: SesionDep) -> list[Equipo]:
     return list(sesion.scalars(select(Equipo).order_by(Equipo.nombre)))
 
 
-@router.post("/equipos", status_code=status.HTTP_201_CREATED, response_model=EquipoSalida)
+@router.post(
+    "/equipos",
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Admin],
+    response_model=EquipoSalida,
+)
 def registrar(entrada: EquipoEntrada, sesion: SesionDep) -> Equipo:
     equipo = Equipo(
         nombre=entrada.nombre,
@@ -32,7 +37,7 @@ def registrar(entrada: EquipoEntrada, sesion: SesionDep) -> Equipo:
     return equipo
 
 
-@router.post("/equipos/{id_equipo}/ubicacion", response_model=EquipoSalida)
+@router.post("/equipos/{id_equipo}/ubicacion", dependencies=[Brigada], response_model=EquipoSalida)
 def actualizar_ubicacion(
     id_equipo: int, entrada: UbicacionEquipoEntrada, sesion: SesionDep
 ) -> Equipo:

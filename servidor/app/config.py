@@ -31,6 +31,7 @@ class ConfigServidor(_Seccion):
     puerto: int
     base_datos: str
     clave_admin: str
+    clave_brigada: str
 
 
 class ConfigCiudad(_Seccion):

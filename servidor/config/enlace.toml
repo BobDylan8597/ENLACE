@@ -6,8 +6,10 @@
 host = "0.0.0.0"
 puerto = 8000
 base_datos = "enlace.sqlite"
-# Solo para la demo: clave fija del panel admin (en producción, autenticación real)
+# Solo para la demo: claves fijas (en producción, autenticación por usuario y nivel).
+# La de brigada va en los celulares de las unidades: si uno se pierde, no expone el panel admin.
 clave_admin = "enlace-demo"
+clave_brigada = "brigada-demo"
 
 [ciudad]
 # Carpeta dentro de `directorio` con ciudad.toml. Cambiar para usar otra ciudad.

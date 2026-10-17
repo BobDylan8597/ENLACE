@@ -25,10 +25,7 @@ from app.ciudad import Ciudad, cargar_ciudad, directorio_ciudad
 from app.config import obtener_config, resolver_ruta
 from app.db import Base, crear_tablas, fabrica_sesiones, obtener_motor
 from app.modelos.tablas import Celda, Equipo
-from app.motor.geo import distancia_km
-
-# Distancia entre centros de celdas vecinas en resolución 8 (~0,8 km), para elegir el anillo h3
-_PASO_KM_RES8 = 0.8
+from app.motor.geo import celdas_en_radio, distancia_km
 
 
 def _celdas_excluidas(zonas: list[dict[str, Any]], resolucion: int) -> set[str]:
@@ -40,17 +37,12 @@ def _celdas_excluidas(zonas: list[dict[str, Any]], resolucion: int) -> set[str]:
 
 
 def _celdas_del_area(ciudad: Ciudad, semilla: dict[str, Any], resolucion: int) -> list[str]:
-    centro = h3.latlng_to_cell(ciudad.centro.lat, ciudad.centro.lon, resolucion)
-    paso = _PASO_KM_RES8 * math.sqrt(7) ** (8 - resolucion)
-    anillos = math.ceil(ciudad.radio_km / paso) + 1
     excluidas = _celdas_excluidas(semilla.get("zonas_sin_poblacion", []), resolucion)
-    return sorted(
+    return [
         c
-        for c in h3.grid_disk(centro, anillos)
+        for c in celdas_en_radio(ciudad.centro.lat, ciudad.centro.lon, ciudad.radio_km, resolucion)
         if c not in excluidas
-        and distancia_km(ciudad.centro.lat, ciudad.centro.lon, *h3.cell_to_latlng(c))
-        <= ciudad.radio_km
-    )
+    ]
 
 
 def _tipo_zona(proporcion: float, zonas: dict[str, Any], azar: random.Random) -> str:

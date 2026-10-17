@@ -310,3 +310,51 @@ def test_mapa_base_se_sirve_por_rangos(entorno: Entorno) -> None:
         return
     parcial = entorno.cliente.get("/mapa/base.pmtiles", headers={"Range": "bytes=0-6"})
     assert parcial.status_code == 206 and parcial.content == b"PMTiles"
+
+
+# ── Clave de brigada ───────────────────────────────────────
+
+BRIGADA = {"X-Clave-Brigada": obtener_config().servidor.clave_brigada}
+
+
+def _evaluacion() -> dict[str, Any]:
+    return {
+        "id_mensaje": _id(),
+        "id_anonimo": "equipo-1",
+        "origen": "brigada",
+        "tipo": "evaluacion",
+        "id_h3": EPICENTRO,
+        "nivel_dano": "grave",
+    }
+
+
+def test_reporte_de_brigada_exige_su_clave(entorno: Entorno) -> None:
+    _emitir(entorno)
+    sin_clave = entorno.cliente.post("/reportes", json=_evaluacion()).json()
+    assert sin_clave["aceptados"] == [] and "brigada" in sin_clave["rechazados"][0]["error"]
+    con_clave = entorno.cliente.post("/reportes", json=_evaluacion(), headers=BRIGADA).json()
+    assert len(con_clave["aceptados"]) == 1
+
+
+def test_clave_de_brigada_no_abre_el_panel_admin(entorno: Entorno) -> None:
+    assert entorno.cliente.get("/reportes", headers=BRIGADA).status_code == 401
+    assert entorno.cliente.get("/recomendaciones", headers=BRIGADA).status_code == 401
+    respuesta = entorno.cliente.post(
+        "/equipos/1/ubicacion", json={"lat": 12.1, "lon": -86.2}, headers=BRIGADA
+    )
+    assert respuesta.status_code == 200
+
+
+def test_geometria_permite_ubicar_la_celda_sin_enviar_coordenadas(entorno: Entorno) -> None:
+    from shapely.geometry import Point, Polygon
+
+    geometria = entorno.cliente.get("/celdas/geometria").json()
+    assert geometria["resolucion"] == obtener_config().h3.resolucion
+    lat, lon = CENTRO[0] + 0.003, CENTRO[1] - 0.002
+    # Lo que hará el celular: buscar el contorno que contiene su punto
+    dentro = [
+        c["id_h3"]
+        for c in geometria["celdas"]
+        if Polygon([(lo, la) for la, lo in c["contorno"]]).contains(Point(lon, lat))
+    ]
+    assert dentro == [h3.latlng_to_cell(lat, lon, geometria["resolucion"])]

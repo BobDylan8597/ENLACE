@@ -11,7 +11,7 @@ from tests.ciudad_prueba import CENTRO
 from tests.conftest import Entorno
 from tests.red_prueba import nodo, punto, red_cuadricula
 from tests.test_api import ADMIN, SISMO, _ayuda
-from tests.test_tiempo_real import _esperar
+from tests.test_tiempo_real import CLAVE_BRIGADA, _esperar
 
 RUTAS = obtener_config().rutas
 # Cuadrícula 5 × 5 centrada en la ciudad de prueba: el cruce (2, 2) es el centro,
@@ -154,7 +154,9 @@ def test_asignacion_aceptada_lleva_su_ruta(con_red: Entorno) -> None:
 def test_bloqueo_en_la_ruta_la_recalcula_y_avisa_a_la_unidad(con_red: Entorno) -> None:
     asignacion = _aceptar_rescate(con_red)
     lat, lon = _punto(3.5, 2)
-    with con_red.cliente.websocket_connect(f"/ws/movil/equipo-{asignacion['id_equipo']}") as ws:
+    with con_red.cliente.websocket_connect(
+        f"/ws/movil/equipo-{asignacion['id_equipo']}?clave={CLAVE_BRIGADA}"
+    ) as ws:
         cambio = _bloqueo(con_red, lat, lon, reportante="equipo-9", origen="brigada")
         assert cambio["rutas_recalculadas"] == 1
         aviso = _esperar(ws, "ruta_recalculada")

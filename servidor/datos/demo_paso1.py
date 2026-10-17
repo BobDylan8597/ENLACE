@@ -29,15 +29,27 @@ from app.config import obtener_config
 
 CONFIG = obtener_config()
 ADMIN = {"X-Clave-Admin": CONFIG.servidor.clave_admin}
+BRIGADA = {"X-Clave-Brigada": CONFIG.servidor.clave_brigada}
 
 
 class Cliente:
     def __init__(self, url: str) -> None:
         self.url = url.rstrip("/")
 
-    def pedir(self, metodo: str, ruta: str, cuerpo: Any = None, admin: bool = False) -> Any:
+    def pedir(
+        self,
+        metodo: str,
+        ruta: str,
+        cuerpo: Any = None,
+        admin: bool = False,
+        brigada: bool = False,
+    ) -> Any:
         datos = json.dumps(cuerpo).encode() if cuerpo is not None else None
-        cabeceras = {"Content-Type": "application/json", **(ADMIN if admin else {})}
+        cabeceras = {
+            "Content-Type": "application/json",
+            **(ADMIN if admin else {}),
+            **(BRIGADA if brigada else {}),
+        }
         pedido = urllib.request.Request(self.url + ruta, datos, cabeceras, method=metodo)
         try:
             with urllib.request.urlopen(pedido) as respuesta:
@@ -48,8 +60,10 @@ class Cliente:
     def get(self, ruta: str, admin: bool = False) -> Any:
         return self.pedir("GET", ruta, admin=admin)
 
-    def post(self, ruta: str, cuerpo: Any = None, admin: bool = False) -> Any:
-        return self.pedir("POST", ruta, cuerpo, admin)
+    def post(
+        self, ruta: str, cuerpo: Any = None, admin: bool = False, brigada: bool = False
+    ) -> Any:
+        return self.pedir("POST", ruta, cuerpo, admin, brigada)
 
 
 def _id() -> str:
@@ -194,6 +208,7 @@ def main() -> None:
                 "id_h3": azar.choice(criticas),
                 "nivel_dano": nivel,
             },
+            brigada=True,
         )
     for _ in range(2):
         cliente.post(
@@ -253,9 +268,10 @@ def main() -> None:
                 "id_h3": primera["id_h3"],
                 "nivel_dano": "leve",
             },
+            brigada=True,
         )
-        # B9: zona atendida
-        cliente.post(f"/asignaciones/{primera['id']}/atendida", admin=True)
+        # B9: zona atendida (lo marca la unidad, con su clave de brigada)
+        cliente.post(f"/asignaciones/{primera['id']}/atendida", brigada=True)
         despues = cliente.get(f"/celdas/{primera['id_h3']}")
         print("La brigada evalúa daño leve y marca la zona atendida:")
         print(

@@ -6,7 +6,15 @@ from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.api.dependencias import Admin, AhoraDep, CiudadDep, ConfigDep, RedDep, SesionDep
+from app.api.dependencias import (
+    Admin,
+    AhoraDep,
+    Brigada,
+    CiudadDep,
+    ConfigDep,
+    RedDep,
+    SesionDep,
+)
 from app.api.vistas import asignacion_salida, resumen_celdas
 from app.eventos.bus import Tema, bus
 from app.modelos.enums import DecisionAsignacion, EstadoEquipo, EstadoReporte
@@ -20,7 +28,7 @@ from app.motor.pipeline import (
 )
 from app.rutas.servicio import asignaciones_activas, destino_de, estimador, trazar_ruta
 
-router = APIRouter(tags=["asignaciones"], dependencies=[Admin])
+router = APIRouter(tags=["asignaciones"])
 
 
 def _evento_o_409(sesion: Session) -> Evento:
@@ -65,7 +73,7 @@ def _publicar_recomendaciones(sesion: Session, recomendaciones: list[Asignacion]
     )
 
 
-@router.get("/recomendaciones", response_model=list[AsignacionSalida])
+@router.get("/recomendaciones", dependencies=[Admin], response_model=list[AsignacionSalida])
 def recomendaciones(
     sesion: SesionDep, ahora: AhoraDep, config: ConfigDep, red: RedDep
 ) -> list[AsignacionSalida]:
@@ -80,7 +88,7 @@ def recomendaciones(
     return [asignacion_salida(sesion, a) for a in vigentes]
 
 
-@router.get("/asignaciones", response_model=list[AsignacionSalida])
+@router.get("/asignaciones", dependencies=[Admin], response_model=list[AsignacionSalida])
 def listar_asignaciones(sesion: SesionDep, activas: bool = True) -> list[AsignacionSalida]:
     """Asignaciones en curso (con su ruta), para el tablero. `activas=false`: todas las decididas."""
     if activas:
@@ -96,7 +104,11 @@ def listar_asignaciones(sesion: SesionDep, activas: bool = True) -> list[Asignac
     return [asignacion_salida(sesion, a) for a in elegidas]
 
 
-@router.post("/asignaciones/{id_asignacion}/decision", response_model=AsignacionSalida)
+@router.post(
+    "/asignaciones/{id_asignacion}/decision",
+    dependencies=[Admin],
+    response_model=AsignacionSalida,
+)
 def decidir(
     id_asignacion: int,
     entrada: DecisionEntrada,
@@ -156,7 +168,11 @@ def decidir(
     return salida
 
 
-@router.post("/asignaciones/{id_asignacion}/atendida", response_model=AsignacionSalida)
+@router.post(
+    "/asignaciones/{id_asignacion}/atendida",
+    dependencies=[Brigada],
+    response_model=AsignacionSalida,
+)
 def marcar_atendida(
     id_asignacion: int,
     sesion: SesionDep,
