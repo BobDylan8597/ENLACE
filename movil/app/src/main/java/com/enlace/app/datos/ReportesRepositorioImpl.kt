@@ -9,6 +9,11 @@ import com.enlace.app.datos.remoto.BloqueoDto
 import com.enlace.app.datos.remoto.IdentidadDto
 import com.enlace.app.datos.remoto.ReporteDto
 import com.enlace.app.dominio.AjustesRepositorio
+import com.enlace.app.dominio.CadenaCanales
+import com.enlace.app.dominio.CanalEnvio
+import com.enlace.app.dominio.CanalSms
+import com.enlace.app.dominio.PedidoParaEnviar
+import com.enlace.app.dominio.ResultadoCanal
 import com.enlace.app.dominio.ConexionRepositorio
 import com.enlace.app.dominio.DatosPedido
 import com.enlace.app.dominio.EstadoEnvio
@@ -65,7 +70,24 @@ class ReportesRepositorioImpl @Inject constructor(
         )
         seguimiento.guardar(PedidoPropio(reporte.idMensaje, System.currentTimeMillis(), resumen(datos)))
         outbox.guardar(reporte.idMensaje, TipoMensaje.REPORTE, json.encodeToString(ReporteDto.serializer(), reporte))
-        return intentarAhora(reporte.idMensaje)
+
+        // Servidor → (red cercana, paso 4.6) → ofrecer SMS
+        val cadena = CadenaCanales(listOf(canalServidor(), CanalSms { conexion.numeroSms() }))
+        val salida = cadena.enviar(PedidoParaEnviar(reporte.idMensaje, lat, lon, datos))
+        return when (salida) {
+            ResultadoCanal.Entregado -> intentarAhora(reporte.idMensaje)
+            is ResultadoCanal.OfrecerSms -> ResultadoEnvio.GuardadoConSms(salida.numero, salida.texto)
+            ResultadoCanal.NoDisponible -> ResultadoEnvio.Guardado
+        }
+    }
+
+    /** Canal servidor: vacía el Outbox. Si el servidor lo procesó (aceptado o rechazado), terminó. */
+    private fun canalServidor() = CanalEnvio { pedido ->
+        outbox.enviarPendientes()
+        when (outbox.observar(pedido.idMensaje).first()?.estado) {
+            EstadoEnvio.ENVIADO, EstadoEnvio.RECHAZADO -> ResultadoCanal.Entregado
+            EstadoEnvio.PENDIENTE, null -> ResultadoCanal.NoDisponible
+        }
     }
 
     override suspend fun reportarBloqueo(tipo: TipoBloqueo, pasaAPie: Boolean): ResultadoEnvio {

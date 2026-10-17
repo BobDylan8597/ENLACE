@@ -202,6 +202,10 @@ class ConfigPreparacion(_Seccion):
     zoom_maximo_mapa: int = Field(ge=0, le=15)
 
 
+class ConfigSms(_Seccion):
+    numero_receptor: str = Field(min_length=3)
+
+
 class ConfigWeb(_Seccion):
     directorio: str
 
@@ -222,6 +226,7 @@ class Configuracion(_Seccion):
     rutas: ConfigRutas
     preparacion: ConfigPreparacion
     web: ConfigWeb
+    sms: ConfigSms
 
 
 def _exigir_claves(nombre: str, valores: dict[Any, Any], enum: type[StrEnum]) -> None:

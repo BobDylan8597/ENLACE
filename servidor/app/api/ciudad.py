@@ -30,6 +30,8 @@ def ciudad_activa(ciudad: CiudadDep, config: ConfigDep) -> dict[str, Any]:
         "resolucion_h3": config.h3.resolucion,
         "mapa_disponible": mapa.exists(),
         "atribucion_mapa": ATRIBUCION_MAPA,
+        # Para ofrecer el envío por SMS cuando no hay otra conexión
+        "numero_sms": config.sms.numero_receptor,
     }
 
 

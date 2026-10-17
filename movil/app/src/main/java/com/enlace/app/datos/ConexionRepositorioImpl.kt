@@ -56,14 +56,20 @@ class ConexionRepositorioImpl @Inject constructor(
         val api = fabricaApi.para(direccion)
         val clave = api.clavePublica().clavePublica
         val geometria = api.geometria()
+        val numeroSms = api.ciudad().numeroSms
         withContext(Dispatchers.IO) {
             archivoGeometria().writeText(json.encodeToString(GeometriaDto.serializer(), geometria))
         }
-        preferencias.edit { it[CLAVE_PUBLICA] = clave }
+        preferencias.edit {
+            it[CLAVE_PUBLICA] = clave
+            if (numeroSms != null) it[CLAVE_NUMERO_SMS] = numeroSms else it.remove(CLAVE_NUMERO_SMS)
+        }
         celdasEnMemoria = null
     }
 
     override suspend fun clavePublica(): String? = preferencias.data.first()[CLAVE_PUBLICA]
+
+    override suspend fun numeroSms(): String? = preferencias.data.first()[CLAVE_NUMERO_SMS]
 
     override suspend fun celdas(): List<CeldaH3> {
         celdasEnMemoria?.let { return it }
@@ -83,5 +89,6 @@ class ConexionRepositorioImpl @Inject constructor(
         val CLAVE_DIRECCION = stringPreferencesKey("direccion_servidor")
         val CLAVE_ID_ANONIMO = stringPreferencesKey("id_anonimo")
         val CLAVE_PUBLICA = stringPreferencesKey("clave_publica_alertas")
+        val CLAVE_NUMERO_SMS = stringPreferencesKey("numero_sms")
     }
 }

@@ -302,6 +302,7 @@ def test_ciudad_activa_para_centrar_el_mapa(entorno: Entorno) -> None:
     assert ciudad["centro"] == {"lat": activa.centro.lat, "lon": activa.centro.lon}
     assert ciudad["resolucion_h3"] == obtener_config().h3.resolucion
     assert "OpenStreetMap" in ciudad["atribucion_mapa"]
+    assert ciudad["numero_sms"] == obtener_config().sms.numero_receptor
 
 
 def test_mapa_base_se_sirve_por_rangos(entorno: Entorno) -> None:

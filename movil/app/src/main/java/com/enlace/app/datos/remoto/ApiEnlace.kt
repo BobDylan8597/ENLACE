@@ -12,6 +12,9 @@ interface ApiEnlace {
     @GET("salud")
     suspend fun salud(): SaludDto
 
+    @GET("ciudad")
+    suspend fun ciudad(): CiudadDto
+
     @GET("alertas/clave-publica")
     suspend fun clavePublica(): ClavePublicaDto
 
@@ -40,6 +43,9 @@ data class SeguimientoDto(
 
 @Serializable
 data class SaludDto(val estado: String, val ciudad: String, val pais: String)
+
+@Serializable
+data class CiudadDto(@SerialName("numero_sms") val numeroSms: String? = null)
 
 @Serializable
 data class ClavePublicaDto(val algoritmo: String, @SerialName("clave_publica") val clavePublica: String)

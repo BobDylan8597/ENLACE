@@ -140,4 +140,6 @@
     <string name="seguimiento_equipo">%1$s llega en unos %2$d min</string>
     <string name="seguimiento_atendido">Atendido</string>
     <string name="seguimiento_hace">Hace %1$d min</string>
+    <string name="sms_explicacion">También puedes enviarlo ahora por SMS: se abrirá tu app de mensajes con el texto listo. Solo tienes que tocar enviar.</string>
+    <string name="sms_enviar">Enviar por SMS</string>
 </resources>

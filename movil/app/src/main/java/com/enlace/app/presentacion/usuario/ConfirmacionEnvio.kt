@@ -1,5 +1,7 @@
 package com.enlace.app.presentacion.usuario
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,6 +14,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -35,7 +38,7 @@ fun ConfirmacionEnvio(
     val vista = when (resultado) {
         ResultadoEnvio.Enviado ->
             Vista(R.drawable.ic_bien, ColoresEnlace.estable, stringResource(textoExito), stringResource(detalleExito), true)
-        ResultadoEnvio.Guardado -> Vista(
+        ResultadoEnvio.Guardado, is ResultadoEnvio.GuardadoConSms -> Vista(
             R.drawable.ic_sin_senal,
             ColoresEnlace.explorar,
             stringResource(R.string.envio_guardado),
@@ -65,6 +68,20 @@ fun ConfirmacionEnvio(
         Icon(painterResource(vista.icono), contentDescription = null, tint = vista.color, modifier = Modifier.size(56.dp))
         Text(vista.titulo, style = MaterialTheme.typography.headlineSmall, color = vista.color)
         vista.detalle?.let { Text(it, style = MaterialTheme.typography.bodyLarge) }
+        if (resultado is ResultadoEnvio.GuardadoConSms) {
+            // Sin permiso SEND_SMS: se abre la app de mensajes con el texto listo (sección 13)
+            val contexto = LocalContext.current
+            Text(stringResource(R.string.sms_explicacion), style = MaterialTheme.typography.bodyLarge)
+            BotonPrincipal(
+                texto = stringResource(R.string.sms_enviar),
+                alTocar = {
+                    val intento = Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:${resultado.numero}"))
+                        .putExtra("sms_body", resultado.texto)
+                    contexto.startActivity(intento)
+                },
+                color = ColoresEnlace.actuar,
+            )
+        }
         if (!vista.exito) BotonPrincipal(stringResource(R.string.envio_reintentar), alReintentar)
         if (vista.exito && alVerSeguimiento != null) {
             BotonPrincipal(stringResource(R.string.envio_ver_seguimiento), alVerSeguimiento)

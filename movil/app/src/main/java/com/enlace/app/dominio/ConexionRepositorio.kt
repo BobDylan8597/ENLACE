@@ -27,4 +27,7 @@ interface ConexionRepositorio {
     suspend fun clavePublica(): String?
 
     suspend fun celdas(): List<CeldaH3>
+
+    /** Número del receptor de SMS (descargado al configurar), para ofrecerlo sin conexión. */
+    suspend fun numeroSms(): String?
 }
