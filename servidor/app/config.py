@@ -162,6 +162,15 @@ class ConfigActivacion(_Seccion):
     directorio_claves: str
 
 
+class ConfigNearby(_Seccion):
+    saltos_max: int = Field(ge=0)
+
+
+class ConfigPrivacidad(_Seccion):
+    dias_borrado: float = Field(gt=0)
+    intervalo_revision_min: float = Field(gt=0)
+
+
 class Configuracion(_Seccion):
     servidor: ConfigServidor
     ciudad: ConfigCiudad
@@ -173,6 +182,8 @@ class Configuracion(_Seccion):
     asignacion: ConfigAsignacion
     celdas: ConfigCeldas
     activacion: ConfigActivacion
+    nearby: ConfigNearby
+    privacidad: ConfigPrivacidad
 
 
 def _exigir_claves(nombre: str, valores: dict[Any, Any], enum: type[StrEnum]) -> None:

@@ -120,3 +120,12 @@ umbral_zona_afectada = 0.005
 pedidos_minimos_comunitaria = 4
 ventana_comunitaria_min = 10
 directorio_claves = "claves"
+
+[nearby]
+saltos_max = 10
+
+[privacidad]
+# Días tras cerrar el evento para borrar los datos personales (Identidad)
+dias_borrado = 30
+# Cada cuánto el servidor revisa si hay datos personales vencidos
+intervalo_revision_min = 60

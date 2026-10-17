@@ -14,6 +14,7 @@ from app.activacion.fuentes.base import NuevoEvento
 from app.config import Configuracion
 from app.modelos.tablas import Evento, Reporte
 from app.motor.pipeline import evento_activo, recalcular_todas
+from app.privacidad.borrado import adoptar_identidades
 
 
 class EventoYaActivo(Exception):
@@ -65,10 +66,12 @@ def emitir(
 
     # Los pedidos que llegaron justo antes de la alerta pasan a ser parte del evento
     desde = nuevo.hora - timedelta(minutes=config.activacion.ventana_comunitaria_min)
-    for reporte in sesion.scalars(
-        select(Reporte).where(Reporte.id_evento.is_(None), Reporte.hora >= desde)
-    ):
+    previos = list(
+        sesion.scalars(select(Reporte).where(Reporte.id_evento.is_(None), Reporte.hora >= desde))
+    )
+    for reporte in previos:
         reporte.id_evento = evento.id
+    adoptar_identidades(sesion, evento, {r.id_anonimo for r in previos})
     sesion.flush()
 
     estados = recalcular_todas(sesion, evento, ahora, config, zona)

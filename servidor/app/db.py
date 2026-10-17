@@ -5,9 +5,11 @@ from __future__ import annotations
 from collections.abc import Iterator
 from datetime import UTC, datetime
 from functools import lru_cache
+from typing import Any
 
 from sqlalchemy import DateTime, Engine, create_engine, event
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
+from sqlalchemy.pool import StaticPool
 from sqlalchemy.types import TypeDecorator
 
 from app.config import obtener_config, resolver_ruta
@@ -38,8 +40,10 @@ def ahora() -> datetime:
     return datetime.now(UTC)
 
 
-def crear_motor(url: str) -> Engine:
-    motor = create_engine(url, connect_args={"check_same_thread": False})
+def crear_motor(url: str, compartir_conexion: bool = False) -> Engine:
+    """`compartir_conexion`: una sola conexión para todos los hilos (SQLite en memoria)."""
+    opciones: dict[str, Any] = {"poolclass": StaticPool} if compartir_conexion else {}
+    motor = create_engine(url, connect_args={"check_same_thread": False}, **opciones)
 
     @event.listens_for(motor, "connect")
     def _activar_claves_foraneas(conexion, _registro) -> None:  # type: ignore[no-untyped-def]
@@ -63,11 +67,11 @@ def crear_tablas(motor: Engine) -> None:
 
 
 @lru_cache
-def _fabrica_sesiones() -> sessionmaker[Session]:
+def fabrica_sesiones() -> sessionmaker[Session]:
     return sessionmaker(bind=obtener_motor(), expire_on_commit=False)
 
 
 def obtener_sesion() -> Iterator[Session]:
     """Dependencia de FastAPI: una sesión por petición."""
-    with _fabrica_sesiones()() as sesion:
+    with fabrica_sesiones()() as sesion:
         yield sesion
