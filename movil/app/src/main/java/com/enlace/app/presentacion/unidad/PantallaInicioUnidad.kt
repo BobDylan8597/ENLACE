@@ -8,6 +8,8 @@ import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -221,11 +223,18 @@ fun PantallaInicioUnidad(
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         TarjetaAccion(R.drawable.ic_alerta, stringResource(R.string.bloqueos_cercanos_titulo), ColoresEnlace.explorar, alVerBloqueos, Modifier.weight(1f))
-                        TarjetaAccion(R.drawable.ic_red_cercana, stringResource(R.string.mula_titulo), ColoresEnlace.estable, alVerMula, Modifier.weight(1f))
+                        TarjetaAccion(
+                            R.drawable.ic_red_cercana,
+                            // B10: cuántos mensajes de la red cercana lleva esta unidad (mula de datos)
+                            if (mensajes == 0) stringResource(R.string.mula_titulo)
+                            else pluralStringResource(R.plurals.mula_mensajes, mensajes, mensajes),
+                            ColoresEnlace.estable,
+                            alVerMula,
+                            Modifier.weight(1f),
+                        )
                     }
                 }
             }
-            item { FilaMula(mensajes, alVerMula) }
             seccionesPanorama(panorama, alActualizar = viewModel::actualizar)
             item {
                 TextButton(onClick = alAbrirConexion, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
@@ -347,18 +356,24 @@ private fun Tarjeta(color: Color, icono: Int, titulo: String, detalle: String?, 
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Icon(painterResource(icono), contentDescription = null, tint = Color.White, modifier = Modifier.size(32.dp))
-            Column {
-                Text(titulo, color = Color.White, style = MaterialTheme.typography.titleLarge)
-                detalle?.let { Text(it, color = Color.White) }
+            Box(
+                Modifier.size(44.dp).background(Color.White.copy(alpha = 0.18f), MaterialTheme.shapes.small),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(painterResource(icono), contentDescription = null, tint = Color.White, modifier = Modifier.size(24.dp))
             }
+            Column(Modifier.weight(1f)) {
+                Text(titulo, color = Color.White, style = MaterialTheme.typography.titleMedium)
+                detalle?.let { Text(it, color = Color.White.copy(alpha = 0.85f), style = MaterialTheme.typography.bodyMedium) }
+            }
+            if (alTocar != null) Text("›", color = Color.White, style = MaterialTheme.typography.headlineSmall)
         }
     }
     val colores = CardDefaults.cardColors(containerColor = color)
     if (alTocar != null) {
-        Card(onClick = alTocar, colors = colores, modifier = Modifier.fillMaxWidth()) { contenido() }
+        Card(onClick = alTocar, colors = colores, shape = MaterialTheme.shapes.large, modifier = Modifier.fillMaxWidth()) { contenido() }
     } else {
-        Card(colors = colores, modifier = Modifier.fillMaxWidth()) { contenido() }
+        Card(colors = colores, shape = MaterialTheme.shapes.large, modifier = Modifier.fillMaxWidth()) { contenido() }
     }
 }
 

@@ -31,6 +31,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.enlace.app.R
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.IconButton
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import com.enlace.app.presentacion.componentes.FilaAjuste
+import com.enlace.app.presentacion.tema.MarcaEnlace
 import com.enlace.app.datos.GestorAlertas
 import com.enlace.app.datos.textoAlerta
 import com.enlace.app.dominio.AlertaVigente
@@ -88,73 +98,110 @@ fun PantallaAlerta(
     }
     val contexto = LocalContext.current
 
-    Scaffold { relleno ->
+    Scaffold(containerColor = MaterialTheme.colorScheme.background) { relleno ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(relleno)
-                .verticalScroll(rememberScrollState())
-                .padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+                .padding(bottom = relleno.calculateBottomPadding())
+                .verticalScroll(rememberScrollState()),
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Icon(
-                    painterResource(R.drawable.ic_alerta),
-                    contentDescription = null,
-                    tint = ColoresEnlace.actuar,
-                    modifier = Modifier.size(40.dp),
-                )
-                Text(
-                    textoAlerta(contexto, actual.alerta),
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                )
+            // Encabezado rojo: la alerta oficial, verificada (firma Ed25519)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        Brush.verticalGradient(listOf(Color(0xFF8E1C1C), ColoresEnlace.actuar)),
+                        RoundedCornerShape(bottomStart = 28.dp, bottomEnd = 28.dp),
+                    )
+                    .statusBarsPadding()
+                    .padding(start = 8.dp, end = 20.dp, top = 4.dp, bottom = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                IconButton(onClick = alVolver) {
+                    Icon(painterResource(R.drawable.ic_atras), contentDescription = stringResource(R.string.volver), tint = Color.White)
+                }
+                Row(
+                    modifier = Modifier.padding(start = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(14.dp),
+                ) {
+                    Box(
+                        Modifier.size(56.dp).background(Color.White.copy(alpha = 0.18f), CircleShape),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(painterResource(R.drawable.ic_alerta), contentDescription = null, tint = Color.White, modifier = Modifier.size(30.dp))
+                    }
+                    Text(
+                        textoAlerta(contexto, actual.alerta),
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = Color.White,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+                Row(
+                    modifier = Modifier
+                        .padding(start = 12.dp)
+                        .background(Color.White.copy(alpha = 0.16f), RoundedCornerShape(50))
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    Icon(painterResource(R.drawable.ic_bien), contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                    Text(stringResource(R.string.alerta_verificada), color = Color.White, style = MaterialTheme.typography.labelLarge)
+                }
             }
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                Icon(
-                    painterResource(R.drawable.ic_bien),
-                    contentDescription = null,
-                    tint = ColoresEnlace.estable,
-                    modifier = Modifier.size(18.dp),
-                )
-                Text(stringResource(R.string.alerta_verificada), color = ColoresEnlace.estable)
-            }
-            Text(stringResource(R.string.alerta_consejo), style = MaterialTheme.typography.bodyLarge)
 
-            if (actual.envioZona == EnvioZona.PENDIENTE_CONFIRMACION) {
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(stringResource(R.string.alerta_preguntar_zona), style = MaterialTheme.typography.titleMedium)
-                        BotonPrincipal(stringResource(R.string.alerta_enviar_zona), { viewModel.enviarZona() })
-                        TextButton(onClick = { viewModel.noEnviarZona() }, modifier = Modifier.fillMaxWidth()) {
-                            Text(stringResource(R.string.alerta_no_enviar_zona))
+            Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                Text(stringResource(R.string.alerta_consejo), style = MaterialTheme.typography.bodyLarge)
+
+                if (actual.envioZona == EnvioZona.PENDIENTE_CONFIRMACION) {
+                    Card(shape = MaterialTheme.shapes.large, modifier = Modifier.fillMaxWidth()) {
+                        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(stringResource(R.string.alerta_preguntar_zona), style = MaterialTheme.typography.titleMedium)
+                            BotonPrincipal(stringResource(R.string.alerta_enviar_zona), { viewModel.enviarZona() })
+                            TextButton(onClick = { viewModel.noEnviarZona() }, modifier = Modifier.fillMaxWidth()) {
+                                Text(stringResource(R.string.alerta_no_enviar_zona))
+                            }
+                        }
+                    }
+                } else {
+                    TEXTO_ZONA[actual.envioZona]?.let { texto ->
+                        val enviada = actual.envioZona == EnvioZona.ENVIADA || actual.envioZona == EnvioZona.UBICACION_ENVIADA
+                        val color = if (enviada) MarcaEnlace.turquesa else MaterialTheme.colorScheme.onSurfaceVariant
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.surface, MaterialTheme.shapes.medium)
+                                .padding(14.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            Icon(painterResource(R.drawable.ic_ubicacion), contentDescription = null, tint = color, modifier = Modifier.size(22.dp))
+                            Text(stringResource(texto), style = MaterialTheme.typography.bodyMedium)
                         }
                     }
                 }
-            } else {
-                TEXTO_ZONA[actual.envioZona]?.let { Text(stringResource(it), style = MaterialTheme.typography.bodyMedium) }
-            }
 
-            if (actual.estoyBien) {
-                Text(
-                    stringResource(R.string.alerta_gracias),
-                    color = ColoresEnlace.estable,
-                    style = MaterialTheme.typography.titleMedium,
-                )
-            } else {
+                if (actual.estoyBien) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Icon(painterResource(R.drawable.ic_bien), contentDescription = null, tint = ColoresEnlace.estable)
+                        Text(stringResource(R.string.alerta_gracias), color = ColoresEnlace.estable, style = MaterialTheme.typography.titleMedium)
+                    }
+                } else {
+                    BotonPrincipal(
+                        texto = stringResource(R.string.alerta_estoy_bien),
+                        alTocar = { viewModel.estoyBien() },
+                        color = ColoresEnlace.estable,
+                        icono = R.drawable.ic_bien,
+                    )
+                }
                 BotonPrincipal(
-                    texto = stringResource(R.string.alerta_estoy_bien),
-                    alTocar = { viewModel.estoyBien() },
-                    color = ColoresEnlace.estable,
+                    texto = stringResource(R.string.ayuda_boton),
+                    alTocar = alPedirAyuda,
+                    color = ColoresEnlace.actuar,
+                    icono = R.drawable.ic_alerta,
                 )
-            }
-            BotonPrincipal(
-                texto = stringResource(R.string.ayuda_boton),
-                alTocar = alPedirAyuda,
-                color = ColoresEnlace.actuar,
-            )
-            TextButton(onClick = alQueHacer, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
-                Text(stringResource(R.string.que_hacer_titulo), style = MaterialTheme.typography.titleMedium)
+                FilaAjuste(R.drawable.ic_lista_consejos, stringResource(R.string.que_hacer_titulo), alQueHacer)
             }
         }
     }

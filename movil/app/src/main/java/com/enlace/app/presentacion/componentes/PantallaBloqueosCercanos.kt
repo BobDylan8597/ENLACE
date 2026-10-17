@@ -105,7 +105,7 @@ fun PantallaBloqueosCercanos(
             )
             if (ui.error) Text(stringResource(R.string.panorama_error), color = ColoresEnlace.actuar)
             if (!ui.cargando && ui.bloqueos.isEmpty() && !ui.error) {
-                Text(stringResource(R.string.bloqueos_cercanos_vacio), modifier = Modifier.padding(top = 16.dp))
+                EstadoVacio(R.drawable.ic_bien, stringResource(R.string.bloqueos_cercanos_vacio))
             }
             LazyColumn(
                 modifier = Modifier.weight(1f),

@@ -20,10 +20,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.enlace.app.presentacion.tema.colorLegible
 
 /** Acción del inicio: ícono en un recuadro de color y el texto. Se usa en grillas de 2 columnas. */
 @Composable
-fun TarjetaAccion(icono: Int, titulo: String, color: Color, alTocar: () -> Unit, modifier: Modifier = Modifier) {
+fun TarjetaAccion(icono: Int, titulo: String, colorBase: Color, alTocar: () -> Unit, modifier: Modifier = Modifier) {
+    val color = colorLegible(colorBase)
     Card(
         onClick = alTocar,
         shape = MaterialTheme.shapes.large,

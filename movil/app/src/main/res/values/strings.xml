@@ -104,6 +104,7 @@
     <string name="ayuda_heridos">Heridas</string>
     <string name="ayuda_vulnerables">Necesitan atención especial</string>
     <string name="ayuda_necesidades">¿Qué necesitan?</string>
+    <string name="ayuda_grupo_personas">¿Quiénes están contigo?</string>
     <string name="ayuda_enviar">Enviar pedido de ayuda</string>
     <string name="ayuda_enviando">Enviando…</string>
     <string name="restar">Restar</string>
@@ -140,7 +141,8 @@
     <string name="seguimiento_titulo">Mis reportes</string>
     <string name="mis_reportes_pedidos">Pedidos de ayuda</string>
     <string name="mis_reportes_bloqueos">Calles bloqueadas que reportaste</string>
-    <string name="seguimiento_vacio">Todavía no enviaste ningún reporte.</string>
+    <string name="seguimiento_vacio">Todavía no enviaste ningún reporte</string>
+    <string name="seguimiento_vacio_detalle">Aquí verás tus pedidos de ayuda y las calles bloqueadas que reportes, y cuándo llega la ayuda.</string>
     <string name="seguimiento_guardado">Guardado: se enviará apenas haya conexión</string>
     <string name="seguimiento_enviado">Recibido por el centro de coordinación</string>
     <string name="seguimiento_rechazado">No se pudo registrar</string>

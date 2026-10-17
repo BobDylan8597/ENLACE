@@ -29,6 +29,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.enlace.app.R
+import com.enlace.app.presentacion.componentes.EstadoVacio
 import com.enlace.app.presentacion.componentes.PantallaConBarra
 import com.enlace.app.TEXTO_BLOQUEO
 import com.enlace.app.datos.Outbox
@@ -91,7 +92,7 @@ fun PantallaSeguimiento(alVolver: () -> Unit, viewModel: SeguimientoViewModel = 
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             if (pedidos.isEmpty() && bloqueos.isEmpty()) {
-                Text(stringResource(R.string.seguimiento_vacio), style = MaterialTheme.typography.bodyLarge)
+                EstadoVacio(R.drawable.ic_lista_consejos, stringResource(R.string.seguimiento_vacio), stringResource(R.string.seguimiento_vacio_detalle))
             }
             LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.weight(1f)) {
                 if (pedidos.isNotEmpty()) {

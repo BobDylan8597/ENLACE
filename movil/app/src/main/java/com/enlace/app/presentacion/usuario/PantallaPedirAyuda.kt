@@ -4,6 +4,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Icon
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -23,6 +28,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.enlace.app.R
+import com.enlace.app.presentacion.componentes.GrupoFormulario
 import com.enlace.app.presentacion.componentes.PantallaConBarra
 import com.enlace.app.TEXTO_NECESIDAD
 import com.enlace.app.dominio.AjustesRepositorio
@@ -111,13 +117,19 @@ fun PantallaPedirAyuda(
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Text(stringResource(R.string.ayuda_explicacion), style = MaterialTheme.typography.bodyMedium)
+            // Qué se comparte y por qué, a la vista (sección 13)
+            Row(verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Icon(painterResource(R.drawable.ic_candado), contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                Text(stringResource(R.string.ayuda_explicacion), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
             val datos = ui.datos
-            Contador(stringResource(R.string.ayuda_personas), datos.personas, { n -> viewModel.cambiar { it.copy(personas = n) } }, minimo = 1)
-            Contador(stringResource(R.string.ayuda_atrapados), datos.atrapados, { n -> viewModel.cambiar { it.copy(atrapados = n) } })
-            Contador(stringResource(R.string.ayuda_heridos), datos.heridos, { n -> viewModel.cambiar { it.copy(heridos = n) } })
-            Contador(stringResource(R.string.ayuda_vulnerables), datos.vulnerables, { n -> viewModel.cambiar { it.copy(vulnerables = n) } })
-            Text(stringResource(R.string.ayuda_necesidades), style = MaterialTheme.typography.titleMedium)
+            GrupoFormulario(stringResource(R.string.ayuda_grupo_personas)) {
+                Contador(stringResource(R.string.ayuda_personas), datos.personas, { n -> viewModel.cambiar { it.copy(personas = n) } }, minimo = 1)
+                Contador(stringResource(R.string.ayuda_atrapados), datos.atrapados, { n -> viewModel.cambiar { it.copy(atrapados = n) } })
+                Contador(stringResource(R.string.ayuda_heridos), datos.heridos, { n -> viewModel.cambiar { it.copy(heridos = n) } })
+                Contador(stringResource(R.string.ayuda_vulnerables), datos.vulnerables, { n -> viewModel.cambiar { it.copy(vulnerables = n) } })
+            }
+            GrupoFormulario(stringResource(R.string.ayuda_necesidades)) {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Necesidad.entries.forEach { necesidad ->
                     val marcada = necesidad in datos.necesidades
@@ -133,11 +145,13 @@ fun PantallaPedirAyuda(
                     )
                 }
             }
+            }
             BotonPrincipal(
                 texto = stringResource(if (ui.enviando) R.string.ayuda_enviando else R.string.ayuda_enviar),
                 alTocar = viewModel::enviar,
                 habilitado = !ui.enviando,
                 color = ColoresEnlace.actuar,
+                icono = R.drawable.ic_alerta,
             )
         }
     }
