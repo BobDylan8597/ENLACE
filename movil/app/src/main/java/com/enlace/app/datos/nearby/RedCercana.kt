@@ -149,6 +149,9 @@ class RedCercana @Inject constructor(
             TipoMensajeRed.BLOQUEO -> true.also { outbox.guardar(mensaje.idMensaje, TipoMensaje.BLOQUEO, mensaje.payload) }
         }
         if (reenviar) decision.reenviar?.let { difundir(it, excepto = desde) }
+        // Si este celular tiene servidor, lo entrega ya: WorkManager puede tardar minutos
+        // (sobre todo con ahorro de batería) y queda solo como respaldo
+        if (mensaje.tipo != TipoMensajeRed.ALERTA) outbox.enviarPendientes()
     }
 
     /** Al conectarse con alguien nuevo se le pasa lo pendiente y la alerta vigente. */

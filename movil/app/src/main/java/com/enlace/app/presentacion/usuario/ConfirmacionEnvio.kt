@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.enlace.app.R
@@ -41,7 +42,7 @@ fun ConfirmacionEnvio(
         is ResultadoEnvio.EnRedCercana -> Vista(
             R.drawable.ic_red_cercana,
             ColoresEnlace.explorar,
-            stringResource(R.string.envio_red_cercana, resultado.celulares),
+            pluralStringResource(R.plurals.envio_red_cercana, resultado.celulares, resultado.celulares),
             stringResource(R.string.envio_red_cercana_detalle),
             true,
         )

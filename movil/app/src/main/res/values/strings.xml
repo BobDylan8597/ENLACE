@@ -17,7 +17,6 @@
     <string name="volver">Volver</string>
 
     <string name="conexion_en_linea">En línea</string>
-    <string name="conexion_red_cercana">Red cercana (%1$d celulares)</string>
     <string name="conexion_sin_conexion">Sin conexión</string>
 
     <string name="modo_titulo">¿Cómo vas a usar ENLACE?</string>
@@ -142,6 +141,13 @@
     <string name="seguimiento_hace">Hace %1$d min</string>
     <string name="sms_explicacion">También puedes enviarlo ahora por SMS: se abrirá tu app de mensajes con el texto listo. Solo tienes que tocar enviar.</string>
     <string name="sms_enviar">Enviar por SMS</string>
-    <string name="envio_red_cercana">Enviado a %1$d celulares cercanos</string>
     <string name="envio_red_cercana_detalle">Viaja de celular en celular hasta que uno con conexión lo entregue al centro de coordinación. También quedó guardado en tu celular.</string>
+    <plurals name="conexion_red_cercana">
+        <item quantity="one">Red cercana (%1$d celular)</item>
+        <item quantity="other">Red cercana (%1$d celulares)</item>
+    </plurals>
+    <plurals name="envio_red_cercana">
+        <item quantity="one">Enviado a %1$d celular cercano</item>
+        <item quantity="other">Enviado a %1$d celulares cercanos</item>
+    </plurals>
 </resources>

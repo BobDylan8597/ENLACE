@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.enlace.app.R
@@ -27,7 +28,7 @@ fun IndicadorConexion(estado: EstadoConexion, modifier: Modifier = Modifier) {
             Triple(R.drawable.ic_senal, stringResource(R.string.conexion_en_linea), ColoresEnlace.estable)
         is EstadoConexion.RedCercana -> Triple(
             R.drawable.ic_red_cercana,
-            stringResource(R.string.conexion_red_cercana, estado.celulares),
+            pluralStringResource(R.plurals.conexion_red_cercana, estado.celulares, estado.celulares),
             ColoresEnlace.explorar,
         )
         EstadoConexion.SinConexion ->
