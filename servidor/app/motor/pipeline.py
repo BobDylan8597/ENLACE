@@ -185,11 +185,11 @@ def recalcular_celda(
 
 def recalcular_todas(
     sesion: Session, evento: Evento, ahora: datetime, config: Configuracion, zona: ZoneInfo
-) -> list[Celda]:
-    celdas = list(sesion.scalars(select(Celda)))
-    for celda in celdas:
+) -> list[EstadoCelda]:
+    return [
         recalcular_celda(sesion, celda, evento, ahora, config, zona)
-    return celdas
+        for celda in sesion.scalars(select(Celda))
+    ]
 
 
 # ── Prioridad de reportes (depende de la hora: se calcula al consultar) ──

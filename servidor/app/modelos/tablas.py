@@ -23,6 +23,7 @@ from app.modelos.enums import (
     EstadoCheckIn,
     EstadoEquipo,
     EstadoEvento,
+    EstadoPropuesta,
     EstadoReporte,
     FuenteEvento,
     NivelAdmin,
@@ -188,3 +189,21 @@ class UsuarioAdmin(Base):
     nombre: Mapped[str] = mapped_column(String(120))
     organismo: Mapped[str] = mapped_column(String(120))
     nivel: Mapped[NivelAdmin] = mapped_column(_enum(NivelAdmin))
+
+
+class PropuestaComunitaria(Base):
+    """Extensión al modelo: muchos pedidos de ayuda juntos sin alerta activa.
+
+    El operador la aprueba (y entonces se emite la alerta) o la descarta.
+    """
+
+    __tablename__ = "propuestas_comunitarias"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id_h3: Mapped[str] = mapped_column(String(16))
+    pedidos: Mapped[int] = mapped_column(Integer)
+    hora: Mapped[datetime] = mapped_column(FechaUTC, default=ahora)
+    estado: Mapped[EstadoPropuesta] = mapped_column(
+        _enum(EstadoPropuesta), default=EstadoPropuesta.pendiente
+    )
+    id_evento: Mapped[int | None] = mapped_column(ForeignKey("eventos.id"))

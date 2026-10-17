@@ -1,5 +1,4 @@
-from datetime import UTC, datetime, timedelta
-from zoneinfo import ZoneInfo
+from datetime import timedelta
 
 import h3
 import pytest
@@ -18,48 +17,16 @@ from app.modelos.enums import (
     TipoEvento,
     TipoReporte,
 )
-from app.modelos.tablas import Asignacion, Celda, CheckIn, Equipo, Evento, Reporte
+from app.modelos.tablas import Celda, CheckIn, Equipo, Evento, Reporte
 from app.motor import pipeline
+from tests.ciudad_prueba import CENTRO, EPICENTRO, HORA, LEJANA, ZONA, poblar_ciudad
 
 CONFIG = obtener_config()
-ZONA = ZoneInfo("America/Managua")
-CENTRO = (12.1364, -86.2514)
-HORA = datetime(2026, 10, 16, 14, 0, tzinfo=UTC)
-EPICENTRO = h3.latlng_to_cell(*CENTRO, 8)
-LEJANA = h3.latlng_to_cell(CENTRO[0] + 0.6, CENTRO[1], 8)  # ~65 km
 
 
 @pytest.fixture
 def escenario(sesion: Session) -> Evento:
-    for id_h3, nombre in ((EPICENTRO, "Centro"), (LEJANA, "Lejos")):
-        sesion.add(
-            Celda(
-                id_h3=id_h3,
-                nombre_zona=nombre,
-                poblacion_por_hora=[3000.0] * 24,
-                vulnerabilidad=0.4,
-                infraestructura_critica={},
-                tipos_construccion={"adobe_taquezal": 0.5, "mamposteria_confinada": 0.5},
-            )
-        )
-    sesion.add_all(
-        [
-            Equipo(
-                nombre="Rescate 1",
-                organismo="Bomberos",
-                capacidades=["rescate"],
-                lat=CENTRO[0] + 0.02,
-                lon=CENTRO[1],
-            ),
-            Equipo(
-                nombre="Reconocimiento 1",
-                organismo="Defensa Civil",
-                capacidades=["reconocimiento"],
-                lat=CENTRO[0],
-                lon=CENTRO[1] + 0.02,
-            ),
-        ]
-    )
+    poblar_ciudad(sesion)
     evento = Evento(
         tipo=TipoEvento.sismo,
         magnitud=6.2,

@@ -117,6 +117,12 @@ class EstadoBloqueo(StrEnum):
     descartado = "descartado"
 
 
+class EstadoPropuesta(StrEnum):
+    pendiente = "pendiente"
+    aprobada = "aprobada"
+    descartada = "descartada"
+
+
 class NivelAdmin(StrEnum):
     coordinador = "coordinador"
     operador = "operador"

@@ -23,6 +23,7 @@ TABLAS_ESPERADAS = {
     "asignaciones",
     "bloqueos",
     "usuarios_admin",
+    "propuestas_comunitarias",
 }
 
 
