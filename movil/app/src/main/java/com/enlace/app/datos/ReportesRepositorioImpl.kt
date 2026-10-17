@@ -1,23 +1,27 @@
 package com.enlace.app.datos
 
 import android.content.Context
+import com.enlace.app.R
 import com.enlace.app.TEXTO_CONDICION
-import com.enlace.app.datos.remoto.ApiEnlace
+import com.enlace.app.TEXTO_NECESIDAD
+import com.enlace.app.datos.local.PedidoPropio
 import com.enlace.app.datos.remoto.BloqueoDto
-import com.enlace.app.datos.remoto.FabricaApi
 import com.enlace.app.datos.remoto.IdentidadDto
 import com.enlace.app.datos.remoto.ReporteDto
 import com.enlace.app.dominio.AjustesRepositorio
 import com.enlace.app.dominio.ConexionRepositorio
 import com.enlace.app.dominio.DatosPedido
+import com.enlace.app.dominio.EstadoEnvio
 import com.enlace.app.dominio.ReportesRepositorio
 import com.enlace.app.dominio.ResultadoEnvio
 import com.enlace.app.dominio.TipoBloqueo
+import com.enlace.app.dominio.TipoMensaje
 import com.enlace.app.dominio.alcanceBloqueo
 import com.enlace.app.dominio.identidadDesde
 import com.enlace.app.ubicacion.ProveedorUbicacion
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first
+import kotlinx.serialization.json.Json
 import java.time.OffsetDateTime
 import java.util.UUID
 import javax.inject.Inject
@@ -25,10 +29,7 @@ import javax.inject.Singleton
 
 private const val ORIGEN_APP = "app"
 
-/**
- * Envía pedidos de ayuda y bloqueos al servidor. En el paso 4.4 pasa a guardar primero en el
- * celular (Outbox) y enviar después; las pantallas no cambian.
- */
+/** Pedidos de ayuda y bloqueos: se guardan primero en el Outbox y se envían apenas se pueda. */
 @Singleton
 class ReportesRepositorioImpl @Inject constructor(
     @param:ApplicationContext private val contexto: Context,
@@ -36,7 +37,9 @@ class ReportesRepositorioImpl @Inject constructor(
     private val ajustes: AjustesRepositorio,
     private val alertas: GestorAlertas,
     private val ubicacion: ProveedorUbicacion,
-    private val fabricaApi: FabricaApi,
+    private val outbox: Outbox,
+    private val seguimiento: Seguimiento,
+    private val json: Json,
 ) : ReportesRepositorio {
 
     override suspend fun pedirAyuda(datos: DatosPedido): ResultadoEnvio {
@@ -60,14 +63,9 @@ class ReportesRepositorioImpl @Inject constructor(
             hora = OffsetDateTime.now().toString(),
             identidad = identidad?.let { IdentidadDto(it.nombre, it.telefono, it.condiciones) },
         )
-        return enviar { api ->
-            val resultado = api.reportes(listOf(reporte))
-            when {
-                reporte.idMensaje in resultado.aceptados -> ResultadoEnvio.Enviado
-                reporte.idMensaje in resultado.repetidos -> ResultadoEnvio.YaRecibido
-                else -> ResultadoEnvio.Rechazado(resultado.rechazados.joinToString { it.error })
-            }
-        }
+        seguimiento.guardar(PedidoPropio(reporte.idMensaje, System.currentTimeMillis(), resumen(datos)))
+        outbox.guardar(reporte.idMensaje, TipoMensaje.REPORTE, json.encodeToString(ReporteDto.serializer(), reporte))
+        return intentarAhora(reporte.idMensaje)
     }
 
     override suspend fun reportarBloqueo(tipo: TipoBloqueo, pasaAPie: Boolean): ResultadoEnvio {
@@ -81,16 +79,29 @@ class ReportesRepositorioImpl @Inject constructor(
             reportante = conexion.idAnonimo(),
             origen = ORIGEN_APP,
         )
-        return enviar { api ->
-            api.bloqueo(bloqueo)
-            ResultadoEnvio.Enviado
+        val id = UUID.randomUUID().toString()
+        outbox.guardar(id, TipoMensaje.BLOQUEO, json.encodeToString(BloqueoDto.serializer(), bloqueo))
+        return intentarAhora(id)
+    }
+
+    /** Intenta enviar ya; si no hay conexión, queda guardado y se envía después. */
+    private suspend fun intentarAhora(id: String): ResultadoEnvio {
+        outbox.enviarPendientes()
+        val mensaje = outbox.observar(id).first()
+        return when (mensaje?.estado) {
+            EstadoEnvio.ENVIADO -> ResultadoEnvio.Enviado
+            EstadoEnvio.RECHAZADO -> ResultadoEnvio.Rechazado(mensaje.error.orEmpty())
+            EstadoEnvio.PENDIENTE, null -> ResultadoEnvio.Guardado
         }
     }
 
-    private suspend fun enviar(
-        accion: suspend (ApiEnlace) -> ResultadoEnvio,
-    ): ResultadoEnvio {
-        val direccion = conexion.direccion.first() ?: return ResultadoEnvio.SinConexion
-        return runCatching { accion(fabricaApi.para(direccion)) }.getOrElse { ResultadoEnvio.SinConexion }
-    }
+    /** "Atrapadas: 1 · Heridas: 2 · Rescate, Agua" */
+    private fun resumen(datos: DatosPedido): String = buildList {
+        if (datos.atrapados > 0) add("${contexto.getString(R.string.ayuda_atrapados)}: ${datos.atrapados}")
+        if (datos.heridos > 0) add("${contexto.getString(R.string.ayuda_heridos)}: ${datos.heridos}")
+        if (datos.necesidades.isNotEmpty()) {
+            add(datos.necesidades.joinToString(", ") { contexto.getString(TEXTO_NECESIDAD.getValue(it)) })
+        }
+        if (isEmpty()) add("${contexto.getString(R.string.ayuda_personas)}: ${datos.personas}")
+    }.joinToString(" · ")
 }

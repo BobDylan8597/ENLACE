@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Path
 
 /** Rutas del servidor ENLACE que usa la app (servidor/README.md). */
 interface ApiEnlace {
@@ -25,7 +26,17 @@ interface ApiEnlace {
 
     @POST("bloqueos")
     suspend fun bloqueo(@Body bloqueo: BloqueoDto): CambioBloqueoDto
+
+    @GET("seguimiento/{id}")
+    suspend fun seguimiento(@Path("id") idMensaje: String): SeguimientoDto
 }
+
+@Serializable
+data class SeguimientoDto(
+    val estado: String,
+    val equipo: String? = null,
+    @SerialName("tiempo_estimado_min") val tiempoEstimadoMin: Double? = null,
+)
 
 @Serializable
 data class SaludDto(val estado: String, val ciudad: String, val pais: String)

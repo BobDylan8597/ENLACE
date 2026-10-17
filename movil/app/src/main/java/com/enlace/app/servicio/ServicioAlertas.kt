@@ -13,6 +13,8 @@ import androidx.core.content.ContextCompat
 import com.enlace.app.datos.GestorAlertas
 import com.enlace.app.datos.ID_NOTIFICACION_SERVICIO
 import com.enlace.app.datos.NotificadorAlertas
+import com.enlace.app.datos.Outbox
+import com.enlace.app.datos.Seguimiento
 import com.enlace.app.dominio.AlertaFirmada
 import com.enlace.app.dominio.ConexionRepositorio
 import dagger.hilt.android.AndroidEntryPoint
@@ -29,6 +31,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.doubleOrNull
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.OkHttpClient
@@ -55,6 +59,8 @@ class ServicioAlertas : Service() {
     @Inject lateinit var conexion: ConexionRepositorio
     @Inject lateinit var gestor: GestorAlertas
     @Inject lateinit var notificador: NotificadorAlertas
+    @Inject lateinit var outbox: Outbox
+    @Inject lateinit var seguimiento: Seguimiento
     @Inject lateinit var http: OkHttpClient
     @Inject lateinit var json: Json
 
@@ -112,6 +118,11 @@ class ServicioAlertas : Service() {
                 object : WebSocketListener() {
                     override fun onOpen(webSocket: WebSocket, response: Response) {
                         abierta = true
+                        // Volvió la conexión: se vacía el Outbox y se pone al día el seguimiento
+                        alcance.launch {
+                            outbox.enviarPendientes()
+                            seguimiento.actualizar()
+                        }
                     }
 
                     override fun onMessage(webSocket: WebSocket, text: String) {
@@ -138,6 +149,12 @@ class ServicioAlertas : Service() {
             "alerta" -> runCatching { json.decodeFromJsonElement<AlertaFirmada>(mensaje.datos) }
                 .getOrNull()?.let { gestor.recibir(it) }
             "evento_cerrado" -> mensaje.datos["id_evento"]?.jsonPrimitive?.int?.let { gestor.cerrar(it) }
+            "ayuda_en_camino" -> {
+                val idReporte = mensaje.datos["id_reporte"]?.jsonPrimitive?.contentOrNull ?: return
+                val equipo = mensaje.datos["equipo"]?.jsonPrimitive?.contentOrNull ?: return
+                val minutos = mensaje.datos["tiempo_estimado_min"]?.jsonPrimitive?.doubleOrNull ?: 0.0
+                seguimiento.ayudaEnCamino(idReporte, equipo, minutos)
+            }
         }
     }
 

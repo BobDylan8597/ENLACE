@@ -4,8 +4,12 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
+import androidx.room.Room
 import com.enlace.app.datos.ConexionRepositorioImpl
 import com.enlace.app.datos.ReportesRepositorioImpl
+import com.enlace.app.datos.local.BaseLocal
+import com.enlace.app.datos.local.OutboxDao
+import com.enlace.app.datos.local.PedidosDao
 import com.enlace.app.dominio.ReportesRepositorio
 import com.enlace.app.datos.local.AjustesRepositorioImpl
 import com.enlace.app.datos.remoto.MonitorConexionImpl
@@ -46,6 +50,17 @@ object ModuloDatos {
     @Provides
     @Singleton
     fun preferencias(@ApplicationContext contexto: Context): DataStore<Preferences> = contexto.preferencias
+
+    @Provides
+    @Singleton
+    fun baseLocal(@ApplicationContext contexto: Context): BaseLocal =
+        Room.databaseBuilder(contexto, BaseLocal::class.java, "enlace.db").build()
+
+    @Provides
+    fun outbox(base: BaseLocal): OutboxDao = base.outbox()
+
+    @Provides
+    fun pedidos(base: BaseLocal): PedidosDao = base.pedidos()
 }
 
 @Module

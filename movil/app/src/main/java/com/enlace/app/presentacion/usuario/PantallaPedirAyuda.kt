@@ -80,7 +80,11 @@ class PedirAyudaViewModel @Inject constructor(
 /** U10: reporte rápido de ayuda. Pocas preguntas, botones grandes, un solo envío. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun PantallaPedirAyuda(alVolver: () -> Unit, viewModel: PedirAyudaViewModel = hiltViewModel()) {
+fun PantallaPedirAyuda(
+    alVolver: () -> Unit,
+    alVerSeguimiento: () -> Unit,
+    viewModel: PedirAyudaViewModel = hiltViewModel(),
+) {
     val ui by viewModel.ui.collectAsStateWithLifecycle()
 
     Scaffold { relleno ->
@@ -93,6 +97,7 @@ fun PantallaPedirAyuda(alVolver: () -> Unit, viewModel: PedirAyudaViewModel = hi
                     detalleExito = R.string.envio_ayuda_ok_detalle,
                     alReintentar = viewModel::reintentar,
                     alVolver = alVolver,
+                    alVerSeguimiento = alVerSeguimiento,
                 )
             }
             return@Scaffold

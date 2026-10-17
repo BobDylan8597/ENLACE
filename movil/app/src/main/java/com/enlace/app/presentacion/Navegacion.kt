@@ -32,6 +32,7 @@ import com.enlace.app.presentacion.usuario.PantallaBloqueo
 import com.enlace.app.presentacion.usuario.PantallaInicio
 import com.enlace.app.presentacion.usuario.PantallaPedirAyuda
 import com.enlace.app.presentacion.usuario.PantallaPerfil
+import com.enlace.app.presentacion.usuario.PantallaSeguimiento
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -52,6 +53,7 @@ import javax.inject.Inject
 @Serializable private data object RutaAlerta
 @Serializable private data object RutaPedirAyuda
 @Serializable private data object RutaBloqueo
+@Serializable private data object RutaSeguimiento
 
 @HiltViewModel
 class ArranqueViewModel @Inject constructor(
@@ -130,6 +132,7 @@ fun NavegacionEnlace(arranque: ArranqueViewModel = hiltViewModel()) {
                     alAbrirAlerta = { nav.navigate(RutaAlerta) },
                     alPedirAyuda = { nav.navigate(RutaPedirAyuda) },
                     alReportarBloqueo = { nav.navigate(RutaBloqueo) },
+                    alVerSeguimiento = { nav.navigate(RutaSeguimiento) },
                 )
             }
             composable<RutaPerfil> {
@@ -142,7 +145,15 @@ fun NavegacionEnlace(arranque: ArranqueViewModel = hiltViewModel()) {
                 )
             }
             composable<RutaPedirAyuda> {
-                PantallaPedirAyuda(alVolver = { nav.popBackStack(RutaInicio, inclusive = false) })
+                PantallaPedirAyuda(
+                    alVolver = { nav.popBackStack(RutaInicio, inclusive = false) },
+                    alVerSeguimiento = {
+                        nav.navigate(RutaSeguimiento) { popUpTo(RutaInicio) }
+                    },
+                )
+            }
+            composable<RutaSeguimiento> {
+                PantallaSeguimiento(alVolver = { nav.popBackStack(RutaInicio, inclusive = false) })
             }
             composable<RutaBloqueo> {
                 PantallaBloqueo(alVolver = { nav.popBackStack(RutaInicio, inclusive = false) })

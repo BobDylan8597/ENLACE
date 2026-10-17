@@ -60,6 +60,12 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.tink)
     implementation(libs.play.services.location)
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    ksp(libs.room.compiler)
+    implementation(libs.work.runtime)
+    implementation(libs.hilt.work)
+    ksp(libs.hilt.compiler.androidx)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

@@ -73,6 +73,7 @@ fun PantallaInicio(
     alAbrirAlerta: () -> Unit,
     alPedirAyuda: () -> Unit,
     alReportarBloqueo: () -> Unit,
+    alVerSeguimiento: () -> Unit,
     viewModel: InicioViewModel = hiltViewModel(),
 ) {
     val conexion by viewModel.conexion.collectAsStateWithLifecycle()
@@ -149,6 +150,7 @@ fun PantallaInicio(
             // Sin alerta activa también se puede pedir ayuda: alimenta la propuesta comunitaria
             BotonPrincipal(stringResource(R.string.ayuda_boton), alPedirAyuda, color = ColoresEnlace.actuar)
             BotonSecundario(R.drawable.ic_alerta, stringResource(R.string.bloqueo_boton), alReportarBloqueo)
+            BotonSecundario(R.drawable.ic_equipo, stringResource(R.string.seguimiento_titulo), alVerSeguimiento)
             BotonSecundario(R.drawable.ic_persona, stringResource(R.string.inicio_perfil), alAbrirPerfil)
             BotonSecundario(R.drawable.ic_candado, stringResource(R.string.inicio_privacidad), alAbrirPrivacidad)
             BotonSecundario(R.drawable.ic_senal, stringResource(R.string.inicio_servidor), alAbrirConexion)

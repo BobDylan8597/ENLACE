@@ -5,13 +5,15 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.enlace.app.datos.remoto.CheckInDto
-import com.enlace.app.datos.remoto.FabricaApi
 import com.enlace.app.datos.seguridad.VerificadorEd25519
 import com.enlace.app.dominio.AjustesRepositorio
 import com.enlace.app.dominio.AlertaFirmada
 import com.enlace.app.dominio.AlertaVigente
 import com.enlace.app.dominio.ConexionRepositorio
 import com.enlace.app.dominio.EnvioZona
+import com.enlace.app.dominio.EstadoEnvio
+import com.enlace.app.dominio.TipoMensaje
+import com.enlace.app.dominio.idCheckin
 import com.enlace.app.dominio.LectorAlertas
 import com.enlace.app.dominio.LocalizadorCelda
 import com.enlace.app.dominio.envioInicial
@@ -38,7 +40,7 @@ class GestorAlertas @Inject constructor(
     private val preferencias: DataStore<Preferences>,
     private val conexion: ConexionRepositorio,
     private val ajustes: AjustesRepositorio,
-    private val fabricaApi: FabricaApi,
+    private val outbox: Outbox,
     private val ubicacion: ProveedorUbicacion,
     private val notificador: NotificadorAlertas,
     private val json: Json,
@@ -95,10 +97,12 @@ class GestorAlertas @Inject constructor(
     private suspend fun enviar(actual: AlertaVigente, estado: String): EnvioZona {
         val (lat, lon) = ubicacion.unaVez() ?: return EnvioZona.SIN_UBICACION
         val celda = LocalizadorCelda(conexion.celdas()).celdaDe(lat, lon) ?: return EnvioZona.FUERA_DE_ZONA
-        val direccion = conexion.direccion.first() ?: return EnvioZona.SIN_CONEXION
         val checkin = CheckInDto(conexion.idAnonimo(), actual.alerta.idEvento, celda, estado)
-        return runCatching { fabricaApi.para(direccion).checkin(checkin) }
-            .fold({ EnvioZona.ENVIADA }, { EnvioZona.SIN_CONEXION })
+        val id = idCheckin(actual.alerta.idEvento)
+        outbox.guardar(id, TipoMensaje.CHECKIN, json.encodeToString(CheckInDto.serializer(), checkin))
+        outbox.enviarPendientes()
+        return if (outbox.observar(id).first()?.estado == EstadoEnvio.ENVIADO) EnvioZona.ENVIADA
+        else EnvioZona.SIN_CONEXION
     }
 
     private suspend fun guardar(vigente: AlertaVigente) {

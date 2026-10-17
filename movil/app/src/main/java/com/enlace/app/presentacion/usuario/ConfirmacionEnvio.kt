@@ -28,26 +28,25 @@ fun ConfirmacionEnvio(
     detalleExito: Int,
     alReintentar: () -> Unit,
     alVolver: () -> Unit,
+    alVerSeguimiento: (() -> Unit)? = null,
 ) {
     data class Vista(val icono: Int, val color: Color, val titulo: String, val detalle: String?, val exito: Boolean)
 
     val vista = when (resultado) {
         ResultadoEnvio.Enviado ->
             Vista(R.drawable.ic_bien, ColoresEnlace.estable, stringResource(textoExito), stringResource(detalleExito), true)
-        ResultadoEnvio.YaRecibido ->
-            Vista(R.drawable.ic_bien, ColoresEnlace.estable, stringResource(R.string.envio_repetido), null, true)
+        ResultadoEnvio.Guardado -> Vista(
+            R.drawable.ic_sin_senal,
+            ColoresEnlace.explorar,
+            stringResource(R.string.envio_guardado),
+            stringResource(R.string.envio_guardado_detalle),
+            true,
+        )
         is ResultadoEnvio.Rechazado -> Vista(
             R.drawable.ic_alerta,
             ColoresEnlace.actuar,
             stringResource(R.string.envio_rechazado, resultado.motivo),
             null,
-            false,
-        )
-        ResultadoEnvio.SinConexion -> Vista(
-            R.drawable.ic_sin_senal,
-            ColoresEnlace.explorar,
-            stringResource(R.string.envio_sin_conexion),
-            stringResource(R.string.envio_sin_conexion_detalle),
             false,
         )
         ResultadoEnvio.SinUbicacion -> Vista(
@@ -67,6 +66,9 @@ fun ConfirmacionEnvio(
         Text(vista.titulo, style = MaterialTheme.typography.headlineSmall, color = vista.color)
         vista.detalle?.let { Text(it, style = MaterialTheme.typography.bodyLarge) }
         if (!vista.exito) BotonPrincipal(stringResource(R.string.envio_reintentar), alReintentar)
+        if (vista.exito && alVerSeguimiento != null) {
+            BotonPrincipal(stringResource(R.string.envio_ver_seguimiento), alVerSeguimiento)
+        }
         TextButton(onClick = alVolver) { Text(stringResource(R.string.envio_volver_inicio)) }
     }
 }

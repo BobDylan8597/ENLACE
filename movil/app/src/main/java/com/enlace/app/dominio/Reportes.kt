@@ -53,9 +53,10 @@ fun alcanceBloqueo(pasaAPie: Boolean): String = if (pasaAPie) "solo_a_pie" else 
 /** Resultado de enviar algo al servidor, para la pantalla de confirmación (U11). */
 sealed interface ResultadoEnvio {
     data object Enviado : ResultadoEnvio
-    data object YaRecibido : ResultadoEnvio
+
+    /** Sin conexión: quedó guardado en el celular y se enviará solo (Outbox). */
+    data object Guardado : ResultadoEnvio
     data class Rechazado(val motivo: String) : ResultadoEnvio
-    data object SinConexion : ResultadoEnvio
     data object SinUbicacion : ResultadoEnvio
 }
 

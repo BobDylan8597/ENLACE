@@ -21,6 +21,7 @@ import javax.inject.Singleton
 private const val CANAL_ALERTAS = "alertas"
 private const val CANAL_SERVICIO = "servicio"
 private const val ID_ALERTA = 1
+private const val ID_AYUDA_EN_CAMINO = 3
 const val ID_NOTIFICACION_SERVICIO = 2
 
 @Singleton
@@ -63,12 +64,7 @@ class NotificadorAlertas @Inject constructor(@param:ApplicationContext private v
         .build()
 
     fun mostrarAlerta(alerta: Alerta) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-            ContextCompat.checkSelfPermission(contexto, Manifest.permission.POST_NOTIFICATIONS) !=
-            PackageManager.PERMISSION_GRANTED
-        ) {
-            return // sin permiso: la persona la verá al abrir la app
-        }
+        if (!puedeNotificar()) return // sin permiso: la persona la verá al abrir la app
         val notificacion = NotificationCompat.Builder(contexto, CANAL_ALERTAS)
             .setSmallIcon(R.drawable.ic_alerta)
             .setContentTitle(textoAlerta(contexto, alerta))
@@ -82,6 +78,24 @@ class NotificadorAlertas @Inject constructor(@param:ApplicationContext private v
     }
 
     fun quitarAlerta() = NotificationManagerCompat.from(contexto).cancel(ID_ALERTA)
+
+    /** U12: el centro asignó un equipo al pedido de ayuda de esta persona. */
+    fun mostrarAyudaEnCamino(equipo: String, minutos: Double) {
+        if (!puedeNotificar()) return
+        val notificacion = NotificationCompat.Builder(contexto, CANAL_ALERTAS)
+            .setSmallIcon(R.drawable.ic_equipo)
+            .setContentTitle(contexto.getString(R.string.seguimiento_en_camino))
+            .setContentText(contexto.getString(R.string.seguimiento_equipo, equipo, minutos.toInt()))
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setContentIntent(abrirApp())
+            .setAutoCancel(true)
+            .build()
+        NotificationManagerCompat.from(contexto).notify(ID_AYUDA_EN_CAMINO, notificacion)
+    }
+
+    private fun puedeNotificar(): Boolean = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+        ContextCompat.checkSelfPermission(contexto, Manifest.permission.POST_NOTIFICATIONS) ==
+        PackageManager.PERMISSION_GRANTED
 }
 
 /** "Alerta oficial: sismo M6.2" */
