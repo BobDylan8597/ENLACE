@@ -1,0 +1,67 @@
+@import 'tailwindcss';
+
+/* Colores con significado fijo (CLAUDE.md, sección 16). Siempre acompañados de ícono o texto. */
+@theme {
+  --color-actuar: #c62828;          /* rojo: actuar / pedir ayuda */
+  --color-actuar-suave: #fdecea;
+  --color-explorar: #b45309;        /* ámbar: explorar / sin confirmar */
+  --color-explorar-suave: #fef3c7;
+  --color-estable: #2e7d32;         /* verde: estable / a salvo */
+  --color-estable-suave: #e8f5e9;
+  --color-sin-datos: #6b7280;       /* gris: sin datos */
+  --color-sin-datos-suave: #f3f4f6;
+  --color-accion: #1d4ed8;          /* azul: acción principal, brigadas, rutas */
+  --color-accion-suave: #dbeafe;
+  --font-sans: system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+html,
+body,
+#raiz {
+  height: 100%;
+}
+
+body {
+  @apply bg-gray-50 text-gray-900 antialiased;
+}
+
+/* El mapa ocupa todo su contenedor */
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  font: inherit;
+}
+
+/* Marcas del mapa: equipos (azul, con iniciales) y bloqueos (✕ con el color de su estado) */
+.marca-equipo {
+  display: flex;
+  height: 30px;
+  width: 30px;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+  border-radius: 6px;
+  background: var(--color-accion);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.4);
+}
+
+.marca-equipo--en_ruta,
+.marca-equipo--ocupado {
+  outline: 3px solid var(--color-explorar);
+}
+
+.marca-bloqueo {
+  display: flex;
+  height: 24px;
+  width: 24px;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+  border-radius: 9999px;
+  color: white;
+  font-weight: 900;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.4);
+}
