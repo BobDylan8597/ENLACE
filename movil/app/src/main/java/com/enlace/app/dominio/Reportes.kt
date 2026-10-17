@@ -57,6 +57,9 @@ sealed interface ResultadoEnvio {
     /** Sin conexión: quedó guardado en el celular y se enviará solo (Outbox). */
     data object Guardado : ResultadoEnvio
 
+    /** Pasó a n celulares cercanos: llegará al centro cuando alguno tenga conexión. */
+    data class EnRedCercana(val celulares: Int) : ResultadoEnvio
+
     /** Guardado, y además se puede enviar ya mismo por SMS (la persona lo envía). */
     data class GuardadoConSms(val numero: String, val texto: String) : ResultadoEnvio
     data class Rechazado(val motivo: String) : ResultadoEnvio

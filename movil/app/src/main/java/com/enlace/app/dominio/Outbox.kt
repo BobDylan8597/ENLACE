@@ -42,5 +42,8 @@ fun estadoAtencion(codigo: String?): EstadoAtencion? = when (codigo) {
     else -> null
 }
 
-/** Id fijo del check-in de un evento: el nuevo estado reemplaza al anterior en el Outbox. */
-fun idCheckin(idEvento: Int): String = "checkin-$idEvento"
+/**
+ * Id fijo del check-in de una persona en un evento: su nuevo estado reemplaza al anterior en el
+ * Outbox. Incluye a la persona porque los check-ins ajenos también viajan por la red cercana.
+ */
+fun idCheckin(idEvento: Int, idAnonimo: String): String = "checkin-$idEvento-$idAnonimo"

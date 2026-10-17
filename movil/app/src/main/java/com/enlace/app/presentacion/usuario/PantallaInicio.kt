@@ -36,6 +36,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.enlace.app.R
 import com.enlace.app.datos.GestorAlertas
+import com.enlace.app.datos.nearby.RedCercana
 import com.enlace.app.datos.textoAlerta
 import com.enlace.app.dominio.AlertaVigente
 import com.enlace.app.dominio.EstadoConexion
@@ -54,7 +55,17 @@ import javax.inject.Inject
 private const val DEJAR_DE_OBSERVAR_MS = 5_000L
 
 @HiltViewModel
-class InicioViewModel @Inject constructor(monitor: MonitorConexion, gestor: GestorAlertas) : ViewModel() {
+class InicioViewModel @Inject constructor(
+    monitor: MonitorConexion,
+    gestor: GestorAlertas,
+    red: RedCercana,
+) : ViewModel() {
+    /** Notificaciones (Android 13+) y red cercana: se piden juntos al llegar al inicio. */
+    val permisos: Array<String> = buildList {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) add(Manifest.permission.POST_NOTIFICATIONS)
+        addAll(red.permisosNecesarios())
+    }.distinct().toTypedArray()
+
     val conexion: StateFlow<EstadoConexion> = monitor.estado.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(DEJAR_DE_OBSERVAR_MS),
@@ -79,17 +90,11 @@ fun PantallaInicio(
     val conexion by viewModel.conexion.collectAsStateWithLifecycle()
     val alerta by viewModel.alerta.collectAsStateWithLifecycle()
     val contexto = LocalContext.current
-    val pedirNotificaciones = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
-        // Con o sin permiso, el servicio arranca: sin él, la alerta se ve al abrir la app
+    val pedirPermisos = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+        // Con o sin permisos, el servicio arranca: sin ellos, la alerta se ve al abrir la app
         ServicioAlertas.iniciar(contexto)
     }
-    LaunchedEffect(Unit) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            pedirNotificaciones.launch(Manifest.permission.POST_NOTIFICATIONS)
-        } else {
-            ServicioAlertas.iniciar(contexto)
-        }
-    }
+    LaunchedEffect(Unit) { pedirPermisos.launch(viewModel.permisos) }
 
     Scaffold { relleno ->
         Column(

@@ -15,6 +15,7 @@ import com.enlace.app.datos.ID_NOTIFICACION_SERVICIO
 import com.enlace.app.datos.NotificadorAlertas
 import com.enlace.app.datos.Outbox
 import com.enlace.app.datos.Seguimiento
+import com.enlace.app.datos.nearby.RedCercana
 import com.enlace.app.dominio.AlertaFirmada
 import com.enlace.app.dominio.ConexionRepositorio
 import dagger.hilt.android.AndroidEntryPoint
@@ -61,6 +62,7 @@ class ServicioAlertas : Service() {
     @Inject lateinit var notificador: NotificadorAlertas
     @Inject lateinit var outbox: Outbox
     @Inject lateinit var seguimiento: Seguimiento
+    @Inject lateinit var red: RedCercana
     @Inject lateinit var http: OkHttpClient
     @Inject lateinit var json: Json
 
@@ -71,6 +73,7 @@ class ServicioAlertas : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         ServiceCompat.startForeground(this, ID_NOTIFICACION_SERVICIO, notificador.servicio(), tipos())
+        red.iniciar()
         if (!iniciado) {
             iniciado = true
             alcance.launch { escuchar() }
@@ -86,6 +89,7 @@ class ServicioAlertas : Service() {
         var tipos = if (ubicacion) ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION else 0
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             tipos = tipos or ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
+            if (red.tienePermisos()) tipos = tipos or ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
         }
         return tipos
     }

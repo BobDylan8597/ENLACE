@@ -4,6 +4,8 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.enlace.app.datos.nearby.RedCercana
+import com.enlace.app.datos.nearby.idAlerta
 import com.enlace.app.datos.remoto.CheckInDto
 import com.enlace.app.datos.seguridad.VerificadorEd25519
 import com.enlace.app.dominio.AjustesRepositorio
@@ -13,6 +15,7 @@ import com.enlace.app.dominio.ConexionRepositorio
 import com.enlace.app.dominio.EnvioZona
 import com.enlace.app.dominio.EstadoEnvio
 import com.enlace.app.dominio.TipoMensaje
+import com.enlace.app.dominio.TipoMensajeRed
 import com.enlace.app.dominio.idCheckin
 import com.enlace.app.dominio.LectorAlertas
 import com.enlace.app.dominio.LocalizadorCelda
@@ -41,6 +44,7 @@ class GestorAlertas @Inject constructor(
     private val conexion: ConexionRepositorio,
     private val ajustes: AjustesRepositorio,
     private val outbox: Outbox,
+    private val red: RedCercana,
     private val ubicacion: ProveedorUbicacion,
     private val notificador: NotificadorAlertas,
     private val json: Json,
@@ -51,8 +55,11 @@ class GestorAlertas @Inject constructor(
         p[CLAVE_VIGENTE]?.let { runCatching { json.decodeFromString<AlertaVigente>(it) }.getOrNull() }
     }
 
-    /** Devuelve true si era una alerta nueva y válida. */
-    suspend fun recibir(firmada: AlertaFirmada): Boolean = cerrojo.withLock {
+    /**
+     * Devuelve true si era una alerta nueva y válida. Si llegó del servidor se propaga por la red
+     * cercana; si llegó por la red cercana, la red se encarga de reenviarla con un salto más.
+     */
+    suspend fun recibir(firmada: AlertaFirmada, desdeRedCercana: Boolean = false): Boolean = cerrojo.withLock {
         val clave = conexion.clavePublica() ?: return false
         val alerta = LectorAlertas(VerificadorEd25519(clave), json).leer(firmada) ?: return false
         if (vigente.first()?.alerta?.idEvento == alerta.idEvento) return false
@@ -60,6 +67,9 @@ class GestorAlertas @Inject constructor(
         val pendiente = envioInicial(ajustes.consentimiento.first())
         guardar(AlertaVigente(alerta, firmada, pendiente ?: EnvioZona.ENVIANDO))
         notificador.mostrarAlerta(alerta)
+        if (!desdeRedCercana) {
+            red.publicar(TipoMensajeRed.ALERTA, idAlerta(alerta.idEvento), json.encodeToString(AlertaFirmada.serializer(), firmada))
+        }
         if (pendiente == null) enviarZonaSinCerrojo(ESTADO_SIN_RESPUESTA)
         true
     }
@@ -98,9 +108,11 @@ class GestorAlertas @Inject constructor(
         val (lat, lon) = ubicacion.unaVez() ?: return EnvioZona.SIN_UBICACION
         val celda = LocalizadorCelda(conexion.celdas()).celdaDe(lat, lon) ?: return EnvioZona.FUERA_DE_ZONA
         val checkin = CheckInDto(conexion.idAnonimo(), actual.alerta.idEvento, celda, estado)
-        val id = idCheckin(actual.alerta.idEvento)
-        outbox.guardar(id, TipoMensaje.CHECKIN, json.encodeToString(CheckInDto.serializer(), checkin))
+        val id = idCheckin(actual.alerta.idEvento, checkin.idAnonimo)
+        val cuerpo = json.encodeToString(CheckInDto.serializer(), checkin)
+        outbox.guardar(id, TipoMensaje.CHECKIN, cuerpo)
         outbox.enviarPendientes()
+        if (outbox.observar(id).first()?.estado != EstadoEnvio.ENVIADO) red.publicar(TipoMensajeRed.CHECKIN, id, cuerpo)
         return if (outbox.observar(id).first()?.estado == EstadoEnvio.ENVIADO) EnvioZona.ENVIADA
         else EnvioZona.SIN_CONEXION
     }

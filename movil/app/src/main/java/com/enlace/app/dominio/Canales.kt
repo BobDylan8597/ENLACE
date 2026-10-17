@@ -12,6 +12,9 @@ sealed interface ResultadoCanal {
     /** Este canal no puede ahora: se prueba el siguiente. */
     data object NoDisponible : ResultadoCanal
 
+    /** Sin servidor, pero viaja por la red cercana hasta que algún celular con conexión lo entregue. */
+    data class EnRedCercana(val celulares: Int) : ResultadoCanal
+
     /** No hay envío automático posible: se ofrece a la persona enviar este SMS. */
     data class OfrecerSms(val numero: String, val texto: String) : ResultadoCanal
 }

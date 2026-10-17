@@ -1,6 +1,7 @@
 package com.enlace.app.dominio
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Test
 
 class OutboxTest {
@@ -20,9 +21,10 @@ class OutboxTest {
     }
 
     @Test
-    fun `el check-in de un evento tiene un id fijo para reemplazar el anterior`() {
-        assertEquals(idCheckin(7), idCheckin(7))
-        assertEquals("checkin-7", idCheckin(7))
+    fun `el check-in de una persona en un evento tiene un id fijo y propio`() {
+        assertEquals(idCheckin(7, "a"), idCheckin(7, "a"))
+        assertEquals("checkin-7-a", idCheckin(7, "a"))
+        assertNotEquals(idCheckin(7, "a"), idCheckin(7, "b"))
     }
 
     @Test

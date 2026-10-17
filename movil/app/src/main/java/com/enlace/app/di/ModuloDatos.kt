@@ -9,7 +9,9 @@ import com.enlace.app.datos.ConexionRepositorioImpl
 import com.enlace.app.datos.ReportesRepositorioImpl
 import com.enlace.app.datos.local.BaseLocal
 import com.enlace.app.datos.local.OutboxDao
+import com.enlace.app.datos.local.MIGRACION_1_2
 import com.enlace.app.datos.local.PedidosDao
+import com.enlace.app.datos.local.VistosDao
 import com.enlace.app.dominio.ReportesRepositorio
 import com.enlace.app.datos.local.AjustesRepositorioImpl
 import com.enlace.app.datos.remoto.MonitorConexionImpl
@@ -54,13 +56,16 @@ object ModuloDatos {
     @Provides
     @Singleton
     fun baseLocal(@ApplicationContext contexto: Context): BaseLocal =
-        Room.databaseBuilder(contexto, BaseLocal::class.java, "enlace.db").build()
+        Room.databaseBuilder(contexto, BaseLocal::class.java, "enlace.db").addMigrations(MIGRACION_1_2).build()
 
     @Provides
     fun outbox(base: BaseLocal): OutboxDao = base.outbox()
 
     @Provides
     fun pedidos(base: BaseLocal): PedidosDao = base.pedidos()
+
+    @Provides
+    fun vistos(base: BaseLocal): VistosDao = base.vistos()
 }
 
 @Module

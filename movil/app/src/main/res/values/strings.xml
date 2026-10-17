@@ -142,4 +142,6 @@
     <string name="seguimiento_hace">Hace %1$d min</string>
     <string name="sms_explicacion">También puedes enviarlo ahora por SMS: se abrirá tu app de mensajes con el texto listo. Solo tienes que tocar enviar.</string>
     <string name="sms_enviar">Enviar por SMS</string>
+    <string name="envio_red_cercana">Enviado a %1$d celulares cercanos</string>
+    <string name="envio_red_cercana_detalle">Viaja de celular en celular hasta que uno con conexión lo entregue al centro de coordinación. También quedó guardado en tu celular.</string>
 </resources>

@@ -38,6 +38,13 @@ fun ConfirmacionEnvio(
     val vista = when (resultado) {
         ResultadoEnvio.Enviado ->
             Vista(R.drawable.ic_bien, ColoresEnlace.estable, stringResource(textoExito), stringResource(detalleExito), true)
+        is ResultadoEnvio.EnRedCercana -> Vista(
+            R.drawable.ic_red_cercana,
+            ColoresEnlace.explorar,
+            stringResource(R.string.envio_red_cercana, resultado.celulares),
+            stringResource(R.string.envio_red_cercana_detalle),
+            true,
+        )
         ResultadoEnvio.Guardado, is ResultadoEnvio.GuardadoConSms -> Vista(
             R.drawable.ic_sin_senal,
             ColoresEnlace.explorar,

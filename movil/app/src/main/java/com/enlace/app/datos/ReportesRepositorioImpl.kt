@@ -5,6 +5,7 @@ import com.enlace.app.R
 import com.enlace.app.TEXTO_CONDICION
 import com.enlace.app.TEXTO_NECESIDAD
 import com.enlace.app.datos.local.PedidoPropio
+import com.enlace.app.datos.nearby.RedCercana
 import com.enlace.app.datos.remoto.BloqueoDto
 import com.enlace.app.datos.remoto.IdentidadDto
 import com.enlace.app.datos.remoto.ReporteDto
@@ -21,6 +22,7 @@ import com.enlace.app.dominio.ReportesRepositorio
 import com.enlace.app.dominio.ResultadoEnvio
 import com.enlace.app.dominio.TipoBloqueo
 import com.enlace.app.dominio.TipoMensaje
+import com.enlace.app.dominio.TipoMensajeRed
 import com.enlace.app.dominio.alcanceBloqueo
 import com.enlace.app.dominio.identidadDesde
 import com.enlace.app.ubicacion.ProveedorUbicacion
@@ -44,6 +46,7 @@ class ReportesRepositorioImpl @Inject constructor(
     private val ubicacion: ProveedorUbicacion,
     private val outbox: Outbox,
     private val seguimiento: Seguimiento,
+    private val red: RedCercana,
     private val json: Json,
 ) : ReportesRepositorio {
 
@@ -71,13 +74,28 @@ class ReportesRepositorioImpl @Inject constructor(
         seguimiento.guardar(PedidoPropio(reporte.idMensaje, System.currentTimeMillis(), resumen(datos)))
         outbox.guardar(reporte.idMensaje, TipoMensaje.REPORTE, json.encodeToString(ReporteDto.serializer(), reporte))
 
-        // Servidor → (red cercana, paso 4.6) → ofrecer SMS
-        val cadena = CadenaCanales(listOf(canalServidor(), CanalSms { conexion.numeroSms() }))
+        // Servidor → red cercana → ofrecer SMS
+        val cuerpo = json.encodeToString(ReporteDto.serializer(), reporte)
+        val cadena = CadenaCanales(
+            listOf(canalServidor(), canalRedCercana(TipoMensajeRed.REPORTE, cuerpo), CanalSms { conexion.numeroSms() }),
+        )
         val salida = cadena.enviar(PedidoParaEnviar(reporte.idMensaje, lat, lon, datos))
         return when (salida) {
             ResultadoCanal.Entregado -> intentarAhora(reporte.idMensaje)
+            is ResultadoCanal.EnRedCercana -> ResultadoEnvio.EnRedCercana(salida.celulares)
             is ResultadoCanal.OfrecerSms -> ResultadoEnvio.GuardadoConSms(salida.numero, salida.texto)
             ResultadoCanal.NoDisponible -> ResultadoEnvio.Guardado
+        }
+    }
+
+    /** Canal red cercana: si hay celulares conectados, el mensaje empieza a propagarse por gossip. */
+    private fun canalRedCercana(tipo: TipoMensajeRed, cuerpo: String) = CanalEnvio { pedido ->
+        val celulares = red.celulares.value
+        if (celulares == 0) {
+            ResultadoCanal.NoDisponible
+        } else {
+            red.publicar(tipo, pedido.idMensaje, cuerpo)
+            ResultadoCanal.EnRedCercana(celulares)
         }
     }
 
@@ -102,8 +120,14 @@ class ReportesRepositorioImpl @Inject constructor(
             origen = ORIGEN_APP,
         )
         val id = UUID.randomUUID().toString()
-        outbox.guardar(id, TipoMensaje.BLOQUEO, json.encodeToString(BloqueoDto.serializer(), bloqueo))
-        return intentarAhora(id)
+        val cuerpo = json.encodeToString(BloqueoDto.serializer(), bloqueo)
+        outbox.guardar(id, TipoMensaje.BLOQUEO, cuerpo)
+        val resultado = intentarAhora(id)
+        if (resultado == ResultadoEnvio.Guardado && red.celulares.value > 0) {
+            red.publicar(TipoMensajeRed.BLOQUEO, id, cuerpo)
+            return ResultadoEnvio.EnRedCercana(red.celulares.value)
+        }
+        return resultado
     }
 
     /** Intenta enviar ya; si no hay conexión, queda guardado y se envía después. */
