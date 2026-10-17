@@ -5,7 +5,11 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.enlace.app.datos.ConexionRepositorioImpl
+import com.enlace.app.datos.local.AjustesRepositorioImpl
+import com.enlace.app.datos.remoto.MonitorConexionImpl
+import com.enlace.app.dominio.AjustesRepositorio
 import com.enlace.app.dominio.ConexionRepositorio
+import com.enlace.app.dominio.MonitorConexion
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -47,4 +51,10 @@ object ModuloDatos {
 abstract class ModuloRepositorios {
     @Binds
     abstract fun conexion(implementacion: ConexionRepositorioImpl): ConexionRepositorio
+
+    @Binds
+    abstract fun ajustes(implementacion: AjustesRepositorioImpl): AjustesRepositorio
+
+    @Binds
+    abstract fun monitor(implementacion: MonitorConexionImpl): MonitorConexion
 }

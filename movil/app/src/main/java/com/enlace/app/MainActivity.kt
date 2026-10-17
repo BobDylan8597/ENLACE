@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.enlace.app.presentacion.configuracion.PantallaConfiguracion
+import com.enlace.app.presentacion.NavegacionEnlace
 import com.enlace.app.presentacion.tema.TemaEnlace
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -15,7 +15,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             TemaEnlace {
-                PantallaConfiguracion()
+                NavegacionEnlace()
             }
         }
     }

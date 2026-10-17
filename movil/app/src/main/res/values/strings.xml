@@ -12,4 +12,47 @@
     <string name="configuracion_conectado">Conectado a ENLACE · %1$s, %2$s</string>
     <string name="configuracion_direccion_invalida">La dirección no es válida</string>
     <string name="configuracion_sin_respuesta">El servidor no responde. Revisa que estés en la misma red Wi-Fi.</string>
+    <string name="continuar">Continuar</string>
+    <string name="guardar">Guardar</string>
+    <string name="volver">Volver</string>
+
+    <string name="conexion_en_linea">En línea</string>
+    <string name="conexion_red_cercana">Red cercana (%1$d celulares)</string>
+    <string name="conexion_sin_conexion">Sin conexión</string>
+
+    <string name="modo_titulo">¿Cómo vas a usar ENLACE?</string>
+    <string name="modo_usuario">Soy una persona de la comunidad</string>
+    <string name="modo_usuario_detalle">Recibe alertas, pide ayuda y avisa de calles bloqueadas.</string>
+    <string name="modo_unidad">Soy parte de un equipo de respuesta</string>
+    <string name="modo_unidad_detalle">Disponible pronto: recibe asignaciones y rutas.</string>
+
+    <string name="consentimiento_titulo">Tu ubicación durante una emergencia</string>
+    <string name="consentimiento_explicacion">Cuando llegue una alerta oficial, ENLACE puede avisar al centro de coordinación en qué zona estás, para saber dónde hay personas. Solo se envía la zona aproximada, nunca tu ubicación exacta. ENLACE no te sigue: solo consulta tu ubicación al recibir una alerta.</string>
+    <string name="consentimiento_automatico">Enviar mi zona automáticamente</string>
+    <string name="consentimiento_automatico_detalle">Recomendado: ayuda a encontrar a quienes no pueden responder.</string>
+    <string name="consentimiento_confirmacion">Preguntarme antes de enviar</string>
+    <string name="consentimiento_confirmacion_detalle">Verás un aviso con cada alerta.</string>
+    <string name="consentimiento_no_compartir">No compartir mi zona</string>
+    <string name="consentimiento_no_compartir_detalle">Igual podrás pedir ayuda cuando la necesites.</string>
+    <string name="consentimiento_nota">Puedes cambiarlo cuando quieras desde Privacidad.</string>
+
+    <string name="perfil_titulo">Mi perfil</string>
+    <string name="perfil_explicacion">Se guarda solo en este celular. Se envía únicamente si pides ayuda, para que el equipo sepa a quién busca.</string>
+    <string name="perfil_nombre">Nombre</string>
+    <string name="perfil_telefono">Teléfono</string>
+    <string name="perfil_personas">Personas en tu hogar</string>
+    <string name="perfil_condiciones">¿Alguien necesita atención especial?</string>
+    <string name="perfil_guardado">Perfil guardado</string>
+    <string name="condicion_movilidad_reducida">Movilidad reducida</string>
+    <string name="condicion_adulto_mayor">Adulto mayor</string>
+    <string name="condicion_embarazo">Embarazo</string>
+    <string name="condicion_ninos">Niños pequeños</string>
+    <string name="condicion_medicacion">Medicación diaria</string>
+    <string name="condicion_discapacidad">Discapacidad</string>
+
+    <string name="inicio_sin_alerta">Sin alerta activa</string>
+    <string name="inicio_sin_alerta_detalle">Si hay una emergencia oficial, recibirás la alerta aquí.</string>
+    <string name="inicio_perfil">Mi perfil</string>
+    <string name="inicio_privacidad">Privacidad</string>
+    <string name="inicio_servidor">Conexión</string>
 </resources>

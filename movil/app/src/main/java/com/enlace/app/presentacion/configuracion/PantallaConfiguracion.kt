@@ -22,13 +22,17 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.enlace.app.R
+import com.enlace.app.presentacion.componentes.BotonPrincipal
 import com.enlace.app.presentacion.tema.ColoresEnlace
 
 /** Altura mínima de los botones críticos (sección 16). */
 private val ALTO_BOTON = 48.dp
 
 @Composable
-fun PantallaConfiguracion(viewModel: ConfiguracionViewModel = hiltViewModel()) {
+fun PantallaConfiguracion(
+    alContinuar: () -> Unit,
+    viewModel: ConfiguracionViewModel = hiltViewModel(),
+) {
     val ui by viewModel.ui.collectAsStateWithLifecycle()
 
     Scaffold { relleno ->
@@ -62,6 +66,9 @@ fun PantallaConfiguracion(viewModel: ConfiguracionViewModel = hiltViewModel()) {
                 )
             }
             ResultadoPrueba(ui.prueba)
+            if (ui.prueba is EstadoPrueba.Conectado) {
+                BotonPrincipal(stringResource(R.string.continuar), alContinuar)
+            }
         }
     }
 }
