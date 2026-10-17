@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { escapar, estiloPersona, iniciales, intensidadCritica, totalCheckins } from '../util/capasMapa.js'
 import { estiloCategoria, estiloPrioridad, ESTILOS } from '../util/colores.js'
-import { distancia, resumenReporte, tiempoRelativo } from '../util/formato.js'
+import { distancia, lineasInfraestructura, resumenReporte, tiempoRelativo } from '../util/formato.js'
 import { nuevoId } from '../util/identificadores.js'
 import { leerRuta } from '../util/useRutaHash.js'
 import { PRIORIDAD_IMPORTANTE, PRIORIDAD_URGENTE } from '../configuracion.js'
@@ -83,5 +83,14 @@ describe('población y personas ubicadas', () => {
     expect(estiloPersona('ayuda').estilo).toBe(ESTILOS.actuar)
     expect(estiloPersona('bien').simbolo).toBe('✓')
     expect(estiloPersona('otro').estilo).toBe(ESTILOS.sin_datos)
+  })
+})
+
+describe('infraestructura crítica', () => {
+  it('con cantidad y nombres de OSM o con el formato sintético', () => {
+    const osm = { hospital: { cantidad: 2, nombres: ['Hospital A', 'Hospital B'] }, escuela: { cantidad: 1, nombres: [] } }
+    expect(lineasInfraestructura(osm)).toEqual(['2 hospitales: Hospital A, Hospital B', '1 escuela'])
+    expect(lineasInfraestructura({ albergue: 1 })).toEqual(['1 albergue'])
+    expect(lineasInfraestructura(null)).toEqual([])
   })
 })

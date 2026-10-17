@@ -8,7 +8,7 @@ import Icono from '../componentes/Icono.jsx'
 import Insignia from '../componentes/Insignia.jsx'
 import InsigniaPrioridad from '../componentes/InsigniaPrioridad.jsx'
 import { t } from '../textos/index.js'
-import { entero, porcentaje, tiempoRelativo } from '../util/formato.js'
+import { entero, lineasInfraestructura, porcentaje, tiempoRelativo } from '../util/formato.js'
 import { navegar } from '../util/useRutaHash.js'
 
 // A5: qué se sabe de una zona y con cuánta certeza
@@ -35,7 +35,7 @@ export default function DetalleCelda({ idH3 }) {
     [t.celda.criticos, c.checkins.criticos],
     [t.celda.ultimaAtencion, c.ultima_atencion ? tiempoRelativo(c.ultima_atencion) : t.celda.nunca],
   ]
-  const infraestructura = Object.keys(c.infraestructura_critica ?? {})
+  const infraestructura = lineasInfraestructura(c.infraestructura_critica)
 
   return (
     <article className="space-y-4 p-5">
@@ -61,10 +61,14 @@ export default function DetalleCelda({ idH3 }) {
       </dl>
 
       {infraestructura.length > 0 && (
-        <p className="text-sm">
-          <span className="text-gray-600">{t.celda.infraestructura}: </span>
-          {infraestructura.join(', ')}
-        </p>
+        <section className="text-sm">
+          <h3 className="mb-1 font-semibold">{t.celda.infraestructura}</h3>
+          <ul className="list-inside list-disc space-y-0.5">
+            {infraestructura.map((linea) => (
+              <li key={linea}>{linea}</li>
+            ))}
+          </ul>
+        </section>
       )}
 
       <section>

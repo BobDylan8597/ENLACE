@@ -27,4 +27,40 @@ Lee el centro y el radio de `ciudad.toml` (más un margen) y genera:
 
 Atribución obligatoria en las interfaces que muestren el mapa: © OpenStreetMap · Protomaps.
 
-Pendientes del paso 6: `calcular_poblacion.py`, `asignar_vulnerabilidad.py`, `validar_evento.py`.
+## calcular_poblacion.py
+
+```bash
+servidor/.venv/Scripts/python preparacion/calcular_poblacion.py [--ciudad <id>]
+```
+
+- **Población de noche por celda:** [Kontur Population](https://data.humdata.org/dataset/kontur-population-dataset)
+  (CC BY 4.0), publicado por país en HDX ya en hexágonos H3 de resolución 8, la misma de ENLACE.
+  El país sale de `codigo_pais` en `ciudad.toml`, así que sirve para cualquier país de la región.
+- **Tipo de zona (día/noche):** comercios, oficinas y servicios de OSM por celda. Es relativo a la
+  ciudad (OSM está más o menos completo según el lugar): el 20 % con más comercio es comercial y el
+  30 % siguiente mixto. Los factores de ocupación de día y de noche están en `semilla.toml`.
+- **Nombres de zona:** el barrio o colonia de OSM más cercano al centro de cada celda.
+
+Genera `poblacion.json`. Managua: 552.000 personas en 95 celdas habitadas, 5.287 comercios, 600
+barrios con nombre.
+
+## asignar_vulnerabilidad.py
+
+```bash
+servidor/.venv/Scripts/python preparacion/asignar_vulnerabilidad.py [--ciudad <id>] [--indice-oficial indice.csv]
+```
+
+- **Infraestructura crítica por celda (OSM):** hospitales, clínicas, escuelas, bomberos, policía y
+  albergues, con sus nombres (se ve en el detalle de la zona).
+- **Vulnerabilidad 0–1 aproximada:** densidad de población, distancia al hospital o clínica más
+  cercano y asentamientos marcados como informales en OSM (pesos en `config/enlace.toml`).
+  Es una aproximación con datos abiertos: si el país tiene un índice oficial por zona (por ejemplo
+  necesidades básicas insatisfechas), `--indice-oficial` acepta un CSV `id_h3,vulnerabilidad`.
+
+Genera `vulnerabilidad.json`. Después: `python datos/semilla.py --reiniciar` (desde `servidor/`)
+usa los datos reales; sin estos archivos, la semilla sigue siendo sintética.
+
+Las respuestas de Overpass y el archivo de Kontur quedan en `.cache_datos/`: volver a correr los
+scripts no repite descargas (los servidores públicos de Overpass limitan las consultas seguidas).
+
+Pendiente del paso 6: `validar_evento.py`.

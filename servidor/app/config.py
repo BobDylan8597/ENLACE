@@ -194,6 +194,24 @@ class ConfigRutas(_Seccion):
         return self
 
 
+class ConfigVulnerabilidadPrep(_Seccion):
+    peso_densidad: float = Field(ge=0)
+    peso_acceso_salud: float = Field(ge=0)
+    peso_precariedad: float = Field(ge=0)
+    escala_densidad: float = Field(gt=0)
+    distancia_salud_max_km: float = Field(gt=0)
+
+    @model_validator(mode="after")
+    def _pesos_suman_uno(self) -> ConfigVulnerabilidadPrep:
+        _exigir_suma_uno(
+            "preparacion.vulnerabilidad",
+            self.peso_densidad,
+            self.peso_acceso_salud,
+            self.peso_precariedad,
+        )
+        return self
+
+
 class ConfigPreparacion(_Seccion):
     margen_km: float = Field(ge=0)
     tipo_red: str
@@ -202,6 +220,18 @@ class ConfigPreparacion(_Seccion):
     url_mapa_base: str
     dias_busqueda_mapa: int = Field(ge=1)
     zoom_maximo_mapa: int = Field(ge=0, le=15)
+    url_busqueda_poblacion: str
+    archivo_poblacion: str
+    archivo_vulnerabilidad: str
+    fraccion_zona_comercial: float = Field(gt=0, lt=1)
+    fraccion_zona_mixta: float = Field(ge=0, lt=1)
+    vulnerabilidad: ConfigVulnerabilidadPrep
+
+    @model_validator(mode="after")
+    def _fracciones(self) -> ConfigPreparacion:
+        if self.fraccion_zona_comercial + self.fraccion_zona_mixta > 1:
+            raise ValueError("preparacion: las fracciones de zona comercial y mixta superan 1")
+        return self
 
 
 class ConfigSms(_Seccion):

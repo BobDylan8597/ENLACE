@@ -1,6 +1,7 @@
-# Datos sintéticos de demostración para Managua.
-# En el paso 6 los scripts de preparación/ reemplazan la población y la vulnerabilidad
-# sintéticas por datos reales (OSM, censo). Para otra ciudad, copiar y ajustar este archivo.
+# Datos de demostración para Managua. Si se corrieron preparacion/calcular_poblacion.py y
+# asignar_vulnerabilidad.py, la población, el tipo de zona, los nombres, la vulnerabilidad y la
+# infraestructura salen de datos reales (Kontur, OSM) y aquí solo se usan los factores de día y
+# noche, la mezcla de construcción y los equipos. Para otra ciudad, copiar y ajustar este archivo.
 
 semilla_aleatoria = 2026
 

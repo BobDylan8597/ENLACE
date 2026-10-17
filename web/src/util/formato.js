@@ -33,3 +33,14 @@ export function resumenReporte(reporte) {
   if (necesidades.length) partes.push(necesidades.join(', '))
   return partes.join(' · ') || t.tipoReporte[reporte.tipo]
 }
+
+// Infraestructura crítica de una celda: {hospital: {cantidad, nombres}} (datos de OSM) o, en los
+// datos sintéticos, {hospital: 1}. → ["2 hospitales: Hospital Vivian Pellas, …", "1 escuela"]
+export function lineasInfraestructura(infraestructura) {
+  return Object.entries(infraestructura ?? {}).map(([tipo, valor]) => {
+    const cantidad = typeof valor === 'number' ? valor : (valor?.cantidad ?? 1)
+    const nombres = typeof valor === 'object' ? (valor?.nombres ?? []) : []
+    const etiqueta = t.infraestructura[tipo]?.(cantidad) ?? `${cantidad} ${tipo}`
+    return nombres.length ? `${etiqueta}: ${nombres.join(', ')}` : etiqueta
+  })
+}

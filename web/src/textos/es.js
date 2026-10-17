@@ -158,6 +158,16 @@ const es = {
       'Solo aparecen quienes eligieron compartir su ubicación exacta. Se borra al cerrar la emergencia.',
   },
 
+  // Infraestructura crítica por celda (OpenStreetMap)
+  infraestructura: {
+    hospital: (n) => `${n} ${n === 1 ? 'hospital' : 'hospitales'}`,
+    clinica: (n) => `${n} ${n === 1 ? 'clínica' : 'clínicas'}`,
+    escuela: (n) => `${n} ${n === 1 ? 'escuela' : 'escuelas'}`,
+    bomberos: (n) => `${n} ${n === 1 ? 'estación de bomberos' : 'estaciones de bomberos'}`,
+    policia: (n) => `${n} ${n === 1 ? 'estación de policía' : 'estaciones de policía'}`,
+    albergue: (n) => `${n} ${n === 1 ? 'albergue' : 'albergues'}`,
+  },
+
   estadoPersona: {
     sin_respuesta: 'Sin respuesta',
     ayuda: 'Pidió ayuda',

@@ -1,4 +1,8 @@
-"""Carga la ciudad activa con datos sintéticos de demostración: celdas y equipos.
+"""Carga la ciudad activa: celdas (población, vulnerabilidad, infraestructura) y equipos.
+
+Si existen poblacion.json y vulnerabilidad.json (preparacion/calcular_poblacion.py y
+asignar_vulnerabilidad.py, con datos reales de Kontur y OpenStreetMap), se usan. Si no, la
+población y la vulnerabilidad se generan sintéticas con los parámetros de semilla.toml.
 
 Uso (desde servidor/):
     python datos/semilla.py              # agrega lo que falte
@@ -11,6 +15,7 @@ ninguna ciudad: para otra ciudad basta con crear su carpeta con esos dos archivo
 from __future__ import annotations
 
 import argparse
+import json
 import math
 import random
 import tomllib
@@ -73,7 +78,21 @@ def _nombre_zona(lat: float, lon: float, barrios: list[dict[str, Any]], indice: 
     return min(barrios, key=lambda b: distancia_km(lat, lon, b["lat"], b["lon"]))["nombre"]
 
 
-def generar_celdas(ciudad: Ciudad, semilla: dict[str, Any], resolucion: int) -> list[Celda]:
+def leer_datos_reales(directorio: Path, archivo: str) -> dict[str, dict[str, Any]] | None:
+    """Celdas de un archivo de preparacion/, o None si todavía no se preparó la ciudad."""
+    ruta = directorio / archivo
+    if not ruta.exists():
+        return None
+    return dict(json.loads(ruta.read_text(encoding="utf-8"))["celdas"])
+
+
+def generar_celdas(
+    ciudad: Ciudad,
+    semilla: dict[str, Any],
+    resolucion: int,
+    poblacion_real: dict[str, dict[str, Any]] | None = None,
+    vulnerabilidad_real: dict[str, dict[str, Any]] | None = None,
+) -> list[Celda]:
     azar = random.Random(semilla["semilla_aleatoria"])
     poblacion = semilla["poblacion"]
     zonas = semilla["zonas"]
@@ -88,17 +107,27 @@ def generar_celdas(ciudad: Ciudad, semilla: dict[str, Any], resolucion: int) -> 
             * azar.uniform(1 - poblacion["variacion"], 1 + poblacion["variacion"])
         )
         minimo, maximo = zonas["vulnerabilidad"][tipo]
-        infraestructura = {
+        vulnerabilidad = round(azar.uniform(minimo, maximo), 2)
+        infraestructura: dict[str, Any] = {
             nombre: 1
             for nombre, probabilidad in semilla["infraestructura"].items()
             if azar.random() < probabilidad
         }
+        nombre = _nombre_zona(lat, lon, semilla.get("barrios", []), indice)
+        # Datos reales (preparacion/): reemplazan a los sintéticos de esta celda
+        if poblacion_real is not None:
+            real = poblacion_real.get(id_h3, {"noche": 0.0, "tipo": "residencial", "nombre": None})
+            noche, tipo = real["noche"], real["tipo"]
+            nombre = real.get("nombre") or nombre
+        if vulnerabilidad_real is not None and id_h3 in vulnerabilidad_real:
+            vulnerabilidad = vulnerabilidad_real[id_h3]["vulnerabilidad"]
+            infraestructura = vulnerabilidad_real[id_h3]["infraestructura"]
         celdas.append(
             Celda(
                 id_h3=id_h3,
-                nombre_zona=_nombre_zona(lat, lon, semilla.get("barrios", []), indice),
+                nombre_zona=nombre,
                 poblacion_por_hora=_poblacion_por_hora(noche, tipo, poblacion),
-                vulnerabilidad=round(azar.uniform(minimo, maximo), 2),
+                vulnerabilidad=vulnerabilidad,
                 infraestructura_critica=infraestructura,
                 tipos_construccion=_construccion(zonas["construccion"][tipo], azar),
             )
@@ -107,10 +136,16 @@ def generar_celdas(ciudad: Ciudad, semilla: dict[str, Any], resolucion: int) -> 
 
 
 def cargar_semilla(
-    sesion: Session, ciudad: Ciudad, semilla: dict[str, Any], resolucion: int
+    sesion: Session,
+    ciudad: Ciudad,
+    semilla: dict[str, Any],
+    resolucion: int,
+    poblacion_real: dict[str, dict[str, Any]] | None = None,
+    vulnerabilidad_real: dict[str, dict[str, Any]] | None = None,
 ) -> tuple[int, int]:
     existentes = set(sesion.scalars(select(Celda.id_h3)))
-    nuevas = [c for c in generar_celdas(ciudad, semilla, resolucion) if c.id_h3 not in existentes]
+    generadas = generar_celdas(ciudad, semilla, resolucion, poblacion_real, vulnerabilidad_real)
+    nuevas = [c for c in generadas if c.id_h3 not in existentes]
     sesion.add_all(nuevas)
     nombres = set(sesion.scalars(select(Equipo.nombre)))
     equipos = [
@@ -146,8 +181,18 @@ def main() -> None:
 
         Base.metadata.drop_all(motor)
     crear_tablas(motor)
+    poblacion_real = leer_datos_reales(directorio, config.preparacion.archivo_poblacion)
+    vulnerabilidad_real = leer_datos_reales(directorio, config.preparacion.archivo_vulnerabilidad)
+    print(
+        "Población: "
+        + ("real (Kontur + OSM)" if poblacion_real else "sintética (semilla.toml)")
+        + " · vulnerabilidad: "
+        + ("real (OSM)" if vulnerabilidad_real else "sintética (semilla.toml)")
+    )
     with fabrica_sesiones()() as sesion:
-        celdas, equipos = cargar_semilla(sesion, ciudad, semilla, config.h3.resolucion)
+        celdas, equipos = cargar_semilla(
+            sesion, ciudad, semilla, config.h3.resolucion, poblacion_real, vulnerabilidad_real
+        )
         total = len(list(sesion.scalars(select(Celda.id_h3))))
     print(f"{ciudad.nombre} ({ciudad.pais}): {celdas} celdas y {equipos} equipos nuevos")
     print(f"Base de datos: {resolver_ruta(config.servidor.base_datos)} ({total} celdas)")
