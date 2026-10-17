@@ -142,6 +142,10 @@ async def ws_movil(
     try:
         if alerta is not None:
             await ws.send_json({"tipo": "alerta", "datos": alerta})
+        else:
+            # Un celular que estuvo desconectado al cerrarse el evento no recibió el aviso:
+            # así deja de mostrar una alerta que ya terminó
+            await ws.send_json({"tipo": "sin_alerta_activa", "datos": {}})
         await _mantener_abierta(ws)
     except WebSocketDisconnect:
         pass

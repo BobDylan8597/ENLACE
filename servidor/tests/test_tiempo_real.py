@@ -46,6 +46,12 @@ def test_movil_recibe_alerta_firmada_al_emitir_y_al_conectarse_tarde(entorno: En
         assert verificar(_esperar(tarde, "alerta"), clave)
 
 
+def test_movil_sin_alerta_activa_recibe_el_aviso(entorno: Entorno) -> None:
+    """Quien estuvo desconectado al cerrarse el evento deja de mostrar la alerta vieja."""
+    with entorno.cliente.websocket_connect("/ws/movil/telefono-1") as ws:
+        assert ws.receive_json() == {"tipo": "sin_alerta_activa", "datos": {}}
+
+
 def test_unidad_y_ciudadano_reciben_la_asignacion(entorno: Entorno) -> None:
     entorno.cliente.post("/eventos", json=SISMO, headers=ADMIN)
     pedido = _ayuda(id_h3=None, lat=12.74, lon=-86.25, atrapados=2)
