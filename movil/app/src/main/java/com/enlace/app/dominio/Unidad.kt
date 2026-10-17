@@ -48,6 +48,8 @@ data class AsignacionUnidad(
     val ruta: String? = null,
     /** La unidad ya abrió el aviso: no se vuelve a abrir solo. */
     val vista: Boolean = false,
+    /** B6: por qué cambió la ruta (p. ej. un bloqueo confirmado), hasta que la unidad lo lee. */
+    val aviso: String? = null,
 )
 
 /** Niveles de daño de la evaluación de una brigada (servidor: NivelDano). */
@@ -195,4 +197,12 @@ interface UnidadRepositorio {
     suspend fun evaluar(datos: DatosEvaluacion): ResultadoEnvio
 
     suspend fun panorama(): Result<PanoramaUnidad>
+
+    /** Mientras navega, la unidad informa dónde está: el servidor recalcula rutas desde ahí. */
+    suspend fun informarPosicion(punto: Punto): Boolean
+
+    suspend fun descartarAviso()
+
+    /** La unidad salió de la ruta: se pide una nueva desde donde está (evitando los bloqueos). */
+    suspend fun recalcularRuta(desde: Punto): Boolean
 }

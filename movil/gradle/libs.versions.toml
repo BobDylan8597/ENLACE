@@ -20,6 +20,7 @@ tink = "1.23.0"
 location = "21.4.0"
 room = "2.8.5"
 nearby = "19.5.1"
+maplibre = "13.6.1"
 work = "2.12.0"
 
 [libraries]
@@ -53,6 +54,7 @@ hilt-work = { module = "androidx.hilt:hilt-work", version.ref = "hiltAndroidx" }
 hilt-compiler-androidx = { module = "androidx.hilt:hilt-compiler", version.ref = "hiltAndroidx" }
 play-services-nearby = { module = "com.google.android.gms:play-services-nearby", version.ref = "nearby" }
 play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "location" }
+maplibre = { module = "org.maplibre.gl:android-sdk", version.ref = "maplibre" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

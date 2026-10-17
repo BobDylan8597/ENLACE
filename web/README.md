@@ -50,3 +50,10 @@ Todo se actualiza solo por WebSocket (`/ws/admin`); el indicador de conexión es
 
 Los identificadores se generan con `crypto.getRandomValues`: `crypto.randomUUID` no existe cuando
 la web se abre por `http://` con la IP de la laptop, que es como se usa en la demo.
+
+## Estilo del mapa de la app Android
+
+`node scripts/estilo_movil.mjs` genera con `@protomaps/basemaps` el estilo de MapLibre (español y
+portugués) y descarga sus fuentes e íconos a `movil/app/src/main/assets/mapa`. Se corre una vez,
+con internet; el resultado se sube al repositorio y sirve para cualquier ciudad.
+

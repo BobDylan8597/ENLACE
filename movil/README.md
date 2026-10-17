@@ -51,4 +51,21 @@ local (`res/xml/seguridad_red.xml`); en producción, solo `https`.
 - **Mula de datos:** lo que llega por la red cercana entra al Outbox y se entrega en lote apenas
   hay conexión; B2 muestra cuántos mensajes lleva.
 
+## Mapas sin internet (paso 4.8)
+
+- **Mapa de la ciudad:** el servicio descarga `/mapa/base.pmtiles` del servidor ENLACE apenas hay
+  conexión y lo guarda en el celular; después se usa sin ninguna red. Al cambiar de servidor (otra
+  ciudad) se descarta y se baja el nuevo.
+- **Estilo, fuentes e íconos** van en el APK (`assets/mapa`, menos de 1 MB) y sirven para cualquier
+  ciudad. Se generan una vez con `node web/scripts/estilo_movil.mjs` (mismo diseño que la web).
+- **MapLibre Native** lee el PMTiles local (`pmtiles://file://…`). Las capas de ENLACE salen de
+  GeoJSON armado en `presentacion/mapa/CapasMapa.kt` (probado sin Android).
+- Pantallas: U6 mapa ciudadano (zona afectada de la alerta firmada, bloqueos y "estás aquí", que
+  no se envía); mapa de la brigada (población crítica, personas sin confirmar, pedidos, bloqueos);
+  B5 navegación guiada con la instrucción que toca según el avance; B6 aviso de ruta recalculada.
+- La unidad informa su posición solo mientras navega (cada 75 m) y, si sale de la ruta, pide una
+  nueva desde donde está (como mucho cada 30 s).
+- Android 14+: para que la asignación se abra sobre la pantalla bloqueada hay que permitir los
+  avisos a pantalla completa (B2 lo pide). Reinstalar la app quita ese permiso.
+
 Las versiones están en `gradle/libs.versions.toml`.

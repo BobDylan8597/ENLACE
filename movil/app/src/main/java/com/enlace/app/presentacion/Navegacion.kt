@@ -34,9 +34,12 @@ import com.enlace.app.presentacion.unidad.PantallaAsignacion
 import com.enlace.app.presentacion.unidad.PantallaAtendida
 import com.enlace.app.presentacion.unidad.PantallaEvaluacion
 import com.enlace.app.presentacion.unidad.PantallaInicioUnidad
+import com.enlace.app.presentacion.unidad.PantallaMapaUnidad
+import com.enlace.app.presentacion.unidad.PantallaNavegacion
 import com.enlace.app.presentacion.usuario.PantallaAlerta
 import com.enlace.app.presentacion.usuario.PantallaBloqueo
 import com.enlace.app.presentacion.usuario.PantallaInicio
+import com.enlace.app.presentacion.usuario.PantallaMapaUsuario
 import com.enlace.app.presentacion.usuario.PantallaPedirAyuda
 import com.enlace.app.presentacion.usuario.PantallaPerfil
 import com.enlace.app.presentacion.usuario.PantallaSeguimiento
@@ -66,6 +69,9 @@ import javax.inject.Inject
 @Serializable private data object RutaAsignacion
 @Serializable private data object RutaEvaluacion
 @Serializable private data object RutaAtendida
+@Serializable private data object RutaMapaUnidad
+@Serializable private data object RutaNavegacion
+@Serializable private data object RutaMapaUsuario
 
 @HiltViewModel
 class ArranqueViewModel @Inject constructor(
@@ -163,6 +169,7 @@ fun NavegacionEnlace(arranque: ArranqueViewModel = hiltViewModel()) {
                     alReportarBloqueo = { nav.navigate(RutaBloqueo) },
                     alVerSeguimiento = { nav.navigate(RutaSeguimiento) },
                     alModoUnidad = { nav.navigate(RutaActivarUnidad) },
+                    alVerMapa = { nav.navigate(RutaMapaUsuario) },
                 )
             }
             composable<RutaPerfil> {
@@ -201,16 +208,31 @@ fun NavegacionEnlace(arranque: ArranqueViewModel = hiltViewModel()) {
                 PantallaInicioUnidad(
                     alAbrirAsignacion = { nav.navigate(RutaAsignacion) },
                     alEvaluar = { nav.navigate(RutaEvaluacion) },
+                    alVerMapa = { nav.navigate(RutaMapaUnidad) },
                     alAbrirConexion = { nav.navigate(RutaConfiguracion) },
                     alSalir = { nav.avanzarA(RutaModo) },
                 )
             }
             composable<RutaAsignacion> {
                 PantallaAsignacion(
+                    alIrAhora = { nav.navigate(RutaNavegacion) },
                     alEvaluar = { nav.navigate(RutaEvaluacion) },
                     alMarcarAtendida = { nav.navigate(RutaAtendida) },
                     alVolver = { nav.popBackStack(RutaInicioUnidad, inclusive = false) },
                 )
+            }
+            composable<RutaNavegacion> {
+                PantallaNavegacion(
+                    alEvaluar = { nav.navigate(RutaEvaluacion) },
+                    alMarcarAtendida = { nav.navigate(RutaAtendida) },
+                    alVolver = { nav.popBackStack() },
+                )
+            }
+            composable<RutaMapaUnidad> {
+                PantallaMapaUnidad(alVolver = { nav.popBackStack() })
+            }
+            composable<RutaMapaUsuario> {
+                PantallaMapaUsuario(alVolver = { nav.popBackStack() })
             }
             composable<RutaEvaluacion> {
                 PantallaEvaluacion(alVolver = { nav.popBackStack() })

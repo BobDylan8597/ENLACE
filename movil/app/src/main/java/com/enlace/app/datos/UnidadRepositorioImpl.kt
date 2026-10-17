@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.enlace.app.datos.remoto.AvisoAsignacionDto
 import com.enlace.app.datos.remoto.FabricaApi
+import com.enlace.app.datos.remoto.PuntoDto
 import com.enlace.app.datos.remoto.ReporteDto
 import com.enlace.app.dominio.AsignacionUnidad
 import com.enlace.app.dominio.Atender
@@ -92,6 +93,7 @@ class UnidadRepositorioImpl @Inject constructor(
     suspend fun recibirAviso(aviso: AvisoAsignacionDto): AsignacionUnidad? {
         val actual = asignacion.first()
         val a = aviso.asignacion
+        val destino = aviso.destino ?: return null
         // Terminada (hora_fin) o rechazada: si era la de este equipo, ya no está en curso
         if (!enCurso(a.decision, a.horaFin)) {
             if (actual?.id == a.id) preferencias.edit { it.remove(ASIGNACION) }
@@ -104,8 +106,8 @@ class UnidadRepositorioImpl @Inject constructor(
             nombreZona = aviso.nombreZona,
             motivo = a.motivo,
             minutos = a.tiempoEstimadoMin,
-            destinoLat = aviso.destino.lat,
-            destinoLon = aviso.destino.lon,
+            destinoLat = destino.lat,
+            destinoLon = destino.lon,
             pedido = aviso.pedido?.let {
                 Atender(it.personas, it.atrapados, it.heridos, it.vulnerables, it.necesidades)
             },
@@ -127,7 +129,38 @@ class UnidadRepositorioImpl @Inject constructor(
     suspend fun actualizarRuta(aviso: AvisoAsignacionDto) {
         val actual = asignacion.first() ?: return
         if (actual.id != aviso.asignacion.id) return
-        guardar(actual.copy(ruta = aviso.asignacion.ruta?.toString(), minutos = aviso.asignacion.tiempoEstimadoMin))
+        guardar(
+            actual.copy(
+                ruta = aviso.asignacion.ruta?.toString(),
+                minutos = aviso.asignacion.tiempoEstimadoMin,
+                aviso = aviso.motivo,
+            ),
+        )
+    }
+
+    override suspend fun informarPosicion(punto: Punto): Boolean {
+        val equipo = credenciales.equipo.first() ?: return false
+        val clave = credenciales.clave() ?: return false
+        val direccion = conexion.direccion.first() ?: return false
+        return runCatching {
+            fabricaApi.para(direccion).ubicacionEquipo(equipo.id, PuntoDto(punto.lat, punto.lon), clave)
+        }.isSuccess
+    }
+
+    override suspend fun recalcularRuta(desde: Punto): Boolean {
+        val actual = asignacion.first() ?: return false
+        val direccion = conexion.direccion.first() ?: return false
+        val ruta = runCatching {
+            fabricaApi.para(direccion).ruta("${desde.lat},${desde.lon}", "${actual.destinoLat},${actual.destinoLon}")
+        }.getOrNull() ?: return false
+        // Solo si sigue siendo la misma asignación (pudo cerrarse mientras tanto)
+        val vigente = asignacion.first()?.takeIf { it.id == actual.id } ?: return false
+        guardar(vigente.copy(ruta = ruta.toString()))
+        return true
+    }
+
+    override suspend fun descartarAviso() {
+        asignacion.first()?.let { guardar(it.copy(aviso = null)) }
     }
 
     override suspend fun marcarVista(id: Int) {

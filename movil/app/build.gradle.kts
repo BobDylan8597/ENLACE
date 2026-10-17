@@ -61,6 +61,7 @@ dependencies {
     implementation(libs.tink)
     implementation(libs.play.services.location)
     implementation(libs.play.services.nearby)
+    implementation(libs.maplibre)
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     ksp(libs.room.compiler)

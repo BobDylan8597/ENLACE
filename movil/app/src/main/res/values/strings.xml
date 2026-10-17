@@ -244,4 +244,32 @@
     <string name="atendida_sin_conexion">No hay conexión con el centro. Intenta de nuevo en un momento.</string>
     <string name="atendida_ok">Zona atendida</string>
     <string name="atendida_ok_detalle">Tu equipo quedó disponible.</string>
+
+    <!-- Mapas y navegación -->
+    <string name="mapa_ver">Ver mapa</string>
+    <string name="mapa_no_disponible">El mapa de la ciudad todavía no se descargó. Se descarga solo la próxima vez que haya conexión con el centro de coordinación.</string>
+    <string name="mapa_privacidad">Tu posición solo se muestra en tu celular: no se envía a nadie.</string>
+    <string name="leyenda_ayuda">Pidió ayuda</string>
+    <string name="leyenda_sin_respuesta">Sin respuesta</string>
+    <string name="leyenda_vulnerables">Hogar con atención especial</string>
+    <string name="leyenda_criticos">Población crítica</string>
+    <string name="leyenda_bloqueo">Calle bloqueada</string>
+    <string name="leyenda_bloqueo_sin_confirmar">Bloqueo sin confirmar</string>
+    <string name="leyenda_tu_equipo">Tu equipo</string>
+    <string name="leyenda_zona_afectada">Zona afectada</string>
+    <string name="leyenda_tu_posicion">Estás aquí</string>
+    <string name="asignacion_ir_ahora">Ir ahora</string>
+    <string name="navegacion_llegaste">Llegaste al destino</string>
+    <string name="navegacion_sin_ruta">Sin ruta por calles</string>
+    <string name="navegacion_sin_ruta_detalle">Ve hacia el punto rojo: no se encontró un camino por calles con los bloqueos actuales.</string>
+    <string name="navegacion_buscando_posicion">Buscando tu posición…</string>
+    <string name="navegacion_fuera_de_ruta">Estás fuera de la ruta</string>
+    <string name="navegacion_linea_recta">El destino está a %1$s en línea recta. Vuelve a la ruta azul.</string>
+    <string name="navegacion_despues">En %1$s: %2$s</string>
+    <string name="navegacion_restante">Faltan %1$s · unos %2$d min</string>
+    <string name="navegacion_ver_asignacion">Ver la asignación</string>
+    <string name="ruta_recalculada">Ruta recalculada</string>
+    <string name="entendido">Entendido</string>
+    <string name="pantalla_completa_titulo">Permite los avisos a pantalla completa</string>
+    <string name="pantalla_completa_detalle">Así una asignación nueva se abre aunque el celular esté bloqueado. Toca para activarlo.</string>
 </resources>

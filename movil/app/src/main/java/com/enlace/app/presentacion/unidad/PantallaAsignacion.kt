@@ -66,6 +66,7 @@ class AsignacionViewModel @Inject constructor(
 /** B3: asignación para la unidad, a pantalla completa: adónde ir, qué atender y a quién llamar. */
 @Composable
 fun PantallaAsignacion(
+    alIrAhora: () -> Unit,
     alEvaluar: () -> Unit,
     alMarcarAtendida: () -> Unit,
     alVolver: () -> Unit,
@@ -137,7 +138,10 @@ fun PantallaAsignacion(
                 }
                 Text(stringResource(R.string.asignacion_motivo), style = MaterialTheme.typography.titleMedium)
                 Text(a.motivo, style = MaterialTheme.typography.bodyLarge)
-                BotonPrincipal(stringResource(R.string.evaluacion_boton), alEvaluar, color = ColoresEnlace.accion)
+                BotonPrincipal(stringResource(R.string.asignacion_ir_ahora), alIrAhora, color = ColoresEnlace.accion)
+                OutlinedButton(onClick = alEvaluar, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                    Text(stringResource(R.string.evaluacion_boton), style = MaterialTheme.typography.titleMedium)
+                }
                 BotonPrincipal(stringResource(R.string.atendida_boton), alMarcarAtendida, color = ColoresEnlace.estable)
                 TextButton(onClick = alVolver, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
                     Text(stringResource(R.string.envio_volver_inicio))

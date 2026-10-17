@@ -132,6 +132,13 @@ class NotificadorAlertas @Inject constructor(@param:ApplicationContext private v
         NotificationManagerCompat.from(contexto).notify(ID_ASIGNACION, notificacion)
     }
 
+    /**
+     * Android 14+ solo deja abrir avisos a pantalla completa a las apps que la persona autoriza
+     * (salvo llamadas y alarmas). Sin el permiso, la asignación llega como notificación normal.
+     */
+    fun puedePantallaCompleta(): Boolean = Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE ||
+        contexto.getSystemService(NotificationManager::class.java).canUseFullScreenIntent()
+
     fun quitarAsignacion() = NotificationManagerCompat.from(contexto).cancel(ID_ASIGNACION)
 
     private fun puedeNotificar(): Boolean = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||

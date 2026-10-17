@@ -12,6 +12,7 @@ import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import com.enlace.app.datos.CredencialesBrigada
 import com.enlace.app.datos.GestorAlertas
+import com.enlace.app.datos.MapaLocal
 import com.enlace.app.datos.ID_NOTIFICACION_SERVICIO
 import com.enlace.app.datos.NotificadorAlertas
 import com.enlace.app.datos.Outbox
@@ -72,6 +73,7 @@ class ServicioAlertas : Service() {
     @Inject lateinit var ajustes: AjustesRepositorio
     @Inject lateinit var unidad: UnidadRepositorioImpl
     @Inject lateinit var credenciales: CredencialesBrigada
+    @Inject lateinit var mapa: MapaLocal
     @Inject lateinit var http: OkHttpClient
     @Inject lateinit var json: Json
 
@@ -148,6 +150,8 @@ class ServicioAlertas : Service() {
                         alcance.launch {
                             outbox.enviarPendientes()
                             seguimiento.actualizar()
+                            // El mapa de la ciudad se guarda apenas hay servidor: después sirve sin red
+                            mapa.asegurar()
                         }
                     }
 

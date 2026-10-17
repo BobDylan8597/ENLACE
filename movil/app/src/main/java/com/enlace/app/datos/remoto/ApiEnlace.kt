@@ -4,10 +4,13 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 import retrofit2.http.Body
+import okhttp3.ResponseBody
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.http.Query
+import retrofit2.http.Streaming
 
 /** Rutas del servidor ENLACE que usa la app (servidor/README.md). */
 interface ApiEnlace {
@@ -16,6 +19,25 @@ interface ApiEnlace {
 
     @GET("ciudad")
     suspend fun ciudad(): CiudadDto
+
+    /** Mapa vectorial de la ciudad (PMTiles), para guardarlo en el celular. */
+    @Streaming
+    @GET("mapa/base.pmtiles")
+    suspend fun mapa(): ResponseBody
+
+    @GET("bloqueos")
+    suspend fun bloqueos(): List<BloqueoMapaDto>
+
+    /** Ruta más rápida evitando bloqueos (GeoJSON con instrucciones). origen/destino: "lat,lon". */
+    @GET("rutas")
+    suspend fun ruta(@Query("origen") origen: String, @Query("destino") destino: String): JsonObject
+
+    @POST("equipos/{id}/ubicacion")
+    suspend fun ubicacionEquipo(
+        @Path("id") idEquipo: Int,
+        @Body punto: PuntoDto,
+        @Header("X-Clave-Brigada") clave: String,
+    )
 
     @GET("alertas/clave-publica")
     suspend fun clavePublica(): ClavePublicaDto
@@ -68,7 +90,7 @@ data class SeguimientoDto(
 data class SaludDto(val estado: String, val ciudad: String, val pais: String)
 
 @Serializable
-data class CiudadDto(@SerialName("numero_sms") val numeroSms: String? = null)
+data class CiudadDto(@SerialName("numero_sms") val numeroSms: String? = null, val idioma: String? = null)
 
 @Serializable
 data class ClavePublicaDto(val algoritmo: String, @SerialName("clave_publica") val clavePublica: String)
@@ -148,6 +170,9 @@ data class EstadoBloqueoDto(val id: Int, val estado: String, val confirmaciones:
 @Serializable
 data class CambioBloqueoDto(val bloqueo: EstadoBloqueoDto, @SerialName("rutas_recalculadas") val rutasRecalculadas: Int)
 
+@Serializable
+data class BloqueoMapaDto(val lat: Double, val lon: Double, val estado: String, val alcance: String = "total")
+
 // ── Modo unidad ──
 
 @Serializable
@@ -200,10 +225,14 @@ data class PedidoMapaDto(
 @Serializable
 data class AvisoAsignacionDto(
     val asignacion: AsignacionDto,
-    val destino: PuntoDto,
+    /** En "ruta_recalculada" no viene: el destino no cambia. */
+    val destino: PuntoDto? = null,
     @SerialName("nombre_zona") val nombreZona: String = "",
     val pedido: AtenderDto? = null,
     val contacto: IdentidadDto? = null,
+    /** Solo en "ruta_recalculada": por qué cambió y si ya no hay forma de llegar. */
+    val motivo: String? = null,
+    @SerialName("sin_ruta") val sinRuta: Boolean = false,
 )
 
 @Serializable

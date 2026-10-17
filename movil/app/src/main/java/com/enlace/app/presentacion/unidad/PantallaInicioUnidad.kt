@@ -1,7 +1,10 @@
 package com.enlace.app.presentacion.unidad
 
 import android.Manifest
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
+import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -36,10 +39,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.enlace.app.R
 import com.enlace.app.datos.GestorAlertas
+import com.enlace.app.datos.NotificadorAlertas
 import com.enlace.app.datos.nearby.RedCercana
 import com.enlace.app.datos.textoAlerta
 import com.enlace.app.dominio.AlertaVigente
@@ -75,6 +80,7 @@ data class UiPanorama(val cargando: Boolean = false, val datos: PanoramaUnidad? 
 class InicioUnidadViewModel @Inject constructor(
     private val unidad: UnidadRepositorio,
     private val ubicacion: ProveedorUbicacion,
+    private val notificador: NotificadorAlertas,
     monitor: MonitorConexion,
     gestor: GestorAlertas,
     red: RedCercana,
@@ -93,6 +99,15 @@ class InicioUnidadViewModel @Inject constructor(
     val asignacion: StateFlow<AsignacionUnidad?> = observar(unidad.asignacion, null)
     val alerta: StateFlow<AlertaVigente?> = observar(gestor.vigente, null)
     val mensajes: StateFlow<Int> = observar(unidad.mensajesQueLleva, 0)
+
+    private val _pantallaCompleta = MutableStateFlow(true)
+
+    /** Falta el permiso para abrir la asignación sobre la pantalla bloqueada (Android 14+). */
+    val pantallaCompleta: StateFlow<Boolean> = _pantallaCompleta.asStateFlow()
+
+    fun revisarPantallaCompleta() {
+        _pantallaCompleta.value = notificador.puedePantallaCompleta()
+    }
 
     private val _panorama = MutableStateFlow(UiPanorama())
     val panorama: StateFlow<UiPanorama> = _panorama.asStateFlow()
@@ -116,11 +131,12 @@ class InicioUnidadViewModel @Inject constructor(
     }
 }
 
-/** B2: inicio de la unidad. El mapa con estas mismas capas llega con la navegación (paso 4.8). */
+/** B2: inicio de la unidad. "Ver mapa" muestra estas mismas capas sobre el mapa de la ciudad. */
 @Composable
 fun PantallaInicioUnidad(
     alAbrirAsignacion: () -> Unit,
     alEvaluar: () -> Unit,
+    alVerMapa: () -> Unit,
     alAbrirConexion: () -> Unit,
     alSalir: () -> Unit,
     viewModel: InicioUnidadViewModel = hiltViewModel(),
@@ -131,6 +147,12 @@ fun PantallaInicioUnidad(
     val alerta by viewModel.alerta.collectAsStateWithLifecycle()
     val mensajes by viewModel.mensajes.collectAsStateWithLifecycle()
     val panorama by viewModel.panorama.collectAsStateWithLifecycle()
+    val pantallaCompleta by viewModel.pantallaCompleta.collectAsStateWithLifecycle()
+    // Se revisa al volver de los ajustes del sistema
+    LifecycleResumeEffect(Unit) {
+        viewModel.revisarPantallaCompleta()
+        onPauseOrDispose { }
+    }
     val contexto = LocalContext.current
     val pedirPermisos = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
         ServicioAlertas.iniciar(contexto)
@@ -159,6 +181,24 @@ fun PantallaInicioUnidad(
                 }
             }
             item { TarjetaEquipo(equipo, asignacion) }
+            if (!pantallaCompleta && Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                item {
+                    Tarjeta(
+                        color = ColoresEnlace.explorar,
+                        icono = R.drawable.ic_alerta,
+                        titulo = stringResource(R.string.pantalla_completa_titulo),
+                        detalle = stringResource(R.string.pantalla_completa_detalle),
+                        alTocar = {
+                            contexto.startActivity(
+                                Intent(
+                                    Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT,
+                                    Uri.parse("package:${contexto.packageName}"),
+                                ),
+                            )
+                        },
+                    )
+                }
+            }
             alerta?.let { activa ->
                 item {
                     Tarjeta(ColoresEnlace.actuar, R.drawable.ic_alerta, textoAlerta(contexto, activa.alerta), null)
@@ -177,6 +217,14 @@ fun PantallaInicioUnidad(
             }
             item { FilaMula(mensajes) }
             item {
+                OutlinedButton(onClick = alVerMapa, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                    Icon(painterResource(R.drawable.ic_ubicacion), contentDescription = null, modifier = Modifier.size(20.dp))
+                    Text(
+                        stringResource(R.string.mapa_ver),
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(start = 8.dp),
+                    )
+                }
                 OutlinedButton(onClick = alEvaluar, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
                     Text(stringResource(R.string.evaluacion_boton), style = MaterialTheme.typography.titleMedium)
                 }

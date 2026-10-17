@@ -65,6 +65,8 @@ class ConexionRepositorioImpl @Inject constructor(
             if (numeroSms != null) it[CLAVE_NUMERO_SMS] = numeroSms else it.remove(CLAVE_NUMERO_SMS)
         }
         celdasEnMemoria = null
+        // Si el servidor es otro (otra ciudad), el mapa guardado ya no sirve: se baja de nuevo
+        File(contexto.filesDir, ARCHIVO_MAPA).delete()
     }
 
     override suspend fun clavePublica(): String? = preferencias.data.first()[CLAVE_PUBLICA]
