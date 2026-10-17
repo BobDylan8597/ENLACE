@@ -5,7 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.enlace.app.presentacion.NavegacionEnlace
-import com.enlace.app.presentacion.tema.TemaEnlace
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -14,9 +13,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            TemaEnlace {
-                NavegacionEnlace()
-            }
+            NavegacionEnlace() // aplica el tema: oscuro durante una alerta
         }
     }
 }

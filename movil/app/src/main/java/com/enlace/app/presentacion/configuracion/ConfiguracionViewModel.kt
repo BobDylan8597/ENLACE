@@ -19,6 +19,8 @@ sealed interface EstadoPrueba {
     data object Probando : EstadoPrueba
     data object DireccionInvalida : EstadoPrueba
     data object SinRespuesta : EstadoPrueba
+    data object Preparando : EstadoPrueba
+    data object SinDatosLocales : EstadoPrueba
     data class Conectado(val info: InfoServidor) : EstadoPrueba
 }
 
@@ -47,7 +49,10 @@ class ConfiguracionViewModel @Inject constructor(
         _ui.update { UiConfiguracion(direccion = texto) }
     }
 
-    /** Prueba la conexión y, si responde, guarda la dirección para el resto de la app. */
+    /**
+     * Prueba la conexión y, si responde, descarga lo necesario para funcionar sin conexión
+     * (clave de las alertas y forma de las celdas) y guarda la dirección.
+     */
     fun probar() {
         val direccion = DireccionServidor.normalizar(_ui.value.direccion)
         if (direccion == null) {
@@ -56,12 +61,18 @@ class ConfiguracionViewModel @Inject constructor(
         }
         _ui.update { it.copy(prueba = EstadoPrueba.Probando) }
         viewModelScope.launch {
-            val resultado = conexion.probar(direccion)
-            val info = resultado.getOrNull()
-            if (info != null) conexion.guardarDireccion(direccion)
-            _ui.update {
-                it.copy(prueba = info?.let(EstadoPrueba::Conectado) ?: EstadoPrueba.SinRespuesta)
+            val info = conexion.probar(direccion).getOrNull()
+            if (info == null) {
+                _ui.update { it.copy(prueba = EstadoPrueba.SinRespuesta) }
+                return@launch
             }
+            _ui.update { it.copy(prueba = EstadoPrueba.Preparando) }
+            if (conexion.prepararDatosLocales(direccion).isFailure) {
+                _ui.update { it.copy(prueba = EstadoPrueba.SinDatosLocales) }
+                return@launch
+            }
+            conexion.guardarDireccion(direccion)
+            _ui.update { it.copy(prueba = EstadoPrueba.Conectado(info)) }
         }
     }
 }

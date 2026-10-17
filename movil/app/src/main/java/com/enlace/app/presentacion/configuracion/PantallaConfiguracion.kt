@@ -55,7 +55,7 @@ fun PantallaConfiguracion(
             )
             Button(
                 onClick = viewModel::probar,
-                enabled = ui.prueba != EstadoPrueba.Probando,
+                enabled = ui.prueba != EstadoPrueba.Probando && ui.prueba != EstadoPrueba.Preparando,
                 modifier = Modifier.fillMaxWidth().heightIn(min = ALTO_BOTON),
             ) {
                 Text(
@@ -83,6 +83,10 @@ private fun ResultadoPrueba(prueba: EstadoPrueba) {
             stringResource(R.string.configuracion_direccion_invalida) to ColoresEnlace.actuar
         EstadoPrueba.SinRespuesta ->
             stringResource(R.string.configuracion_sin_respuesta) to ColoresEnlace.actuar
+        EstadoPrueba.SinDatosLocales ->
+            stringResource(R.string.configuracion_sin_datos) to ColoresEnlace.actuar
+        EstadoPrueba.Preparando ->
+            stringResource(R.string.configuracion_preparando) to ColoresEnlace.sinDatos
         EstadoPrueba.SinProbar, EstadoPrueba.Probando -> return
     }
     Text(texto, color = color, style = MaterialTheme.typography.bodyLarge)

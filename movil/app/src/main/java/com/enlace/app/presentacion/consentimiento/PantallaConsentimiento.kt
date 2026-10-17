@@ -1,5 +1,8 @@
 package com.enlace.app.presentacion.consentimiento
 
+import android.Manifest
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -65,6 +68,20 @@ fun PantallaConsentimiento(alGuardar: () -> Unit, viewModel: ConsentimientoViewM
     // Sin opción marcada de antemano: la persona elige de forma explícita
     var elegido by rememberSaveable { mutableStateOf<Consentimiento?>(null) }
     LaunchedEffect(Unit) { viewModel.actual()?.let { elegido = it } }
+    // Se guarda la elección aunque se niegue el permiso: igual se podrá pedir ayuda a mano
+    val pedirUbicacion = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+        elegido?.let { viewModel.guardar(it, alGuardar) }
+    }
+    fun continuar() {
+        val opcion = elegido ?: return
+        if (opcion == Consentimiento.NO_COMPARTIR) {
+            viewModel.guardar(opcion, alGuardar)
+        } else {
+            pedirUbicacion.launch(
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION),
+            )
+        }
+    }
 
     Scaffold { relleno ->
         Column(
@@ -89,7 +106,7 @@ fun PantallaConsentimiento(alGuardar: () -> Unit, viewModel: ConsentimientoViewM
             Text(stringResource(R.string.consentimiento_nota), style = MaterialTheme.typography.bodyMedium)
             BotonPrincipal(
                 texto = stringResource(R.string.continuar),
-                alTocar = { elegido?.let { viewModel.guardar(it, alGuardar) } },
+                alTocar = ::continuar,
                 habilitado = elegido != null,
             )
         }

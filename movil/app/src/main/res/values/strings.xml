@@ -55,4 +55,34 @@
     <string name="inicio_perfil">Mi perfil</string>
     <string name="inicio_privacidad">Privacidad</string>
     <string name="inicio_servidor">Conexión</string>
+    <string name="inicio_alerta_activa">Hay una alerta activa</string>
+    <string name="inicio_ver_alerta">Ver alerta</string>
+    <string name="configuracion_preparando">Preparando datos para usar sin conexión…</string>
+    <string name="configuracion_sin_datos">No se pudieron descargar los datos de la zona. Prueba de nuevo.</string>
+
+    <string name="canal_alertas">Alertas oficiales</string>
+    <string name="canal_servicio">Conexión con ENLACE</string>
+    <string name="servicio_titulo">ENLACE atento a alertas</string>
+    <string name="servicio_texto">Te avisará si se emite una alerta oficial.</string>
+
+    <string name="evento_sismo">Sismo</string>
+    <string name="evento_inundacion">Inundación</string>
+    <string name="evento_huracan">Huracán</string>
+    <string name="evento_otro">Emergencia</string>
+    <string name="alerta_titulo">Alerta oficial: %1$s</string>
+    <string name="alerta_notificacion_texto">Toca para decir si estás bien o pedir ayuda.</string>
+    <string name="alerta_verificada">Alerta verificada</string>
+    <string name="alerta_consejo">Mantén la calma. Si estás a salvo, avísalo. Si necesitas ayuda, pídela aquí.</string>
+    <string name="alerta_estoy_bien">Estoy bien</string>
+    <string name="alerta_gracias">Gracias. Avisaste que estás bien.</string>
+    <string name="alerta_preguntar_zona">¿Enviar tu zona aproximada al centro de coordinación?</string>
+    <string name="alerta_enviar_zona">Enviar mi zona</string>
+    <string name="alerta_no_enviar_zona">No enviar</string>
+    <string name="zona_enviando">Enviando tu zona…</string>
+    <string name="zona_enviada">Tu zona aproximada fue enviada</string>
+    <string name="zona_no_compartida">No se comparte tu zona</string>
+    <string name="zona_sin_ubicacion">No se pudo saber tu ubicación</string>
+    <string name="zona_fuera">Estás fuera de la zona de la alerta</string>
+    <string name="zona_sin_conexion">Sin conexión: se intentará de nuevo</string>
+    <string name="permiso_ubicacion_explicacion">Para enviar tu zona durante una alerta, ENLACE necesita permiso de ubicación. Solo la consulta al recibir una alerta.</string>
 </resources>
