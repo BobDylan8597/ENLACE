@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.api.dependencias import Admin, AhoraDep, CiudadDep, ConfigDep, SesionDep
-from app.api.vistas import asignacion_salida, resumen_celdas
+from app.api.vistas import asignacion_salida, identidades_de_ayuda, resumen_celdas
 from app.eventos.bus import Tema, bus
 from app.modelos.enums import DecisionAsignacion, EstadoEquipo, EstadoReporte
 from app.modelos.esquemas import AsignacionSalida, DecisionEntrada
@@ -35,6 +35,27 @@ def _asignacion_o_404(sesion: Session, id_asignacion: int) -> Asignacion:
     if asignacion is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Asignación no encontrada")
     return asignacion
+
+
+def _publicar_asignacion(sesion: Session, salida: AsignacionSalida) -> None:
+    """Para la unidad: destino y, si es un pedido de ayuda, el punto exacto de la persona.
+    Para el ciudadano (por su id_anonimo): el aviso de ayuda en camino."""
+    datos: dict[str, object] = {
+        "asignacion": salida.model_dump(mode="json"),
+        "destino": dict(zip(("lat", "lon"), centro_celda(salida.id_h3))),
+        "id_anonimo": None,
+        "ubicacion": None,
+    }
+    if salida.id_reporte is not None:
+        reporte = sesion.get_one(Reporte, salida.id_reporte)
+        datos["id_anonimo"] = reporte.id_anonimo
+        identidad = identidades_de_ayuda(sesion, [reporte]).get(
+            (reporte.id_anonimo, reporte.id_evento)
+        )
+        if identidad is not None:
+            datos["ubicacion"] = {"lat": identidad.lat, "lon": identidad.lon}
+            datos["destino"] = datos["ubicacion"]
+    bus.publicar(Tema.asignacion_cambiada, datos)
 
 
 def _publicar_recomendaciones(sesion: Session, recomendaciones: list[Asignacion]) -> None:
@@ -112,7 +133,7 @@ def decidir(
     vigentes = actualizar_recomendaciones(sesion, evento, ahora, config)
     sesion.commit()
     salida = asignacion_salida(sesion, asignacion)
-    bus.publicar(Tema.asignacion_cambiada, salida.model_dump(mode="json"))
+    _publicar_asignacion(sesion, salida)
     _publicar_recomendaciones(sesion, vigentes)
     return salida
 
@@ -144,7 +165,7 @@ def marcar_atendida(
     sesion.commit()
 
     salida = asignacion_salida(sesion, asignacion)
-    bus.publicar(Tema.asignacion_cambiada, salida.model_dump(mode="json"))
+    _publicar_asignacion(sesion, salida)
     bus.publicar(
         Tema.celda_actualizada,
         {

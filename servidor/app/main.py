@@ -8,7 +8,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.api import asignaciones, celdas, equipos, eventos, reportes
+from app.api import asignaciones, celdas, equipos, eventos, reportes, tiempo_real
 from app.api.dependencias import reloj
 from app.ciudad import obtener_ciudad
 from app.config import obtener_config
@@ -31,7 +31,8 @@ async def ciclo_de_vida(_app: FastAPI) -> AsyncIterator[None]:
 
 
 app = FastAPI(title="ENLACE", version="0.1.0", lifespan=ciclo_de_vida)
-for modulo in (eventos, celdas, reportes, asignaciones, equipos):
+tiempo_real.suscribir(bus)
+for modulo in (eventos, celdas, reportes, asignaciones, equipos, tiempo_real):
     app.include_router(modulo.router)
 
 
