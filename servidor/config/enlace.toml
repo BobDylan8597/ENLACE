@@ -205,4 +205,4 @@ directorio = "../web/dist"
 [sms]
 # Número del celular con la app receptora de SMS (paso 5). Los celulares lo descargan al
 # configurarse, para poder ofrecer el envío por SMS cuando no hay otra conexión.
-numero_receptor = "+50588880000"
+numero_receptor = "+50585214860"
