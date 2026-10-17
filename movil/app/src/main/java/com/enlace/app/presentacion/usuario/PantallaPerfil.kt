@@ -30,6 +30,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.enlace.app.R
+import com.enlace.app.TEXTO_CONDICION
 import com.enlace.app.dominio.AjustesRepositorio
 import com.enlace.app.dominio.Condicion
 import com.enlace.app.dominio.Perfil
@@ -63,15 +64,6 @@ class PerfilViewModel @Inject constructor(private val ajustes: AjustesRepositori
         }
     }
 }
-
-private val TEXTO_CONDICION = mapOf(
-    Condicion.MOVILIDAD_REDUCIDA to R.string.condicion_movilidad_reducida,
-    Condicion.ADULTO_MAYOR to R.string.condicion_adulto_mayor,
-    Condicion.EMBARAZO to R.string.condicion_embarazo,
-    Condicion.NINOS to R.string.condicion_ninos,
-    Condicion.MEDICACION to R.string.condicion_medicacion,
-    Condicion.DISCAPACIDAD to R.string.condicion_discapacidad,
-)
 
 /** U18: perfil guardado solo en el celular; se envía únicamente al pedir ayuda (sección 13). */
 @Composable

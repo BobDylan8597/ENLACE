@@ -40,6 +40,7 @@ import com.enlace.app.datos.textoAlerta
 import com.enlace.app.dominio.AlertaVigente
 import com.enlace.app.dominio.EstadoConexion
 import com.enlace.app.dominio.MonitorConexion
+import com.enlace.app.presentacion.componentes.BotonPrincipal
 import com.enlace.app.presentacion.componentes.IndicadorConexion
 import com.enlace.app.presentacion.tema.ColoresEnlace
 import com.enlace.app.servicio.ServicioAlertas
@@ -70,6 +71,8 @@ fun PantallaInicio(
     alAbrirPrivacidad: () -> Unit,
     alAbrirConexion: () -> Unit,
     alAbrirAlerta: () -> Unit,
+    alPedirAyuda: () -> Unit,
+    alReportarBloqueo: () -> Unit,
     viewModel: InicioViewModel = hiltViewModel(),
 ) {
     val conexion by viewModel.conexion.collectAsStateWithLifecycle()
@@ -143,6 +146,9 @@ fun PantallaInicio(
                     }
                 }
             }
+            // Sin alerta activa también se puede pedir ayuda: alimenta la propuesta comunitaria
+            BotonPrincipal(stringResource(R.string.ayuda_boton), alPedirAyuda, color = ColoresEnlace.actuar)
+            BotonSecundario(R.drawable.ic_alerta, stringResource(R.string.bloqueo_boton), alReportarBloqueo)
             BotonSecundario(R.drawable.ic_persona, stringResource(R.string.inicio_perfil), alAbrirPerfil)
             BotonSecundario(R.drawable.ic_candado, stringResource(R.string.inicio_privacidad), alAbrirPrivacidad)
             BotonSecundario(R.drawable.ic_senal, stringResource(R.string.inicio_servidor), alAbrirConexion)

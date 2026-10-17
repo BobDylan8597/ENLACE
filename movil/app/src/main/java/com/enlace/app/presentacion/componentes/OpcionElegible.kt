@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun OpcionElegible(
     titulo: String,
-    detalle: String,
+    detalle: String = "",
     elegida: Boolean,
     alElegir: () -> Unit,
     habilitada: Boolean = true,
@@ -47,7 +47,7 @@ fun OpcionElegible(
             RadioButton(selected = elegida, onClick = null, enabled = habilitada)
             Column {
                 Text(titulo, style = MaterialTheme.typography.titleMedium)
-                Text(detalle, style = MaterialTheme.typography.bodyMedium)
+                if (detalle.isNotEmpty()) Text(detalle, style = MaterialTheme.typography.bodyMedium)
             }
         }
     }

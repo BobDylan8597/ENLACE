@@ -5,6 +5,8 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.enlace.app.datos.ConexionRepositorioImpl
+import com.enlace.app.datos.ReportesRepositorioImpl
+import com.enlace.app.dominio.ReportesRepositorio
 import com.enlace.app.datos.local.AjustesRepositorioImpl
 import com.enlace.app.datos.remoto.MonitorConexionImpl
 import com.enlace.app.dominio.AjustesRepositorio
@@ -57,4 +59,7 @@ abstract class ModuloRepositorios {
 
     @Binds
     abstract fun monitor(implementacion: MonitorConexionImpl): MonitorConexion
+
+    @Binds
+    abstract fun reportes(implementacion: ReportesRepositorioImpl): ReportesRepositorio
 }

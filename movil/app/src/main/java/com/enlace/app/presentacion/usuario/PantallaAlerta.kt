@@ -70,7 +70,11 @@ private val TEXTO_ZONA = mapOf(
 
 /** U8: alerta activa. Modo oscuro y botones de ancho completo (sección 16). */
 @Composable
-fun PantallaAlerta(alVolver: () -> Unit, viewModel: AlertaViewModel = hiltViewModel()) {
+fun PantallaAlerta(
+    alVolver: () -> Unit,
+    alPedirAyuda: () -> Unit,
+    viewModel: AlertaViewModel = hiltViewModel(),
+) {
     val leida by viewModel.alerta.collectAsStateWithLifecycle()
     val cargada = leida ?: return // todavía leyendo lo guardado
     val actual = cargada.vigente
@@ -141,7 +145,11 @@ fun PantallaAlerta(alVolver: () -> Unit, viewModel: AlertaViewModel = hiltViewMo
                     color = ColoresEnlace.estable,
                 )
             }
-            // "Necesito ayuda" (U10) se agrega en el paso 4.3
+            BotonPrincipal(
+                texto = stringResource(R.string.ayuda_boton),
+                alTocar = alPedirAyuda,
+                color = ColoresEnlace.actuar,
+            )
         }
     }
 }

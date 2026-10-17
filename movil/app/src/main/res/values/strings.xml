@@ -85,4 +85,49 @@
     <string name="zona_fuera">Estás fuera de la zona de la alerta</string>
     <string name="zona_sin_conexion">Sin conexión: se intentará de nuevo</string>
     <string name="permiso_ubicacion_explicacion">Para enviar tu zona durante una alerta, ENLACE necesita permiso de ubicación. Solo la consulta al recibir una alerta.</string>
+    <string name="necesidad_rescate">Rescate</string>
+    <string name="necesidad_medico">Atención médica</string>
+    <string name="necesidad_agua">Agua</string>
+    <string name="necesidad_refugio">Refugio</string>
+
+    <string name="ayuda_boton">Necesito ayuda</string>
+    <string name="ayuda_titulo">Pedir ayuda</string>
+    <string name="ayuda_explicacion">Envía tu ubicación exacta y tu perfil al centro de coordinación. Solo se comparten porque pides ayuda.</string>
+    <string name="ayuda_personas">Personas contigo</string>
+    <string name="ayuda_atrapados">Atrapadas</string>
+    <string name="ayuda_heridos">Heridas</string>
+    <string name="ayuda_vulnerables">Necesitan atención especial</string>
+    <string name="ayuda_necesidades">¿Qué necesitan?</string>
+    <string name="ayuda_enviar">Enviar pedido de ayuda</string>
+    <string name="ayuda_enviando">Enviando…</string>
+    <string name="restar">Restar</string>
+    <string name="sumar">Sumar</string>
+
+    <string name="envio_ayuda_ok">Tu pedido de ayuda fue enviado</string>
+    <string name="envio_ayuda_ok_detalle">El centro de coordinación ya lo ve. Quédate donde estás si es seguro y mantén el celular con batería.</string>
+    <string name="envio_bloqueo_ok">Gracias. El bloqueo fue reportado</string>
+    <string name="envio_bloqueo_ok_detalle">Las rutas de los equipos se recalculan para evitarlo.</string>
+    <string name="envio_repetido">Ya habíamos recibido este reporte</string>
+    <string name="envio_rechazado">No se pudo registrar: %1$s</string>
+    <string name="envio_sin_conexion">No hay conexión con el servidor</string>
+    <string name="envio_sin_conexion_detalle">Intenta de nuevo en unos minutos.</string>
+    <string name="envio_sin_ubicacion">No se pudo saber dónde estás</string>
+    <string name="envio_sin_ubicacion_detalle">Activa la ubicación del celular e intenta de nuevo.</string>
+    <string name="envio_reintentar">Intentar de nuevo</string>
+    <string name="envio_volver_inicio">Volver al inicio</string>
+
+    <string name="bloqueo_boton">Reportar calle bloqueada</string>
+    <string name="bloqueo_titulo">Reportar calle bloqueada</string>
+    <string name="bloqueo_donde">Párate frente al bloqueo: se enviará el lugar donde estás ahora.</string>
+    <string name="bloqueo_tipo">¿Qué bloquea la calle?</string>
+    <string name="bloqueo_a_pie">¿Puede pasar una persona a pie?</string>
+    <string name="bloqueo_a_pie_si">Sí, a pie se puede pasar</string>
+    <string name="bloqueo_a_pie_no">No, no se puede pasar</string>
+    <string name="bloqueo_enviar">Enviar reporte</string>
+    <string name="bloqueo_derrumbe">Derrumbe</string>
+    <string name="bloqueo_agua">Agua o inundación</string>
+    <string name="bloqueo_escombros">Escombros</string>
+    <string name="bloqueo_cables">Cables caídos</string>
+    <string name="bloqueo_via_rota">Calle rota</string>
+    <string name="bloqueo_otro">Otro</string>
 </resources>

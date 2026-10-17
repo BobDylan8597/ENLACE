@@ -28,7 +28,9 @@ import com.enlace.app.presentacion.consentimiento.PantallaConsentimiento
 import com.enlace.app.presentacion.modo.PantallaModo
 import com.enlace.app.presentacion.tema.TemaEnlace
 import com.enlace.app.presentacion.usuario.PantallaAlerta
+import com.enlace.app.presentacion.usuario.PantallaBloqueo
 import com.enlace.app.presentacion.usuario.PantallaInicio
+import com.enlace.app.presentacion.usuario.PantallaPedirAyuda
 import com.enlace.app.presentacion.usuario.PantallaPerfil
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -48,6 +50,8 @@ import javax.inject.Inject
 @Serializable private data object RutaInicio
 @Serializable private data object RutaPerfil
 @Serializable private data object RutaAlerta
+@Serializable private data object RutaPedirAyuda
+@Serializable private data object RutaBloqueo
 
 @HiltViewModel
 class ArranqueViewModel @Inject constructor(
@@ -124,13 +128,24 @@ fun NavegacionEnlace(arranque: ArranqueViewModel = hiltViewModel()) {
                     alAbrirPrivacidad = { nav.navigate(RutaConsentimiento) },
                     alAbrirConexion = { nav.navigate(RutaConfiguracion) },
                     alAbrirAlerta = { nav.navigate(RutaAlerta) },
+                    alPedirAyuda = { nav.navigate(RutaPedirAyuda) },
+                    alReportarBloqueo = { nav.navigate(RutaBloqueo) },
                 )
             }
             composable<RutaPerfil> {
                 PantallaPerfil(alVolver = { nav.popBackStack() })
             }
             composable<RutaAlerta> {
-                PantallaAlerta(alVolver = { nav.popBackStack(RutaInicio, inclusive = false) })
+                PantallaAlerta(
+                    alVolver = { nav.popBackStack(RutaInicio, inclusive = false) },
+                    alPedirAyuda = { nav.navigate(RutaPedirAyuda) },
+                )
+            }
+            composable<RutaPedirAyuda> {
+                PantallaPedirAyuda(alVolver = { nav.popBackStack(RutaInicio, inclusive = false) })
+            }
+            composable<RutaBloqueo> {
+                PantallaBloqueo(alVolver = { nav.popBackStack(RutaInicio, inclusive = false) })
             }
         }
     }
