@@ -107,3 +107,16 @@ rescate = "rescate"
 medico = "medico"
 agua = "agua"
 refugio = "reconocimiento"
+
+[celdas]
+# Para reportes que llegan desde fuera del área preparada de la ciudad
+vulnerabilidad_por_defecto = 0.5
+nombre_fuera_de_area = "Fuera del área preparada"
+
+[activacion]
+# Fracción de daño mínima del modelo para incluir una celda en la zona afectada
+umbral_zona_afectada = 0.005
+# Propuesta comunitaria: ≥ N pedidos de ayuda en la misma celda en la ventana, sin alerta activa
+pedidos_minimos_comunitaria = 4
+ventana_comunitaria_min = 10
+directorio_claves = "claves"

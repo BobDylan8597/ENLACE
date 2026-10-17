@@ -80,3 +80,16 @@ def test_tiempo_en_linea_recta() -> None:
     minutos = EstimadorLineaRecta(CONFIG).minutos(DESTINO, (DESTINO[0] + 10 / 111.195, DESTINO[1]))
     esperado = 10 * CONFIG.factor_desvio / CONFIG.velocidad_promedio_kmh * 60
     assert minutos == pytest.approx(esperado, rel=1e-3)
+
+
+def test_no_repite_un_par_rechazado() -> None:
+    equipos = [_equipo(1, 1, Capacidad.rescate), _equipo(2, 3, Capacidad.rescate)]
+    pendiente = _pendiente(90)
+    resultado = recomendar(
+        [pendiente],
+        equipos,
+        EstimadorLineaRecta(CONFIG),
+        CONFIG,
+        vetados=frozenset({(pendiente.clave, 1)}),
+    )
+    assert [r.id_equipo for r in resultado.recomendaciones] == [2]

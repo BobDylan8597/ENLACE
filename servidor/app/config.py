@@ -150,6 +150,18 @@ class ConfigAsignacion(_Seccion):
         return self
 
 
+class ConfigCeldas(_Seccion):
+    vulnerabilidad_por_defecto: float = Field(ge=0, le=1)
+    nombre_fuera_de_area: str
+
+
+class ConfigActivacion(_Seccion):
+    umbral_zona_afectada: float = Field(ge=0, le=1)
+    pedidos_minimos_comunitaria: int = Field(ge=1)
+    ventana_comunitaria_min: float = Field(gt=0)
+    directorio_claves: str
+
+
 class Configuracion(_Seccion):
     servidor: ConfigServidor
     ciudad: ConfigCiudad
@@ -159,6 +171,8 @@ class Configuracion(_Seccion):
     clasificacion: ConfigClasificacion
     prioridad: ConfigPrioridad
     asignacion: ConfigAsignacion
+    celdas: ConfigCeldas
+    activacion: ConfigActivacion
 
 
 def _exigir_claves(nombre: str, valores: dict[Any, Any], enum: type[StrEnum]) -> None:

@@ -1,0 +1,16 @@
+# Finales de línea normalizados (LF en el repositorio)
+* text=auto eol=lf
+
+# Scripts que deben conservar LF o CRLF al ejecutarse
+gradlew text eol=lf
+*.sh text eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binarios
+*.png binary
+*.jpg binary
+*.pbf binary
+*.apk binary
+*.jar binary
+*.sqlite binary

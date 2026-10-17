@@ -42,6 +42,10 @@ class Pendiente:
     destino: tuple[float, float]
     id_reporte: str | None = None
 
+    @property
+    def clave(self) -> str:
+        return self.id_reporte or self.id_h3
+
 
 @dataclass(frozen=True)
 class EquipoDisponible:
@@ -103,7 +107,9 @@ def recomendar(
     equipos: list[EquipoDisponible],
     estimador: EstimadorTiempo,
     config: ConfigAsignacion,
+    vetados: frozenset[tuple[str, int]] = frozenset(),
 ) -> ResultadoAsignacion:
+    """`vetados`: pares (clave del pendiente, id del equipo) que una persona ya rechazó."""
     libres = list(equipos)
     recomendaciones: list[Recomendacion] = []
     sin_cubrir: list[Pendiente] = []
@@ -111,7 +117,11 @@ def recomendar(
     for pendiente in sorted(pendientes, key=lambda p: p.prioridad, reverse=True):
         if len(recomendaciones) >= config.maximo_recomendaciones:
             break
-        aptos = [e for e in libres if pendiente.capacidad in e.capacidades]
+        aptos = [
+            e
+            for e in libres
+            if pendiente.capacidad in e.capacidades and (pendiente.clave, e.id) not in vetados
+        ]
         if not aptos:
             sin_cubrir.append(pendiente)
             continue
