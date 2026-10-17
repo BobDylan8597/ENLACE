@@ -62,10 +62,20 @@ interface AjustesRepositorio {
     suspend fun guardarConsentimiento(consentimiento: Consentimiento)
 
     suspend fun guardarPerfil(perfil: Perfil)
+
+    /** La persona ya vio (y cerró) el aviso de permitir el inicio automático. */
+    val avisoInicioAutomaticoVisto: Flow<Boolean>
+
+    suspend fun marcarAvisoInicioAutomatico()
 }
 
+/** Marcas que bloquean el arranque automático de las apps salvo permiso de la persona. */
+private val MARCAS_CON_INICIO_RESTRINGIDO = setOf("xiaomi", "redmi", "poco", "honor", "huawei", "oppo", "realme", "oneplus", "vivo")
+
+fun necesitaInicioAutomatico(fabricante: String): Boolean = fabricante.lowercase() in MARCAS_CON_INICIO_RESTRINGIDO
+
 /** Pantalla con la que abre la app según lo que ya está configurado. */
-enum class Destino { CONFIGURACION, MODO, CONSENTIMIENTO, INICIO_USUARIO, ACTIVAR_UNIDAD, INICIO_UNIDAD }
+enum class Destino { BIENVENIDA, CONFIGURACION, MODO, CONSENTIMIENTO, INICIO_USUARIO, ACTIVAR_UNIDAD, INICIO_UNIDAD }
 
 fun destinoInicial(
     direccion: String?,
@@ -73,7 +83,7 @@ fun destinoInicial(
     consentimiento: Consentimiento?,
     unidadActiva: Boolean = false,
 ): Destino = when {
-    direccion == null -> Destino.CONFIGURACION
+    direccion == null -> Destino.BIENVENIDA
     modo == null -> Destino.MODO
     // La unidad necesita la clave de brigada y su equipo; el consentimiento es del modo usuario
     modo == Modo.UNIDAD -> if (unidadActiva) Destino.INICIO_UNIDAD else Destino.ACTIVAR_UNIDAD

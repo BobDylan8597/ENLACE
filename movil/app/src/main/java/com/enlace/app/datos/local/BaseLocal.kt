@@ -68,6 +68,12 @@ interface OutboxDao {
     @Query("SELECT COUNT(*) FROM outbox WHERE estado = 'PENDIENTE'")
     fun contarPendientes(): Flow<Int>
 
+    @Query("SELECT * FROM outbox WHERE estado = 'PENDIENTE' ORDER BY creado")
+    fun observarPendientes(): Flow<List<MensajeSaliente>>
+
+    @Query("SELECT * FROM outbox WHERE tipo = :tipo ORDER BY creado DESC")
+    fun observarPorTipo(tipo: TipoMensaje): Flow<List<MensajeSaliente>>
+
     @Query("SELECT COUNT(*) FROM outbox WHERE idMensaje = :id")
     suspend fun existe(id: String): Int
 

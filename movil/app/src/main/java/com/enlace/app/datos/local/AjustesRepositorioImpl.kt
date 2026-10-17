@@ -2,6 +2,7 @@ package com.enlace.app.datos.local
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.enlace.app.dominio.AjustesRepositorio
@@ -32,6 +33,12 @@ class AjustesRepositorioImpl @Inject constructor(
         p[PERFIL]?.let { runCatching { json.decodeFromString<Perfil>(it) }.getOrNull() } ?: Perfil()
     }
 
+    override val avisoInicioAutomaticoVisto: Flow<Boolean> = preferencias.data.map { it[AVISO_INICIO] == true }
+
+    override suspend fun marcarAvisoInicioAutomatico() {
+        preferencias.edit { it[AVISO_INICIO] = true }
+    }
+
     override suspend fun guardarModo(modo: Modo) {
         preferencias.edit { it[MODO] = modo.name }
     }
@@ -48,5 +55,6 @@ class AjustesRepositorioImpl @Inject constructor(
         val MODO = stringPreferencesKey("modo")
         val CONSENTIMIENTO = stringPreferencesKey("consentimiento")
         val PERFIL = stringPreferencesKey("perfil")
+        val AVISO_INICIO = booleanPreferencesKey("aviso_inicio_automatico_visto")
     }
 }

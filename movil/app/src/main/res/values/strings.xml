@@ -134,8 +134,10 @@
     <string name="envio_guardado_detalle">No hay conexión ahora. Se enviará solo apenas haya conexión, aunque cierres la app.</string>
     <string name="envio_ver_seguimiento">Ver mis pedidos</string>
 
-    <string name="seguimiento_titulo">Mis pedidos de ayuda</string>
-    <string name="seguimiento_vacio">No has pedido ayuda.</string>
+    <string name="seguimiento_titulo">Mis reportes</string>
+    <string name="mis_reportes_pedidos">Pedidos de ayuda</string>
+    <string name="mis_reportes_bloqueos">Calles bloqueadas que reportaste</string>
+    <string name="seguimiento_vacio">Todavía no enviaste ningún reporte.</string>
     <string name="seguimiento_guardado">Guardado: se enviará apenas haya conexión</string>
     <string name="seguimiento_enviado">Recibido por el centro de coordinación</string>
     <string name="seguimiento_rechazado">No se pudo registrar</string>
@@ -272,4 +274,94 @@
     <string name="entendido">Entendido</string>
     <string name="pantalla_completa_titulo">Permite los avisos a pantalla completa</string>
     <string name="pantalla_completa_detalle">Así una asignación nueva se abre aunque el celular esté bloqueado. Toca para activarlo.</string>
+
+    <!-- Inicio automático (Xiaomi, Honor, Huawei, Oppo, Vivo) -->
+    <string name="inicio_automatico_titulo">Permite que ENLACE inicie solo</string>
+    <string name="inicio_automatico_detalle">Tu celular bloquea que las apps se abran solas. Activa «Inicio automático» para ENLACE y así recibirás las alertas aunque reinicies el celular.</string>
+    <string name="inicio_automatico_abrir">Abrir ajustes</string>
+    <string name="inicio_automatico_listo">Listo</string>
+
+    <!-- U1 bienvenida -->
+    <string name="bienvenida_lema">Decidir cuando todavía no se ve nada, y corregir con cada dato que llega.</string>
+    <string name="bienvenida_alertas">Alertas oficiales verificadas</string>
+    <string name="bienvenida_alertas_detalle">Solo recibes alertas firmadas por el centro de coordinación: ninguna falsa.</string>
+    <string name="bienvenida_sin_internet">Funciona sin internet</string>
+    <string name="bienvenida_sin_internet_detalle">Tu pedido de ayuda viaja por los celulares cercanos o por SMS hasta llegar al centro.</string>
+    <string name="bienvenida_privacidad">Tú decides qué compartir</string>
+    <string name="bienvenida_privacidad_detalle">ENLACE no te sigue. Tus datos se borran al terminar la emergencia.</string>
+    <string name="bienvenida_empezar">Empezar</string>
+
+    <!-- U3 perfil inicial -->
+    <string name="perfil_inicial_titulo">Tu perfil (opcional)</string>
+    <string name="perfil_omitir">Omitir por ahora</string>
+
+    <!-- U4 permisos -->
+    <string name="permisos_titulo">Antes de empezar</string>
+    <string name="permisos_explicacion">Android te pedirá estos permisos. Esto es para qué sirve cada uno:</string>
+    <string name="permiso_notificaciones">Notificaciones</string>
+    <string name="permiso_notificaciones_detalle">Para avisarte de una alerta oficial aunque tengas la app cerrada.</string>
+    <string name="permiso_ubicacion">Ubicación</string>
+    <string name="permiso_ubicacion_detalle">Solo se consulta al llegar una alerta o al pedir ayuda. Nunca te sigue.</string>
+    <string name="permiso_cercanos">Dispositivos cercanos</string>
+    <string name="permiso_cercanos_detalle">Para pasar tu pedido de celular en celular cuando no hay internet.</string>
+    <string name="permisos_dar">Dar permisos</string>
+    <string name="permisos_ahora_no">Ahora no</string>
+
+    <!-- U7 qué hacer -->
+    <string name="que_hacer_titulo">Qué hacer ahora</string>
+    <string name="que_hacer_albergues">Los albergues y puntos de encuentro oficiales los informa el centro de coordinación de tu ciudad.</string>
+    <string-array name="consejos_sismo">
+        <item>Si estás adentro y todavía tiembla: agáchate, cúbrete y sujétate. No corras hacia afuera.</item>
+        <item>Cuando pare, sal con calma por la ruta más segura. No uses ascensores.</item>
+        <item>Aléjate de paredes dañadas, postes y cables caídos. Espera réplicas.</item>
+        <item>Si hueles gas, no enciendas luces ni fuego y sal del lugar.</item>
+        <item>Avisa en ENLACE si estás bien o si necesitas ayuda: así el rescate llega antes a quien lo necesita.</item>
+    </string-array>
+    <string-array name="consejos_inundacion">
+        <item>Sube a un lugar alto y quédate ahí. No intentes cruzar calles con agua en movimiento.</item>
+        <item>Desconecta la electricidad si puedes hacerlo sin tocar agua.</item>
+        <item>No camines ni manejes por zonas inundadas: 15 cm de corriente pueden derribarte.</item>
+        <item>Avisa en ENLACE si estás bien o si necesitas ayuda.</item>
+    </string-array>
+    <string-array name="consejos_huracan">
+        <item>Quédate en un cuarto interior, lejos de ventanas.</item>
+        <item>No salgas durante la calma del ojo: el viento vuelve desde el otro lado.</item>
+        <item>Guarda agua, linterna y la carga del celular.</item>
+        <item>Avisa en ENLACE si estás bien o si necesitas ayuda.</item>
+    </string-array>
+    <string-array name="consejos_general">
+        <item>Mantén la calma y aléjate del peligro.</item>
+        <item>Sigue las indicaciones oficiales del centro de coordinación.</item>
+        <item>Avisa en ENLACE si estás bien o si necesitas ayuda.</item>
+    </string-array>
+
+    <!-- U15 / B11 bloqueos cercanos -->
+    <string name="bloqueos_cercanos_titulo">Calles bloqueadas cerca</string>
+    <string name="bloqueos_cercanos_comunidad">Si pasas por una de estas calles y sigue bloqueada, avísalo: así los equipos la evitan.</string>
+    <string name="bloqueos_cercanos_brigada">Tu confirmación vale de inmediato: saca la calle de las rutas o la devuelve.</string>
+    <string name="bloqueos_cercanos_vacio">No hay calles bloqueadas reportadas.</string>
+    <string name="bloqueos_cercanos_gracias">Gracias, quedó registrado.</string>
+    <string name="bloqueos_sigue">Sigue bloqueada</string>
+    <string name="bloqueos_confirmar">Confirmar</string>
+    <string name="bloqueos_descartar">Ya se puede pasar</string>
+    <string name="bloqueo_estado_confirmado">Confirmado</string>
+    <string name="bloqueo_estado_sin_confirmar">Sin confirmar</string>
+    <plurals name="bloqueo_reportes">
+        <item quantity="one">%1$d reporte</item>
+        <item quantity="other">%1$d reportes</item>
+    </plurals>
+
+    <!-- B10 mula de datos -->
+    <string name="mula_titulo">Mensajes que llevas</string>
+    <string name="mula_explicacion">Llegaron por la red cercana desde celulares sin conexión. Se entregan solos al centro apenas tengas conexión.</string>
+    <string name="mula_entregar">Entregar ahora</string>
+    <string name="mula_entregado">Entregados al centro de coordinación</string>
+    <string name="mula_sin_conexion">Sin conexión: se entregarán apenas haya</string>
+    <string name="mula_tipo_reporte">Pedido de ayuda o evaluación</string>
+    <string name="mula_tipo_checkin">Zona de una persona (anónima)</string>
+    <string name="mula_tipo_bloqueo">Calle bloqueada</string>
+    <plurals name="mula_intentos">
+        <item quantity="one">%1$d intento</item>
+        <item quantity="other">%1$d intentos</item>
+    </plurals>
 </resources>

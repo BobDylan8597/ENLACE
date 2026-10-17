@@ -28,6 +28,10 @@ interface ApiEnlace {
     @GET("bloqueos")
     suspend fun bloqueos(): List<BloqueoMapaDto>
 
+    /** Sin clave (persona de la comunidad) solo se puede confirmar; la brigada también descarta. */
+    @POST("bloqueos")
+    suspend fun decidirBloqueo(@Body decision: BloqueoDecisionDto, @Header("X-Clave-Brigada") clave: String?)
+
     /** Ruta más rápida evitando bloqueos (GeoJSON con instrucciones). origen/destino: "lat,lon". */
     @GET("rutas")
     suspend fun ruta(@Query("origen") origen: String, @Query("destino") destino: String): JsonObject
@@ -171,7 +175,24 @@ data class EstadoBloqueoDto(val id: Int, val estado: String, val confirmaciones:
 data class CambioBloqueoDto(val bloqueo: EstadoBloqueoDto, @SerialName("rutas_recalculadas") val rutasRecalculadas: Int)
 
 @Serializable
-data class BloqueoMapaDto(val lat: Double, val lon: Double, val estado: String, val alcance: String = "total")
+data class BloqueoMapaDto(
+    val id: Int = 0,
+    val lat: Double,
+    val lon: Double,
+    val estado: String,
+    val alcance: String = "total",
+    val tipo: String = "otro",
+    val confirmaciones: Int = 1,
+)
+
+/** Confirmar o descartar un bloqueo existente (servidor: BloqueoEntrada sin lat/lon). */
+@Serializable
+data class BloqueoDecisionDto(
+    val accion: String,
+    @SerialName("id_bloqueo") val idBloqueo: Int,
+    val reportante: String,
+    val origen: String,
+)
 
 // ── Modo unidad ──
 

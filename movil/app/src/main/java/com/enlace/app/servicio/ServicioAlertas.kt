@@ -83,7 +83,8 @@ class ServicioAlertas : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        ServiceCompat.startForeground(this, ID_NOTIFICACION_SERVICIO, notificador.servicio(), tipos())
+        val desdeArranque = intent?.getBooleanExtra(EXTRA_DESDE_ARRANQUE, false) == true
+        ServiceCompat.startForeground(this, ID_NOTIFICACION_SERVICIO, notificador.servicio(), tipos(desdeArranque))
         red.iniciar()
         if (!iniciado) {
             iniciado = true
@@ -92,11 +93,17 @@ class ServicioAlertas : Service() {
         return START_STICKY
     }
 
-    /** "location" solo si hay permiso: permite consultar la ubicación al llegar una alerta. */
-    private fun tipos(): Int {
+    /**
+     * "location" solo si hay permiso: permite consultar la ubicación al llegar una alerta.
+     * Al encender el celular, Android 14+ no deja iniciar un servicio de ubicación sin que la
+     * persona haya abierto la app: arranca sin ese tipo y lo suma la próxima vez que se abre
+     * ENLACE (MainActivity vuelve a llamar a iniciar, y startForeground actualiza los tipos).
+     */
+    private fun tipos(desdeArranque: Boolean): Int {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return 0
         val ubicacion = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
-            PackageManager.PERMISSION_GRANTED
+            PackageManager.PERMISSION_GRANTED &&
+            !(desdeArranque && Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
         var tipos = if (ubicacion) ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION else 0
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             tipos = tipos or ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
@@ -202,8 +209,11 @@ class ServicioAlertas : Service() {
     }
 
     companion object {
-        fun iniciar(contexto: Context) {
-            ContextCompat.startForegroundService(contexto, Intent(contexto, ServicioAlertas::class.java))
+        private const val EXTRA_DESDE_ARRANQUE = "desde_arranque"
+
+        fun iniciar(contexto: Context, desdeArranque: Boolean = false) {
+            val intent = Intent(contexto, ServicioAlertas::class.java).putExtra(EXTRA_DESDE_ARRANQUE, desdeArranque)
+            ContextCompat.startForegroundService(contexto, intent)
         }
 
         /** Al cambiar de modo o de equipo, la conexión se rehace con la nueva identidad. */

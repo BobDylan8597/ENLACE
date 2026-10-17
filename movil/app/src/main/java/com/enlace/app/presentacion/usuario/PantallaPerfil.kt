@@ -69,7 +69,7 @@ class PerfilViewModel @Inject constructor(private val ajustes: AjustesRepositori
 
 /** U18: perfil guardado solo en el celular; se envía únicamente al pedir ayuda (sección 13). */
 @Composable
-fun PantallaPerfil(alVolver: () -> Unit, viewModel: PerfilViewModel = hiltViewModel()) {
+fun PantallaPerfil(alVolver: () -> Unit, inicial: Boolean = false, viewModel: PerfilViewModel = hiltViewModel()) {
     val perfil by viewModel.perfil.collectAsStateWithLifecycle()
 
     Scaffold { relleno ->
@@ -81,7 +81,11 @@ fun PantallaPerfil(alVolver: () -> Unit, viewModel: PerfilViewModel = hiltViewMo
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text(stringResource(R.string.perfil_titulo), style = MaterialTheme.typography.headlineSmall)
+            // U3: la primera vez es opcional y se puede omitir
+            Text(
+                stringResource(if (inicial) R.string.perfil_inicial_titulo else R.string.perfil_titulo),
+                style = MaterialTheme.typography.headlineSmall,
+            )
             Text(stringResource(R.string.perfil_explicacion), style = MaterialTheme.typography.bodyLarge)
             OutlinedTextField(
                 value = perfil.nombre,
@@ -140,7 +144,7 @@ fun PantallaPerfil(alVolver: () -> Unit, viewModel: PerfilViewModel = hiltViewMo
             }
             BotonPrincipal(stringResource(R.string.guardar), { viewModel.guardar(alVolver) })
             TextButton(onClick = alVolver, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
-                Text(stringResource(R.string.volver))
+                Text(stringResource(if (inicial) R.string.perfil_omitir else R.string.volver))
             }
         }
     }

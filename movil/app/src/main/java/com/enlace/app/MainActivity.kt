@@ -11,11 +11,10 @@ import com.enlace.app.datos.CredencialesBrigada
 import com.enlace.app.datos.EXTRA_ASIGNACION
 import com.enlace.app.dominio.AjustesRepositorio
 import com.enlace.app.dominio.ConexionRepositorio
-import com.enlace.app.dominio.Modo
 import com.enlace.app.presentacion.NavegacionEnlace
 import com.enlace.app.servicio.ServicioAlertas
+import com.enlace.app.servicio.appConfigurada
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -55,12 +54,7 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         lifecycleScope.launch {
-            val configurada = conexion.direccion.first() != null && when (ajustes.modo.first()) {
-                Modo.USUARIO -> true
-                Modo.UNIDAD -> credenciales.equipo.first() != null
-                null -> false
-            }
-            if (configurada) ServicioAlertas.iniciar(this@MainActivity)
+            if (appConfigurada(conexion, ajustes, credenciales)) ServicioAlertas.iniciar(this@MainActivity)
         }
     }
 }

@@ -5,6 +5,8 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -42,6 +44,7 @@ import com.enlace.app.dominio.AlertaVigente
 import com.enlace.app.dominio.EstadoConexion
 import com.enlace.app.dominio.MonitorConexion
 import com.enlace.app.presentacion.componentes.BotonPrincipal
+import com.enlace.app.presentacion.componentes.AvisoInicioAutomatico
 import com.enlace.app.presentacion.componentes.IndicadorConexion
 import com.enlace.app.presentacion.tema.ColoresEnlace
 import com.enlace.app.servicio.ServicioAlertas
@@ -87,6 +90,7 @@ fun PantallaInicio(
     alVerSeguimiento: () -> Unit,
     alModoUnidad: () -> Unit,
     alVerMapa: () -> Unit,
+    alVerBloqueos: () -> Unit,
     viewModel: InicioViewModel = hiltViewModel(),
 ) {
     val conexion by viewModel.conexion.collectAsStateWithLifecycle()
@@ -100,7 +104,7 @@ fun PantallaInicio(
 
     Scaffold { relleno ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(relleno).padding(24.dp),
+            modifier = Modifier.fillMaxSize().padding(relleno).verticalScroll(rememberScrollState()).padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
@@ -113,6 +117,7 @@ fun PantallaInicio(
                 )
                 IndicadorConexion(conexion)
             }
+            AvisoInicioAutomatico()
             alerta?.let { activa ->
                 Card(
                     onClick = alAbrirAlerta,
@@ -158,6 +163,7 @@ fun PantallaInicio(
             BotonPrincipal(stringResource(R.string.ayuda_boton), alPedirAyuda, color = ColoresEnlace.actuar)
             BotonSecundario(R.drawable.ic_alerta, stringResource(R.string.bloqueo_boton), alReportarBloqueo)
             BotonSecundario(R.drawable.ic_ubicacion, stringResource(R.string.mapa_ver), alVerMapa)
+            BotonSecundario(R.drawable.ic_alerta, stringResource(R.string.bloqueos_cercanos_titulo), alVerBloqueos)
             BotonSecundario(R.drawable.ic_equipo, stringResource(R.string.seguimiento_titulo), alVerSeguimiento)
             BotonSecundario(R.drawable.ic_persona, stringResource(R.string.inicio_perfil), alAbrirPerfil)
             BotonSecundario(R.drawable.ic_candado, stringResource(R.string.inicio_privacidad), alAbrirPrivacidad)

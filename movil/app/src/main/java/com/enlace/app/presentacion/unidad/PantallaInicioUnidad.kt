@@ -7,6 +7,7 @@ import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -58,6 +59,7 @@ import com.enlace.app.dominio.Punto
 import com.enlace.app.dominio.UnidadRepositorio
 import com.enlace.app.dominio.minutosRedondeados
 import com.enlace.app.dominio.ordenarPanorama
+import com.enlace.app.presentacion.componentes.AvisoInicioAutomatico
 import com.enlace.app.presentacion.componentes.IndicadorConexion
 import com.enlace.app.presentacion.tema.ColoresEnlace
 import com.enlace.app.servicio.ServicioAlertas
@@ -137,6 +139,8 @@ fun PantallaInicioUnidad(
     alAbrirAsignacion: () -> Unit,
     alEvaluar: () -> Unit,
     alVerMapa: () -> Unit,
+    alVerBloqueos: () -> Unit,
+    alVerMula: () -> Unit,
     alAbrirConexion: () -> Unit,
     alSalir: () -> Unit,
     viewModel: InicioUnidadViewModel = hiltViewModel(),
@@ -181,6 +185,7 @@ fun PantallaInicioUnidad(
                 }
             }
             item { TarjetaEquipo(equipo, asignacion) }
+            item { AvisoInicioAutomatico() }
             if (!pantallaCompleta && Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
                 item {
                     Tarjeta(
@@ -215,7 +220,7 @@ fun PantallaInicioUnidad(
                     )
                 }
             }
-            item { FilaMula(mensajes) }
+            item { FilaMula(mensajes, alVerMula) }
             item {
                 OutlinedButton(onClick = alVerMapa, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
                     Icon(painterResource(R.drawable.ic_ubicacion), contentDescription = null, modifier = Modifier.size(20.dp))
@@ -227,6 +232,9 @@ fun PantallaInicioUnidad(
                 }
                 OutlinedButton(onClick = alEvaluar, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
                     Text(stringResource(R.string.evaluacion_boton), style = MaterialTheme.typography.titleMedium)
+                }
+                OutlinedButton(onClick = alVerBloqueos, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                    Text(stringResource(R.string.bloqueos_cercanos_titulo), style = MaterialTheme.typography.titleMedium)
                 }
             }
             seccionesPanorama(panorama, alActualizar = viewModel::actualizar)
@@ -361,8 +369,13 @@ private fun Tarjeta(color: Color, icono: Int, titulo: String, detalle: String?, 
 }
 
 @Composable
-private fun FilaMula(mensajes: Int) {
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+private fun FilaMula(mensajes: Int, alTocar: () -> Unit) {
+    // B10: tocar abre la mula de datos (qué lleva y entregar ahora)
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(onClick = alTocar),
+    ) {
         Icon(
             painterResource(R.drawable.ic_red_cercana),
             contentDescription = null,

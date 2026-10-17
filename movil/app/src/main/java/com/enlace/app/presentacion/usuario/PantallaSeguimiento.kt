@@ -29,6 +29,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.enlace.app.R
+import com.enlace.app.TEXTO_BLOQUEO
+import com.enlace.app.datos.Outbox
+import com.enlace.app.datos.local.MensajeSaliente
+import com.enlace.app.datos.remoto.BloqueoDto
+import com.enlace.app.dominio.TipoBloqueo
+import com.enlace.app.dominio.TipoMensaje
+import kotlinx.coroutines.flow.map
+import kotlinx.serialization.json.Json
 import com.enlace.app.datos.PedidoConEstado
 import com.enlace.app.datos.Seguimiento
 import com.enlace.app.dominio.EstadoAtencion
@@ -46,9 +54,20 @@ private const val CONSULTA_MS = 30_000L
 private const val MS_POR_MINUTO = 60_000L
 
 @HiltViewModel
-class SeguimientoViewModel @Inject constructor(private val seguimiento: Seguimiento) : ViewModel() {
+class SeguimientoViewModel @Inject constructor(
+    private val seguimiento: Seguimiento,
+    outbox: Outbox,
+    json: Json,
+) : ViewModel() {
     val pedidos: StateFlow<List<PedidoConEstado>> =
         seguimiento.mios.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+
+    /** Bloqueos que reportó esta persona: tipo y si ya llegaron al centro. */
+    val bloqueos: StateFlow<List<Pair<MensajeSaliente, String>>> = outbox.observarPorTipo(TipoMensaje.BLOQUEO)
+        .map { lista ->
+            lista.map { it to (runCatching { json.decodeFromString<BloqueoDto>(it.cuerpo).tipo }.getOrNull() ?: "otro") }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 
     suspend fun consultar() = seguimiento.actualizar()
 }
@@ -57,6 +76,7 @@ class SeguimientoViewModel @Inject constructor(private val seguimiento: Seguimie
 @Composable
 fun PantallaSeguimiento(alVolver: () -> Unit, viewModel: SeguimientoViewModel = hiltViewModel()) {
     val pedidos by viewModel.pedidos.collectAsStateWithLifecycle()
+    val bloqueos by viewModel.bloqueos.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
         while (true) {
             viewModel.consultar()
@@ -70,13 +90,46 @@ fun PantallaSeguimiento(alVolver: () -> Unit, viewModel: SeguimientoViewModel = 
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Text(stringResource(R.string.seguimiento_titulo), style = MaterialTheme.typography.headlineSmall)
-            if (pedidos.isEmpty()) {
+            if (pedidos.isEmpty() && bloqueos.isEmpty()) {
                 Text(stringResource(R.string.seguimiento_vacio), style = MaterialTheme.typography.bodyLarge)
             }
             LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.weight(1f)) {
+                if (pedidos.isNotEmpty()) {
+                    item { Text(stringResource(R.string.mis_reportes_pedidos), style = MaterialTheme.typography.titleMedium) }
+                }
                 items(pedidos, key = { it.pedido.idMensaje }) { FilaPedido(it) }
+                if (bloqueos.isNotEmpty()) {
+                    item { Text(stringResource(R.string.mis_reportes_bloqueos), style = MaterialTheme.typography.titleMedium) }
+                }
+                items(bloqueos, key = { it.first.idMensaje }) { (mensaje, tipo) -> FilaBloqueoPropio(mensaje, tipo) }
             }
             TextButton(onClick = alVolver) { Text(stringResource(R.string.envio_volver_inicio)) }
+        }
+    }
+}
+
+@Composable
+private fun FilaBloqueoPropio(mensaje: MensajeSaliente, tipo: String) {
+    val enviado = mensaje.estado == EstadoEnvio.ENVIADO
+    val color = if (enviado) ColoresEnlace.estable else ColoresEnlace.explorar
+    val nombre = TipoBloqueo.entries.firstOrNull { it.codigo == tipo } ?: TipoBloqueo.OTRO
+    val minutosDesde = ((System.currentTimeMillis() - mensaje.creado) / MS_POR_MINUTO).toInt()
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Icon(painterResource(R.drawable.ic_alerta), contentDescription = null, tint = color, modifier = Modifier.size(32.dp))
+            Column {
+                Text(stringResource(TEXTO_BLOQUEO.getValue(nombre)), style = MaterialTheme.typography.titleMedium)
+                Text(
+                    stringResource(if (enviado) R.string.seguimiento_enviado else R.string.seguimiento_guardado),
+                    color = color,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                Text(stringResource(R.string.seguimiento_hace, minutosDesde), style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+            }
         }
     }
 }

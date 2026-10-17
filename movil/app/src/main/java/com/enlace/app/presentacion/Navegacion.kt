@@ -25,7 +25,10 @@ import com.enlace.app.dominio.Destino
 import com.enlace.app.dominio.Modo
 import com.enlace.app.dominio.UnidadRepositorio
 import com.enlace.app.dominio.destinoInicial
+import com.enlace.app.presentacion.componentes.PantallaBloqueosCercanos
+import com.enlace.app.presentacion.configuracion.PantallaBienvenida
 import com.enlace.app.presentacion.configuracion.PantallaConfiguracion
+import com.enlace.app.presentacion.configuracion.PantallaPermisos
 import com.enlace.app.presentacion.consentimiento.PantallaConsentimiento
 import com.enlace.app.presentacion.modo.PantallaModo
 import com.enlace.app.presentacion.tema.TemaEnlace
@@ -35,6 +38,7 @@ import com.enlace.app.presentacion.unidad.PantallaAtendida
 import com.enlace.app.presentacion.unidad.PantallaEvaluacion
 import com.enlace.app.presentacion.unidad.PantallaInicioUnidad
 import com.enlace.app.presentacion.unidad.PantallaMapaUnidad
+import com.enlace.app.presentacion.unidad.PantallaMula
 import com.enlace.app.presentacion.unidad.PantallaNavegacion
 import com.enlace.app.presentacion.usuario.PantallaAlerta
 import com.enlace.app.presentacion.usuario.PantallaBloqueo
@@ -42,6 +46,7 @@ import com.enlace.app.presentacion.usuario.PantallaInicio
 import com.enlace.app.presentacion.usuario.PantallaMapaUsuario
 import com.enlace.app.presentacion.usuario.PantallaPedirAyuda
 import com.enlace.app.presentacion.usuario.PantallaPerfil
+import com.enlace.app.presentacion.usuario.PantallaQueHacer
 import com.enlace.app.presentacion.usuario.PantallaSeguimiento
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -55,7 +60,14 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import javax.inject.Inject
 
+@Serializable private data object RutaBienvenida
 @Serializable private data object RutaConfiguracion
+@Serializable private data object RutaPerfilInicial
+@Serializable private data object RutaPermisos
+@Serializable private data object RutaQueHacer
+@Serializable private data object RutaBloqueosCercanos
+@Serializable private data object RutaBloqueosUnidad
+@Serializable private data object RutaMula
 @Serializable private data object RutaModo
 @Serializable private data object RutaConsentimiento
 @Serializable private data object RutaInicio
@@ -105,6 +117,7 @@ class ArranqueViewModel @Inject constructor(
 }
 
 private fun ruta(destino: Destino): Any = when (destino) {
+    Destino.BIENVENIDA -> RutaBienvenida
     Destino.CONFIGURACION -> RutaConfiguracion
     Destino.MODO -> RutaModo
     Destino.CONSENTIMIENTO -> RutaConsentimiento
@@ -144,6 +157,9 @@ fun NavegacionEnlace(arranque: ArranqueViewModel = hiltViewModel()) {
         }
 
         NavHost(navController = nav, startDestination = ruta(inicial)) {
+            composable<RutaBienvenida> {
+                PantallaBienvenida(alEmpezar = { nav.avanzarA(RutaConfiguracion) })
+            }
             composable<RutaConfiguracion> {
                 // Desde el inicio (Conexión) se vuelve atrás; en la primera configuración, se sigue al modo
                 PantallaConfiguracion(alContinuar = { if (!nav.popBackStack()) nav.avanzarA(RutaModo) })
@@ -155,8 +171,8 @@ fun NavegacionEnlace(arranque: ArranqueViewModel = hiltViewModel()) {
             }
             composable<RutaConsentimiento> {
                 PantallaConsentimiento(alGuardar = {
-                    // Desde el inicio (Privacidad) se vuelve atrás; en la primera configuración, al inicio
-                    if (!nav.popBackStack()) nav.avanzarA(RutaInicio)
+                    // Desde el inicio (Privacidad) se vuelve atrás; en la primera configuración, U3 y U4
+                    if (!nav.popBackStack()) nav.avanzarA(RutaPerfilInicial)
                 })
             }
             composable<RutaInicio> {
@@ -170,7 +186,26 @@ fun NavegacionEnlace(arranque: ArranqueViewModel = hiltViewModel()) {
                     alVerSeguimiento = { nav.navigate(RutaSeguimiento) },
                     alModoUnidad = { nav.navigate(RutaActivarUnidad) },
                     alVerMapa = { nav.navigate(RutaMapaUsuario) },
+                    alVerBloqueos = { nav.navigate(RutaBloqueosCercanos) },
                 )
+            }
+            composable<RutaPerfilInicial> {
+                PantallaPerfil(alVolver = { nav.avanzarA(RutaPermisos) }, inicial = true)
+            }
+            composable<RutaPermisos> {
+                PantallaPermisos(alContinuar = { nav.avanzarA(RutaInicio) })
+            }
+            composable<RutaQueHacer> {
+                PantallaQueHacer(alPedirAyuda = { nav.navigate(RutaPedirAyuda) }, alVolver = { nav.popBackStack() })
+            }
+            composable<RutaBloqueosCercanos> {
+                PantallaBloqueosCercanos(comoBrigada = false, alVolver = { nav.popBackStack() })
+            }
+            composable<RutaBloqueosUnidad> {
+                PantallaBloqueosCercanos(comoBrigada = true, alVolver = { nav.popBackStack() })
+            }
+            composable<RutaMula> {
+                PantallaMula(alVolver = { nav.popBackStack() })
             }
             composable<RutaPerfil> {
                 PantallaPerfil(alVolver = { nav.popBackStack() })
@@ -179,6 +214,7 @@ fun NavegacionEnlace(arranque: ArranqueViewModel = hiltViewModel()) {
                 PantallaAlerta(
                     alVolver = { nav.popBackStack(RutaInicio, inclusive = false) },
                     alPedirAyuda = { nav.navigate(RutaPedirAyuda) },
+                    alQueHacer = { nav.navigate(RutaQueHacer) },
                 )
             }
             composable<RutaPedirAyuda> {
@@ -209,6 +245,8 @@ fun NavegacionEnlace(arranque: ArranqueViewModel = hiltViewModel()) {
                     alAbrirAsignacion = { nav.navigate(RutaAsignacion) },
                     alEvaluar = { nav.navigate(RutaEvaluacion) },
                     alVerMapa = { nav.navigate(RutaMapaUnidad) },
+                    alVerBloqueos = { nav.navigate(RutaBloqueosUnidad) },
+                    alVerMula = { nav.navigate(RutaMula) },
                     alAbrirConexion = { nav.navigate(RutaConfiguracion) },
                     alSalir = { nav.avanzarA(RutaModo) },
                 )

@@ -55,6 +55,10 @@ class Outbox @Inject constructor(
     /** Cuántos mensajes esperan ser entregados (para la unidad: los que lleva como mula). */
     fun pendientes() = dao.contarPendientes()
 
+    fun observarPendientes() = dao.observarPendientes()
+
+    fun observarPorTipo(tipo: TipoMensaje) = dao.observarPorTipo(tipo)
+
     /** Envía todo lo pendiente. Devuelve true si no quedó nada por enviar. */
     suspend fun enviarPendientes(): Boolean = cerrojo.withLock {
         val pendientes = dao.pendientes()

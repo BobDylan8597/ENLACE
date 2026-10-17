@@ -1,14 +1,16 @@
 package com.enlace.app.dominio
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class AjustesTest {
     private val servidor = "http://192.168.1.10:8000/"
 
     @Test
-    fun `sin servidor configurado abre la configuracion`() {
-        assertEquals(Destino.CONFIGURACION, destinoInicial(null, Modo.USUARIO, Consentimiento.AUTOMATICO))
+    fun `la primera vez abre la bienvenida`() {
+        assertEquals(Destino.BIENVENIDA, destinoInicial(null, Modo.USUARIO, Consentimiento.AUTOMATICO))
     }
 
     @Test
@@ -29,6 +31,14 @@ class AjustesTest {
     fun `el modo unidad pide la clave hasta activarse y no pide consentimiento`() {
         assertEquals(Destino.ACTIVAR_UNIDAD, destinoInicial(servidor, Modo.UNIDAD, null))
         assertEquals(Destino.INICIO_UNIDAD, destinoInicial(servidor, Modo.UNIDAD, null, unidadActiva = true))
+    }
+
+    @Test
+    fun `el aviso de inicio automatico solo aparece en marcas que lo bloquean`() {
+        assertTrue(necesitaInicioAutomatico("Xiaomi"))
+        assertTrue(necesitaInicioAutomatico("HONOR"))
+        assertFalse(necesitaInicioAutomatico("samsung"))
+        assertFalse(necesitaInicioAutomatico("Google"))
     }
 
     @Test
