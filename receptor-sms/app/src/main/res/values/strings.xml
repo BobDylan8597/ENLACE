@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Textos en español, en oración y cortos (CLAUDE.md, sección 16). -->
+<resources>
+    <string name="app_nombre">ENLACE · Receptor SMS</string>
+    <string name="explicacion">Este celular recibe los pedidos de ayuda por SMS (formato ENL) y los reenvía al centro de coordinación. Los demás mensajes no se leen ni se envían.</string>
+    <string name="permiso_ok">Recibiendo SMS</string>
+    <string name="permiso_falta">Falta el permiso para recibir SMS</string>
+    <string name="permiso_pedir">Dar permiso</string>
+    <string name="direccion">Dirección del servidor (por ejemplo 192.168.1.10:8000)</string>
+    <string name="clave">Clave de brigada</string>
+    <string name="guardar_probar">Guardar y probar conexión</string>
+    <string name="direccion_invalida">La dirección no es válida</string>
+    <string name="prueba_ok">Conectado con el centro de coordinación</string>
+    <string name="prueba_error">El servidor respondió con un error</string>
+    <string name="error_sin_servidor">Sin conexión con el servidor: se reintenta solo</string>
+    <string name="error_clave">La clave de brigada no es correcta</string>
+    <string name="error_formato">El servidor no entendió el mensaje (formato ENL incorrecto)</string>
+    <string name="resumen">Pendientes: %1$d · Entregados: %2$d</string>
+    <string name="reintentar">Reintentar ahora</string>
+    <string name="simular">Simular un SMS de prueba</string>
+    <string name="vacio">Todavía no llegó ningún SMS de ENLACE.</string>
+    <string name="estado_entregado">Entregado</string>
+    <string name="estado_rechazado">Rechazado</string>
+    <string name="estado_pendiente">Pendiente de envío</string>
+</resources>

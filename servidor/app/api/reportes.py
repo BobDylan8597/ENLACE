@@ -18,6 +18,7 @@ from app.activacion.fuentes.fuente_comunitaria import detectar_propuestas
 from app.api.dependencias import (
     Admin,
     AhoraDep,
+    Brigada,
     CiudadDep,
     ConfigDep,
     PrivilegiadoDep,
@@ -346,7 +347,8 @@ def recibir_checkin(
     return {"celdas_actualizadas": celdas}
 
 
-@router.post("/sms/entrante", response_model=ResultadoReportes)
+# Solo el celular receptor (con la clave de brigada): evita que cualquiera en la red invente pedidos
+@router.post("/sms/entrante", response_model=ResultadoReportes, dependencies=[Brigada])
 def recibir_sms(
     entrada: SmsEntrante,
     sesion: SesionDep,

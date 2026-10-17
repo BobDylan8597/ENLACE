@@ -188,6 +188,7 @@ def main() -> None:
         cliente.post(
             "/sms/entrante",
             {"remitente": f"+505 8{azar.randint(1000000, 9999999)}", "texto": texto},
+            brigada=True,
         )
     print("4 SMS con formato ENL")
 

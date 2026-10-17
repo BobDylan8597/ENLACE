@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Demo: el servidor ENLACE está en una laptop de la red local, sin internet ni certificados.
+     Por eso se permite http. En producción: solo https con certificado del organismo. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

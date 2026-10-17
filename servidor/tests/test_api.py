@@ -15,6 +15,7 @@ from tests.ciudad_prueba import CENTRO, EPICENTRO, HORA, LEJANA
 from tests.conftest import Entorno
 
 ADMIN = {"X-Clave-Admin": obtener_config().servidor.clave_admin}
+BRIGADA = {"X-Clave-Brigada": obtener_config().servidor.clave_brigada}
 SISMO = {
     "fuente": "manual",
     "tipo": "sismo",
@@ -191,8 +192,9 @@ def test_sms_crea_pedido_de_ayuda_y_no_se_duplica(entorno: Entorno) -> None:
         "texto": f"ENL {CENTRO[0]},{CENTRO[1]} P4 A1 H1 RM",
         "hora": HORA.isoformat(),
     }
-    primero = entorno.cliente.post("/sms/entrante", json=sms).json()
-    segundo = entorno.cliente.post("/sms/entrante", json=sms).json()
+    assert entorno.cliente.post("/sms/entrante", json=sms).status_code == 401
+    primero = entorno.cliente.post("/sms/entrante", json=sms, headers=BRIGADA).json()
+    segundo = entorno.cliente.post("/sms/entrante", json=sms, headers=BRIGADA).json()
     assert len(primero["aceptados"]) == 1 and segundo["repetidos"] == primero["aceptados"]
     detalle = entorno.cliente.get(f"/reportes/{primero['aceptados'][0]}", headers=ADMIN).json()
     assert (detalle["origen"], detalle["atrapados"], detalle["necesidades"]) == (
@@ -204,7 +206,9 @@ def test_sms_crea_pedido_de_ayuda_y_no_se_duplica(entorno: Entorno) -> None:
 
 
 def test_sms_mal_formado_se_rechaza(entorno: Entorno) -> None:
-    respuesta = entorno.cliente.post("/sms/entrante", json={"remitente": "+505", "texto": "hola"})
+    respuesta = entorno.cliente.post(
+        "/sms/entrante", json={"remitente": "+505", "texto": "hola"}, headers=BRIGADA
+    )
     assert respuesta.status_code == 422
 
 

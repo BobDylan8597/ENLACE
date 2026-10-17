@@ -21,7 +21,7 @@ Rutas REST y WebSocket. La lista completa está en `/docs` con el servidor corri
   `vulnerables`). Solo admite un punto (`ubicacion`) si la persona eligió compartirlo durante
   emergencias; se guarda aparte y nunca aparece en `/celdas`. Un reporte con lat/lon se reduce a su celda,
   salvo los pedidos de ayuda, cuyo punto exacto y datos de contacto se guardan en `Identidad`.
-- **SMS:** `formato_sms.py` interpreta `ENL <lat>,<lon> P<n> A<n> H<n> <RMWF>`. El mismo SMS
+- **SMS:** `POST /sms/entrante` exige la clave de brigada (solo el celular receptor). `formato_sms.py` interpreta `ENL <lat>,<lon> P<n> A<n> H<n> <RMWF>`. El mismo SMS
   reenviado dos veces genera el mismo `id_mensaje` y se descarta.
 
 ## Mensajes por WebSocket
