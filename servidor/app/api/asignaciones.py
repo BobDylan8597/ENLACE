@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException, status
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.dependencias import Admin, AhoraDep, CiudadDep, ConfigDep, RedDep, SesionDep
@@ -17,7 +18,7 @@ from app.motor.pipeline import (
     evento_activo,
     recalcular_celda,
 )
-from app.rutas.servicio import destino_de, estimador, trazar_ruta
+from app.rutas.servicio import asignaciones_activas, destino_de, estimador, trazar_ruta
 
 router = APIRouter(tags=["asignaciones"], dependencies=[Admin])
 
@@ -77,6 +78,22 @@ def recomendaciones(
     )
     sesion.commit()
     return [asignacion_salida(sesion, a) for a in vigentes]
+
+
+@router.get("/asignaciones", response_model=list[AsignacionSalida])
+def listar_asignaciones(sesion: SesionDep, activas: bool = True) -> list[AsignacionSalida]:
+    """Asignaciones en curso (con su ruta), para el tablero. `activas=false`: todas las decididas."""
+    if activas:
+        elegidas = asignaciones_activas(sesion)
+    else:
+        elegidas = list(
+            sesion.scalars(
+                select(Asignacion)
+                .where(Asignacion.decision != DecisionAsignacion.pendiente)
+                .order_by(Asignacion.hora.desc())
+            )
+        )
+    return [asignacion_salida(sesion, a) for a in elegidas]
 
 
 @router.post("/asignaciones/{id_asignacion}/decision", response_model=AsignacionSalida)

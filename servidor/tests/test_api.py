@@ -7,6 +7,7 @@ import h3
 from sqlalchemy import select
 
 from app.activacion.firma import verificar
+from app.ciudad import obtener_ciudad
 from app.config import obtener_config
 from app.modelos.tablas import Identidad
 from tests.ciudad_prueba import CENTRO, EPICENTRO, HORA, LEJANA
@@ -289,3 +290,23 @@ def test_pedidos_sin_alerta_generan_propuesta_que_se_aprueba(entorno: Entorno) -
     # Los pedidos previos ya forman parte del evento
     assert len(entorno.cliente.get("/reportes", headers=ADMIN).json()) == 4
     assert entorno.cliente.get("/propuestas", headers=ADMIN).json() == []
+
+
+# ── Ciudad y mapa ──────────────────────────────────────────
+
+
+def test_ciudad_activa_para_centrar_el_mapa(entorno: Entorno) -> None:
+    ciudad = entorno.cliente.get("/ciudad").json()
+    activa = obtener_ciudad()
+    assert ciudad["nombre"] == activa.nombre
+    assert ciudad["centro"] == {"lat": activa.centro.lat, "lon": activa.centro.lon}
+    assert ciudad["resolucion_h3"] == obtener_config().h3.resolucion
+    assert "OpenStreetMap" in ciudad["atribucion_mapa"]
+
+
+def test_mapa_base_se_sirve_por_rangos(entorno: Entorno) -> None:
+    if not entorno.cliente.get("/ciudad").json()["mapa_disponible"]:
+        assert entorno.cliente.get("/mapa/base.pmtiles").status_code == 404
+        return
+    parcial = entorno.cliente.get("/mapa/base.pmtiles", headers={"Range": "bytes=0-6"})
+    assert parcial.status_code == 206 and parcial.content == b"PMTiles"

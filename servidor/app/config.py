@@ -201,6 +201,10 @@ class ConfigPreparacion(_Seccion):
     zoom_maximo_mapa: int = Field(ge=0, le=15)
 
 
+class ConfigWeb(_Seccion):
+    directorio: str
+
+
 class Configuracion(_Seccion):
     servidor: ConfigServidor
     ciudad: ConfigCiudad
@@ -216,6 +220,7 @@ class Configuracion(_Seccion):
     privacidad: ConfigPrivacidad
     rutas: ConfigRutas
     preparacion: ConfigPreparacion
+    web: ConfigWeb
 
 
 def _exigir_claves(nombre: str, valores: dict[Any, Any], enum: type[StrEnum]) -> None:

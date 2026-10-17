@@ -201,3 +201,13 @@ def test_marcar_atendida_termina_la_ruta(con_red: Entorno) -> None:
         _bloqueo(con_red, lat, lon, reportante="equipo-9", origen="brigada")["rutas_recalculadas"]
         == 0
     )
+
+
+def test_tablero_lista_las_asignaciones_activas_con_su_ruta(con_red: Entorno) -> None:
+    asignacion = _aceptar_rescate(con_red)
+    (activa,) = con_red.cliente.get("/asignaciones", headers=ADMIN).json()
+    assert activa["id"] == asignacion["id"] and activa["ruta"] is not None
+    con_red.cliente.post(f"/asignaciones/{asignacion['id']}/atendida", headers=ADMIN)
+    assert con_red.cliente.get("/asignaciones", headers=ADMIN).json() == []
+    todas = con_red.cliente.get("/asignaciones?activas=false", headers=ADMIN).json()
+    assert [a["id"] for a in todas] == [asignacion["id"]]

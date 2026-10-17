@@ -20,6 +20,7 @@ python -m venv .venv
 No hay migraciones de base de datos: si cambia el modelo, volver a cargar la semilla con
 `--reiniciar`.
 
+- Web del administrador: <http://127.0.0.1:8000/> (compilarla antes con `npm run build` en `web/`)
 - Documentación interactiva de la API: <http://127.0.0.1:8000/docs>
 - Demos de punta a punta (con el servidor corriendo y la semilla recién cargada):
   `datos/demo_paso1.py` (motor y decisiones) y `datos/demo_paso2.py` (rutas y bloqueos)
@@ -57,6 +58,8 @@ suma 1. La **ciudad activa** se elige en `[ciudad] activa`: cada ciudad es una c
 | GET | `/reportes/{id}` | Detalle del reporte (pantalla A3) |
 | POST | `/asignaciones/{id}/atendida` | La unidad termina (pantalla B9) |
 | POST | `/equipos/{id}/ubicacion` | Posición de la unidad mientras navega (solo equipos, nunca ciudadanos) |
+| GET | `/asignaciones?activas=true` | Asignaciones en curso con su ruta (tablero) |
+| GET | `/ciudad` · `/mapa/base.pmtiles` | Ciudad activa y su mapa base local, leído por rangos HTTP |
 
 Las rutas del administrador piden la cabecera `X-Clave-Admin` (en `/ws/admin`, el parámetro
 `?clave=`). Es una clave fija para la demo; en producción, autenticación por usuario y nivel.

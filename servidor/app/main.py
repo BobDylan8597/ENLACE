@@ -7,11 +7,21 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
-from app.api import asignaciones, celdas, equipos, eventos, reportes, rutas, tiempo_real
+from app.api import (
+    asignaciones,
+    celdas,
+    ciudad,
+    equipos,
+    eventos,
+    reportes,
+    rutas,
+    tiempo_real,
+)
 from app.api.dependencias import reloj
 from app.ciudad import obtener_ciudad
-from app.config import obtener_config
+from app.config import obtener_config, resolver_ruta
 from app.db import crear_tablas, fabrica_sesiones, obtener_motor
 from app.eventos.bus import bus
 from app.privacidad.borrado import iniciar_borrado_programado
@@ -34,7 +44,7 @@ async def ciclo_de_vida(_app: FastAPI) -> AsyncIterator[None]:
 
 app = FastAPI(title="ENLACE", version="0.1.0", lifespan=ciclo_de_vida)
 tiempo_real.suscribir(bus)
-for modulo in (eventos, celdas, reportes, asignaciones, equipos, rutas, tiempo_real):
+for modulo in (eventos, celdas, reportes, asignaciones, equipos, rutas, tiempo_real, ciudad):
     app.include_router(modulo.router)
 
 
@@ -42,3 +52,9 @@ for modulo in (eventos, celdas, reportes, asignaciones, equipos, rutas, tiempo_r
 def salud() -> dict[str, str]:
     ciudad = obtener_ciudad()
     return {"estado": "ok", "ciudad": ciudad.nombre, "pais": ciudad.pais}
+
+
+# La web compilada se monta al final: las rutas de la API tienen prioridad
+_web = resolver_ruta(obtener_config().web.directorio)
+if _web.exists():
+    app.mount("/", StaticFiles(directory=_web, html=True), name="web")

@@ -164,3 +164,7 @@ archivo_mapa = "mapa.pmtiles"
 url_mapa_base = "https://build.protomaps.com/{fecha}.pmtiles"
 dias_busqueda_mapa = 10
 zoom_maximo_mapa = 15
+
+[web]
+# Web del administrador compilada (npm run build en web/). El servidor la entrega en "/"
+directorio = "../web/dist"
