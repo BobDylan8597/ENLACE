@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "enlace-servidor"
+version = "0.1.0"
+description = "Servidor de ENLACE: API, motor de decisión y datos para la post-emergencia"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "pydantic>=2.7",
+    "sqlalchemy>=2.0",
+    "h3>=4.1",
+    "numpy>=2.0",
+    "apscheduler>=3.10,<4",
+    "cryptography>=43",
+    "tzdata",
+]
+
+[project.optional-dependencies]
+# Paso 2: grafo de calles y rutas evitando bloqueos
+rutas = [
+    "osmnx>=2.0",
+    "networkx>=3.3",
+    "geopandas>=1.0",
+    "shapely>=2.0",
+]
+dev = [
+    "pytest>=8",
+    "httpx2",
+    "black>=24",
+]
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.black]
+line-length = 100

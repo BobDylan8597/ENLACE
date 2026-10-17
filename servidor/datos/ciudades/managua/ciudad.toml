@@ -1,0 +1,16 @@
+# Ciudad de prueba para la demo. Cualquier ciudad de Latinoamérica se agrega
+# creando otra carpeta con este mismo archivo y activándola en config/enlace.toml.
+
+id = "managua"
+nombre = "Managua"
+pais = "Nicaragua"
+codigo_pais = "NI"
+zona_horaria = "America/Managua"
+idioma = "es"
+
+# Área cubierta por la demo: círculo alrededor del centro
+radio_km = 5.0
+
+[centro]
+lat = 12.1364
+lon = -86.2514

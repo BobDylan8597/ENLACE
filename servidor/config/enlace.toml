@@ -1,0 +1,109 @@
+# Configuración del servidor ENLACE.
+# Todos los umbrales, pesos y plazos viven aquí: el código no tiene valores mágicos.
+# Rutas relativas se resuelven desde la carpeta servidor/.
+
+[servidor]
+host = "0.0.0.0"
+puerto = 8000
+base_datos = "enlace.sqlite"
+# Solo para la demo: clave fija del panel admin (en producción, autenticación real)
+clave_admin = "enlace-demo"
+
+[ciudad]
+# Carpeta dentro de `directorio` con ciudad.toml. Cambiar para usar otra ciudad.
+activa = "managua"
+directorio = "datos/ciudades"
+
+[h3]
+resolucion = 8
+
+# ── Motor de decisión ──────────────────────────────────────
+
+[amenazas.sismo]
+# Intensidad (MMI) por magnitud y distancia hipocentral R (km), Bakun y Wentworth (1997):
+#   MMI = a + b·M − c·log10(R)
+a = 3.67
+b = 1.17
+c = 3.19
+profundidad_por_defecto_km = 10.0
+distancia_minima_km = 1.0
+
+# P(daño grave | MMI, tipo) = Φ((MMI − mediana) / dispersion)
+# Valores ilustrativos para la demo: calibrar con estudios de vulnerabilidad de cada país.
+[amenazas.sismo.fragilidad]
+precaria = { mediana = 8.0, dispersion = 1.0 }
+adobe_taquezal = { mediana = 8.5, dispersion = 1.0 }
+mamposteria_no_reforzada = { mediana = 9.0, dispersion = 1.0 }
+mamposteria_confinada = { mediana = 10.0, dispersion = 1.0 }
+madera_liviana = { mediana = 10.0, dispersion = 1.2 }
+concreto_reforzado = { mediana = 10.5, dispersion = 1.0 }
+
+[fusion]
+# Peso (confiabilidad) de cada reporte según su origen
+peso_coincidentes = 0.7          # reporte ciudadano confirmado por otra persona en la misma celda
+ventana_coincidencia_min = 60
+ventana_duplicado_min = 30       # misma persona, misma celda y tipo: se fusiona como duplicado
+# Señal de un reporte ciudadano, relativa a la fracción estimada por el modelo
+factor_ayuda = 1.5
+factor_bien = 0.7
+fraccion_minima_ayuda = 0.02
+# Check-ins: aportan la tasa de personas con problemas en la celda
+peso_por_checkin = 0.02
+peso_maximo_checkins = 1.0
+peso_sin_respuesta = 0.3
+minimo_checkins = 5
+
+[fusion.pesos_origen]
+brigada = 1.0
+app = 0.5
+sms = 0.5
+nearby = 0.5
+radio = 0.3
+
+# Fracción de ocupantes gravemente afectados según la evaluación de una brigada
+[fusion.fraccion_por_nivel_dano]
+ninguno = 0.0
+leve = 0.02
+moderado = 0.1
+grave = 0.3
+colapso = 0.6
+
+[clasificacion]
+umbral_impacto_personas = 20.0
+umbral_certeza = 0.5
+
+[prioridad.celda]
+# Los pesos deben sumar 1
+peso_impacto = 0.5
+peso_urgencia = 0.15
+peso_vulnerabilidad = 0.2
+peso_espera = 0.15
+escala_impacto_personas = 50.0
+horas_urgencia_max = 72.0
+horas_espera_max = 6.0
+
+[prioridad.reporte]
+# Los pesos deben sumar 1
+peso_gravedad = 0.45
+peso_vulnerabilidad = 0.2
+peso_espera = 0.15
+peso_celda = 0.2
+peso_atrapado = 2.0
+peso_herido = 1.0
+peso_persona = 0.2
+escala_gravedad = 3.0
+escala_vulnerables = 2.0
+horas_espera_max = 2.0
+
+[asignacion]
+# Paso 1: tiempo de llegada = distancia en línea recta × factor_desvio / velocidad.
+# En el paso 2 se reemplaza por rutas reales sobre el grafo de calles.
+velocidad_promedio_kmh = 25.0
+factor_desvio = 1.3
+maximo_recomendaciones = 10
+
+[asignacion.capacidad_por_necesidad]
+rescate = "rescate"
+medico = "medico"
+agua = "agua"
+refugio = "reconocimiento"
