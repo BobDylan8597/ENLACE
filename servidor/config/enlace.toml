@@ -131,3 +131,34 @@ saltos_max = 10
 dias_borrado = 30
 # Cada cuánto el servidor revisa si hay datos personales vencidos
 intervalo_revision_min = 60
+
+[rutas]
+archivo_calles = "calles.graphml"
+# Después de un desastre se circula más lento que lo que indica OSM (escombros, tráfico)
+factor_velocidad_emergencia = 0.7
+# Penalización del tiempo de viaje de una calle según el estado del bloqueo
+factor_sin_confirmar = 3.0
+factor_probable = 10.0
+# Personas distintas que reportaron el bloqueo (incluida la primera)
+reportes_para_probable = 2
+reportes_para_confirmado = 3
+# Un reporte a menos de esta distancia de un bloqueo existente lo confirma
+radio_fusion_bloqueo_m = 50.0
+# Un bloqueo más lejos que esto de cualquier calle no afecta las rutas
+distancia_maxima_calle_m = 150.0
+
+[preparacion]
+# Margen alrededor del radio de la ciudad (equipos que llegan desde fuera del área)
+margen_km = 1.5
+tipo_red = "drive"
+# Servidores Overpass (datos de calles de OSM), en orden de preferencia
+servidores_overpass = [
+    "https://overpass-api.de/api",
+    "https://overpass.kumi.systems/api",
+    "https://overpass.private.coffee/api",
+]
+archivo_mapa = "mapa.pmtiles"
+# Mapa base: extracto de la compilación diaria de Protomaps (datos OSM, licencia ODbL)
+url_mapa_base = "https://build.protomaps.com/{fecha}.pmtiles"
+dias_busqueda_mapa = 10
+zoom_maximo_mapa = 15

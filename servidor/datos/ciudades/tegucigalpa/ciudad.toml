@@ -1,0 +1,14 @@
+# Segunda ciudad de ejemplo: demuestra que la preparación no depende de Managua.
+# Para usarla en la demo hace falta además su semilla.toml.
+
+id = "tegucigalpa"
+nombre = "Tegucigalpa"
+pais = "Honduras"
+codigo_pais = "HN"
+zona_horaria = "America/Tegucigalpa"
+idioma = "es"
+radio_km = 2.0
+
+[centro]
+lat = 14.0818
+lon = -87.2068

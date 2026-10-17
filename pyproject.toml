@@ -1,0 +1,3 @@
+# Configuración compartida por todo el Python del repositorio (servidor/ y preparacion/)
+[tool.black]
+line-length = 100

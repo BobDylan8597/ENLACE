@@ -171,6 +171,35 @@ class ConfigPrivacidad(_Seccion):
     intervalo_revision_min: float = Field(gt=0)
 
 
+class ConfigRutas(_Seccion):
+    archivo_calles: str
+    factor_velocidad_emergencia: float = Field(gt=0, le=1)
+    factor_sin_confirmar: float = Field(ge=1)
+    factor_probable: float = Field(ge=1)
+    reportes_para_probable: int = Field(ge=1)
+    reportes_para_confirmado: int = Field(ge=1)
+    radio_fusion_bloqueo_m: float = Field(gt=0)
+    distancia_maxima_calle_m: float = Field(gt=0)
+
+    @model_validator(mode="after")
+    def _escalonado(self) -> ConfigRutas:
+        if self.reportes_para_confirmado <= self.reportes_para_probable:
+            raise ValueError(
+                "rutas: reportes_para_confirmado debe superar a reportes_para_probable"
+            )
+        return self
+
+
+class ConfigPreparacion(_Seccion):
+    margen_km: float = Field(ge=0)
+    tipo_red: str
+    servidores_overpass: list[str] = Field(min_length=1)
+    archivo_mapa: str
+    url_mapa_base: str
+    dias_busqueda_mapa: int = Field(ge=1)
+    zoom_maximo_mapa: int = Field(ge=0, le=15)
+
+
 class Configuracion(_Seccion):
     servidor: ConfigServidor
     ciudad: ConfigCiudad
@@ -184,6 +213,8 @@ class Configuracion(_Seccion):
     activacion: ConfigActivacion
     nearby: ConfigNearby
     privacidad: ConfigPrivacidad
+    rutas: ConfigRutas
+    preparacion: ConfigPreparacion
 
 
 def _exigir_claves(nombre: str, valores: dict[Any, Any], enum: type[StrEnum]) -> None:

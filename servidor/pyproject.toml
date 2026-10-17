@@ -17,15 +17,16 @@ dependencies = [
     "apscheduler>=3.10,<4",
     "cryptography>=43",
     "tzdata",
+    # Grafo de calles y rutas evitando bloqueos
+    "osmnx>=2.0",
+    "networkx>=3.3",
+    "shapely>=2.0",
 ]
 
 [project.optional-dependencies]
-# Paso 2: grafo de calles y rutas evitando bloqueos
-rutas = [
-    "osmnx>=2.0",
-    "networkx>=3.3",
-    "geopandas>=1.0",
-    "shapely>=2.0",
+# Scripts de preparación de ciudades (requieren internet una sola vez)
+preparacion = [
+    "pmtiles>=3.4",
 ]
 dev = [
     "pytest>=8",
@@ -39,5 +40,3 @@ include = ["app*"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 
-[tool.black]
-line-length = 100

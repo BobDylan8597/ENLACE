@@ -78,3 +78,9 @@ google-services.json
 *.pbf
 *.osm
 preparacion/descargas/
+
+# Mapas locales generados por preparacion/descargar_osm.py (se regeneran, pesan varios MB)
+servidor/datos/ciudades/*/calles.graphml
+servidor/datos/ciudades/*/mapa.pmtiles
+servidor/datos/ciudades/*/*.parcial
+servidor/datos/ciudades/*/.cache_osm/
