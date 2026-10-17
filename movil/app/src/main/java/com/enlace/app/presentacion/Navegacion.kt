@@ -81,7 +81,8 @@ fun NavegacionEnlace(arranque: ArranqueViewModel = hiltViewModel()) {
 
     NavHost(navController = nav, startDestination = ruta(inicial)) {
         composable<RutaConfiguracion> {
-            PantallaConfiguracion(alContinuar = { nav.avanzarA(RutaModo) })
+            // Desde el inicio (Conexión) se vuelve atrás; en la primera configuración, se sigue al modo
+            PantallaConfiguracion(alContinuar = { if (!nav.popBackStack()) nav.avanzarA(RutaModo) })
         }
         composable<RutaModo> {
             PantallaModo(alElegir = { nav.avanzarA(RutaConsentimiento) })
