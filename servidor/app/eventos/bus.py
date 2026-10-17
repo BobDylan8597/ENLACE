@@ -30,6 +30,7 @@ class Tema(StrEnum):
     recomendaciones_actualizadas = "recomendaciones_actualizadas"
     asignacion_cambiada = "asignacion_cambiada"
     bloqueo_cambiado = "bloqueo_cambiado"
+    ruta_recalculada = "ruta_recalculada"
     propuesta_comunitaria = "propuesta_comunitaria"
 
 

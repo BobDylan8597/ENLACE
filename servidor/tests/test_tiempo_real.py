@@ -63,7 +63,7 @@ def test_unidad_y_ciudadano_reciben_la_asignacion(entorno: Entorno) -> None:
                 headers=ADMIN,
             )
             asignacion = _esperar(ws_unidad, "asignacion")
-            assert asignacion["ubicacion"] == {"lat": 12.74, "lon": -86.25}
-            assert asignacion["destino"] == asignacion["ubicacion"]
+            # El destino de la unidad es el punto exacto de quien pidió ayuda
+            assert asignacion["destino"] == {"lat": 12.74, "lon": -86.25}
             aviso = _esperar(ws_ciudadano, "ayuda_en_camino")
             assert aviso["equipo"] == recomendacion["nombre_equipo"]

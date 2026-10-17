@@ -146,6 +146,8 @@ reportes_para_confirmado = 3
 radio_fusion_bloqueo_m = 50.0
 # Un bloqueo más lejos que esto de cualquier calle no afecta las rutas
 distancia_maxima_calle_m = 150.0
+# Un origen o destino más lejos que esto de la red se calcula en línea recta
+distancia_maxima_a_la_red_m = 1000.0
 
 [preparacion]
 # Margen alrededor del radio de la ciudad (equipos que llegan desde fuera del área)

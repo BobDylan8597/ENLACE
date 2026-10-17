@@ -14,6 +14,8 @@ from app.activacion.firma import Firmador
 from app.ciudad import Ciudad, obtener_ciudad
 from app.config import Configuracion, obtener_config, resolver_ruta
 from app.db import obtener_sesion
+from app.rutas.grafo import GrafoCalles
+from app.rutas.servicio import obtener_red
 
 
 def reloj() -> datetime:
@@ -42,4 +44,6 @@ AhoraDep = Annotated[datetime, Depends(reloj)]
 ConfigDep = Annotated[Configuracion, Depends(obtener_config)]
 CiudadDep = Annotated[Ciudad, Depends(obtener_ciudad)]
 FirmadorDep = Annotated[Firmador, Depends(obtener_firmador)]
+# Grafo de calles de la ciudad activa; None si no se preparó (se usa la línea recta)
+RedDep = Annotated[GrafoCalles | None, Depends(obtener_red)]
 Admin = Depends(exigir_admin)

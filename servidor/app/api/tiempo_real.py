@@ -2,7 +2,8 @@
 
 - /ws/admin?clave=...   todos los temas, para el centro de reportes y el tablero.
 - /ws/movil/{id}        alertas firmadas para todos; `id` = "equipo-<n>" recibe además sus
-                        asignaciones, e `id` = id_anonimo recibe el aviso de ayuda en camino.
+                        asignaciones (con su ruta) y las rutas recalculadas por bloqueos;
+                        `id` = id_anonimo recibe el aviso de ayuda en camino.
 
 Mensajes: {"tipo": "<tema>", "datos": {...}}
 """
@@ -88,7 +89,12 @@ def suscribir(bus: BusEventos) -> None:
                 },
             )
 
+    async def ruta_a_unidad(datos: Datos) -> None:
+        id_equipo = datos["asignacion"]["id_equipo"]
+        await gestor.a_movil(f"{PREFIJO_EQUIPO}{id_equipo}", "ruta_recalculada", datos)
+
     bus.suscribir(Tema.evento_emitido, alerta_a_moviles)
+    bus.suscribir(Tema.ruta_recalculada, ruta_a_unidad)
     bus.suscribir(Tema.evento_cerrado, cierre_a_moviles)
     bus.suscribir(Tema.asignacion_cambiada, asignacion_a_moviles)
 

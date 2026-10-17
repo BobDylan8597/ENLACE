@@ -11,7 +11,18 @@ from datetime import datetime
 from enum import StrEnum
 from typing import Any
 
-from sqlalchemy import JSON, Enum, Float, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import (
+    JSON,
+    BigInteger,
+    Boolean,
+    Enum,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base, FechaUTC, ahora
@@ -166,6 +177,8 @@ class Asignacion(Base):
     )
     decidido_por: Mapped[str | None] = mapped_column(String(120))
     hora: Mapped[datetime] = mapped_column(FechaUTC, default=ahora)
+    # Extensión al modelo: cuándo la unidad marcó la zona atendida (la ruta deja de estar activa)
+    hora_fin: Mapped[datetime | None] = mapped_column(FechaUTC)
 
 
 class Bloqueo(Base):
@@ -180,6 +193,16 @@ class Bloqueo(Base):
     estado: Mapped[EstadoBloqueo] = mapped_column(
         _enum(EstadoBloqueo), default=EstadoBloqueo.sin_confirmar
     )
+    # Extensiones al modelo:
+    # identificadores anónimos de quienes lo reportaron (cuentan personas distintas)
+    reportantes: Mapped[list[str]] = mapped_column(JSON, default=list)
+    confirmado_por_brigada: Mapped[bool] = mapped_column(Boolean, default=False)
+    # Calle afectada (tramo u → v del grafo); None si el punto está lejos de toda calle
+    nodo_u: Mapped[int | None] = mapped_column(BigInteger)
+    nodo_v: Mapped[int | None] = mapped_column(BigInteger)
+    clave_tramo: Mapped[int | None] = mapped_column(Integer)
+    hora: Mapped[datetime] = mapped_column(FechaUTC, default=ahora)
+    actualizado: Mapped[datetime] = mapped_column(FechaUTC, default=ahora)
 
 
 class UsuarioAdmin(Base):

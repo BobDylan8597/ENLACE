@@ -180,6 +180,7 @@ class ConfigRutas(_Seccion):
     reportes_para_confirmado: int = Field(ge=1)
     radio_fusion_bloqueo_m: float = Field(gt=0)
     distancia_maxima_calle_m: float = Field(gt=0)
+    distancia_maxima_a_la_red_m: float = Field(gt=0)
 
     @model_validator(mode="after")
     def _escalonado(self) -> ConfigRutas:

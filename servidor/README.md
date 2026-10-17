@@ -8,14 +8,21 @@ Python 3.11+, FastAPI, SQLite. Monolito modular: cada carpeta de `app/` es un m�
 ```bash
 cd servidor
 python -m venv .venv
-.venv/Scripts/python -m pip install -e ".[dev]"     # Windows (en Linux/macOS: .venv/bin/python)
+.venv/Scripts/python -m pip install -e ".[dev,preparacion]"  # Windows (Linux/macOS: .venv/bin/python)
+
+# Una vez, con internet: mapa de calles y mapa base de la ciudad activa (ver preparacion/)
+.venv/Scripts/python ../preparacion/descargar_osm.py
 
 .venv/Scripts/python datos/semilla.py --reiniciar   # ciudad activa: celdas y equipos sintéticos
 .venv/Scripts/python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
+No hay migraciones de base de datos: si cambia el modelo, volver a cargar la semilla con
+`--reiniciar`.
+
 - Documentación interactiva de la API: <http://127.0.0.1:8000/docs>
-- Demo de punta a punta (con el servidor corriendo): `.venv/Scripts/python datos/demo_paso1.py`
+- Demos de punta a punta (con el servidor corriendo y la semilla recién cargada):
+  `datos/demo_paso1.py` (motor y decisiones) y `datos/demo_paso2.py` (rutas y bloqueos)
 - Pruebas: `.venv/Scripts/python -m pytest` · formato: `.venv/Scripts/python -m black app tests datos`
 
 ## Configuración
@@ -36,7 +43,7 @@ suma 1. La **ciudad activa** se elige en `[ciudad] activa`: cada ciudad es una c
 | `app/api/` | Rutas REST y WebSocket (fachada del sistema) |
 | `app/eventos/` | Pub/sub interno entre módulos |
 | `app/privacidad/` | Cierre de eventos y borrado programado de datos personales |
-| `app/rutas/` | Paso 2: grafo de calles, bloqueos y rutas |
+| `app/rutas/` | Grafo de calles, bloqueos, rutas con instrucciones y recálculo |
 | `app/paquete/` | Pendiente: PDF del paquete de primera hora |
 
 ## Rutas agregadas a la tabla de CLAUDE.md (sección 8)
@@ -49,6 +56,7 @@ suma 1. La **ciudad activa** se elige en `[ciudad] activa`: cada ciudad es una c
 | GET | `/propuestas` · POST `/propuestas/{id}/descartar` | Propuestas comunitarias (se aprueban con POST `/eventos`, fuente `comunitaria`) |
 | GET | `/reportes/{id}` | Detalle del reporte (pantalla A3) |
 | POST | `/asignaciones/{id}/atendida` | La unidad termina (pantalla B9) |
+| POST | `/equipos/{id}/ubicacion` | Posición de la unidad mientras navega (solo equipos, nunca ciudadanos) |
 
 Las rutas del administrador piden la cabecera `X-Clave-Admin` (en `/ws/admin`, el parámetro
 `?clave=`). Es una clave fija para la demo; en producción, autenticación por usuario y nivel.
@@ -58,4 +66,6 @@ Las rutas del administrador piden la cabecera `X-Clave-Admin` (en `/ws/admin`, e
 - `Evento.profundidad_km`: distancia hipocentral del sismo.
 - `Celda.tipos_construccion`, `impacto_inicial`, `suma_pesos`, `ultima_atencion`.
 - `Reporte.id_evento`.
+- `Bloqueo.reportantes`, `confirmado_por_brigada`, `nodo_u`, `nodo_v`, `clave_tramo`, `hora`, `actualizado`.
+- `Asignacion.hora_fin`.
 - Tabla `propuestas_comunitarias`.

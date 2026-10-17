@@ -8,18 +8,20 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.api import asignaciones, celdas, equipos, eventos, reportes, tiempo_real
+from app.api import asignaciones, celdas, equipos, eventos, reportes, rutas, tiempo_real
 from app.api.dependencias import reloj
 from app.ciudad import obtener_ciudad
 from app.config import obtener_config
 from app.db import crear_tablas, fabrica_sesiones, obtener_motor
 from app.eventos.bus import bus
 from app.privacidad.borrado import iniciar_borrado_programado
+from app.rutas.servicio import obtener_red
 
 
 @asynccontextmanager
 async def ciclo_de_vida(_app: FastAPI) -> AsyncIterator[None]:
     crear_tablas(obtener_motor())
+    obtener_red()  # el grafo de calles tarda unos segundos: se carga al arrancar
     bus.vincular_bucle(asyncio.get_running_loop())
     planificador = iniciar_borrado_programado(
         fabrica_sesiones(), reloj, obtener_config().privacidad
@@ -32,7 +34,7 @@ async def ciclo_de_vida(_app: FastAPI) -> AsyncIterator[None]:
 
 app = FastAPI(title="ENLACE", version="0.1.0", lifespan=ciclo_de_vida)
 tiempo_real.suscribir(bus)
-for modulo in (eventos, celdas, reportes, asignaciones, equipos, tiempo_real):
+for modulo in (eventos, celdas, reportes, asignaciones, equipos, rutas, tiempo_real):
     app.include_router(modulo.router)
 
 

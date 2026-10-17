@@ -5,20 +5,19 @@ from __future__ import annotations
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.api.dependencias import Admin, AhoraDep, CiudadDep, ConfigDep, SesionDep
-from app.api.vistas import asignacion_salida, identidades_de_ayuda, resumen_celdas
+from app.api.dependencias import Admin, AhoraDep, CiudadDep, ConfigDep, RedDep, SesionDep
+from app.api.vistas import asignacion_salida, resumen_celdas
 from app.eventos.bus import Tema, bus
 from app.modelos.enums import DecisionAsignacion, EstadoEquipo, EstadoReporte
 from app.modelos.esquemas import AsignacionSalida, DecisionEntrada
 from app.modelos.tablas import Asignacion, Celda, Equipo, Evento, Reporte
-from app.motor.asignacion import EstimadorLineaRecta
-from app.motor.geo import centro_celda
 from app.motor.pipeline import (
     DECISIONES_EN_CURSO,
     actualizar_recomendaciones,
     evento_activo,
     recalcular_celda,
 )
+from app.rutas.servicio import destino_de, estimador, trazar_ruta
 
 router = APIRouter(tags=["asignaciones"], dependencies=[Admin])
 
@@ -37,25 +36,21 @@ def _asignacion_o_404(sesion: Session, id_asignacion: int) -> Asignacion:
     return asignacion
 
 
-def _publicar_asignacion(sesion: Session, salida: AsignacionSalida) -> None:
-    """Para la unidad: destino y, si es un pedido de ayuda, el punto exacto de la persona.
+def _publicar_asignacion(sesion: Session, asignacion: Asignacion) -> AsignacionSalida:
+    """Para la unidad: destino (el punto exacto si es un pedido de ayuda) y su ruta.
     Para el ciudadano (por su id_anonimo): el aviso de ayuda en camino."""
-    datos: dict[str, object] = {
-        "asignacion": salida.model_dump(mode="json"),
-        "destino": dict(zip(("lat", "lon"), centro_celda(salida.id_h3))),
-        "id_anonimo": None,
-        "ubicacion": None,
-    }
-    if salida.id_reporte is not None:
-        reporte = sesion.get_one(Reporte, salida.id_reporte)
-        datos["id_anonimo"] = reporte.id_anonimo
-        identidad = identidades_de_ayuda(sesion, [reporte]).get(
-            (reporte.id_anonimo, reporte.id_evento)
-        )
-        if identidad is not None:
-            datos["ubicacion"] = {"lat": identidad.lat, "lon": identidad.lon}
-            datos["destino"] = datos["ubicacion"]
-    bus.publicar(Tema.asignacion_cambiada, datos)
+    salida = asignacion_salida(sesion, asignacion)
+    lat, lon = destino_de(sesion, asignacion)
+    reporte = sesion.get(Reporte, asignacion.id_reporte) if asignacion.id_reporte else None
+    bus.publicar(
+        Tema.asignacion_cambiada,
+        {
+            "asignacion": salida.model_dump(mode="json"),
+            "destino": {"lat": lat, "lon": lon},
+            "id_anonimo": reporte.id_anonimo if reporte else None,
+        },
+    )
+    return salida
 
 
 def _publicar_recomendaciones(sesion: Session, recomendaciones: list[Asignacion]) -> None:
@@ -71,13 +66,15 @@ def _publicar_recomendaciones(sesion: Session, recomendaciones: list[Asignacion]
 
 @router.get("/recomendaciones", response_model=list[AsignacionSalida])
 def recomendaciones(
-    sesion: SesionDep, ahora: AhoraDep, config: ConfigDep
+    sesion: SesionDep, ahora: AhoraDep, config: ConfigDep, red: RedDep
 ) -> list[AsignacionSalida]:
     """Próximas decisiones sugeridas, de mayor a menor prioridad, cada una con su motivo."""
     evento = evento_activo(sesion)
     if evento is None:
         return []
-    vigentes = actualizar_recomendaciones(sesion, evento, ahora, config)
+    vigentes = actualizar_recomendaciones(
+        sesion, evento, ahora, config, estimador(sesion, red, config)
+    )
     sesion.commit()
     return [asignacion_salida(sesion, a) for a in vigentes]
 
@@ -89,8 +86,10 @@ def decidir(
     sesion: SesionDep,
     ahora: AhoraDep,
     config: ConfigDep,
+    red: RedDep,
 ) -> AsignacionSalida:
-    """La decisión final siempre es humana: aceptar, cambiar el equipo o rechazar."""
+    """La decisión final siempre es humana: aceptar, cambiar el equipo o rechazar.
+    Al aceptar se traza la ruta del equipo, que la unidad recibe con la asignación."""
     evento = _evento_o_409(sesion)
     asignacion = _asignacion_o_404(sesion, id_asignacion)
     if asignacion.decision is not DecisionAsignacion.pendiente:
@@ -113,8 +112,8 @@ def decidir(
         if equipo is not sugerido:
             asignacion.id_equipo = equipo.id
             asignacion.tiempo_estimado_min = round(
-                EstimadorLineaRecta(config.asignacion).minutos(
-                    (equipo.lat, equipo.lon), centro_celda(asignacion.id_h3)
+                estimador(sesion, red, config).minutos(
+                    (equipo.lat, equipo.lon), destino_de(sesion, asignacion)
                 ),
                 1,
             )
@@ -128,12 +127,14 @@ def decidir(
         equipo.estado = EstadoEquipo.en_ruta
         if asignacion.id_reporte is not None:
             sesion.get_one(Reporte, asignacion.id_reporte).estado = EstadoReporte.asignado
+        trazar_ruta(sesion, red, asignacion, config)
 
     sesion.flush()
-    vigentes = actualizar_recomendaciones(sesion, evento, ahora, config)
+    vigentes = actualizar_recomendaciones(
+        sesion, evento, ahora, config, estimador(sesion, red, config)
+    )
     sesion.commit()
-    salida = asignacion_salida(sesion, asignacion)
-    _publicar_asignacion(sesion, salida)
+    salida = _publicar_asignacion(sesion, asignacion)
     _publicar_recomendaciones(sesion, vigentes)
     return salida
 
@@ -145,27 +146,30 @@ def marcar_atendida(
     ahora: AhoraDep,
     config: ConfigDep,
     ciudad: CiudadDep,
+    red: RedDep,
 ) -> AsignacionSalida:
     """La unidad terminó (pantalla B9): el equipo queda libre y la celda se recalcula."""
     evento = _evento_o_409(sesion)
     asignacion = _asignacion_o_404(sesion, id_asignacion)
-    if asignacion.decision not in DECISIONES_EN_CURSO:
+    if asignacion.decision not in DECISIONES_EN_CURSO or asignacion.hora_fin is not None:
         raise HTTPException(status.HTTP_409_CONFLICT, "La asignación no está en curso")
+    asignacion.hora_fin = ahora
     if asignacion.id_reporte is not None:
         sesion.get_one(Reporte, asignacion.id_reporte).estado = EstadoReporte.atendido
     equipo = sesion.get_one(Equipo, asignacion.id_equipo)
     equipo.estado = EstadoEquipo.disponible
     # El equipo queda donde terminó el trabajo
-    equipo.lat, equipo.lon = centro_celda(asignacion.id_h3)
+    equipo.lat, equipo.lon = destino_de(sesion, asignacion)
     celda = sesion.get_one(Celda, asignacion.id_h3)
     celda.ultima_atencion = ahora
     sesion.flush()
     recalcular_celda(sesion, celda, evento, ahora, config, ciudad.zona)
-    vigentes = actualizar_recomendaciones(sesion, evento, ahora, config)
+    vigentes = actualizar_recomendaciones(
+        sesion, evento, ahora, config, estimador(sesion, red, config)
+    )
     sesion.commit()
 
-    salida = asignacion_salida(sesion, asignacion)
-    _publicar_asignacion(sesion, salida)
+    salida = _publicar_asignacion(sesion, asignacion)
     bus.publicar(
         Tema.celda_actualizada,
         {

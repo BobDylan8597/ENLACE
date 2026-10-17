@@ -14,9 +14,11 @@ from typing import Annotated, Any, Literal
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, model_validator
 
 from app.modelos.enums import (
+    AlcanceBloqueo,
     Capacidad,
     CategoriaCelda,
     DecisionAsignacion,
+    EstadoBloqueo,
     EstadoCheckIn,
     EstadoEquipo,
     EstadoEvento,
@@ -26,6 +28,7 @@ from app.modelos.enums import (
     Necesidad,
     NivelDano,
     OrigenReporte,
+    TipoBloqueo,
     TipoEvento,
     TipoReporte,
 )
@@ -289,6 +292,9 @@ class AsignacionSalida(_Salida):
     decision: DecisionAsignacion
     decidido_por: str | None
     hora: datetime
+    hora_fin: datetime | None = None
+    # GeoJSON de la ruta del equipo, con instrucciones paso a paso (cuando ya fue aceptada)
+    ruta: dict[str, Any] | None = None
 
 
 class DecisionEntrada(_Entrada):
@@ -305,3 +311,53 @@ class DecisionEntrada(_Entrada):
 
 
 ReporteDetalle.model_rebuild()
+
+
+# ── Bloqueos y rutas ───────────────────────────────────────
+
+
+class BloqueoEntrada(_Entrada):
+    """Reportar crea un bloqueo o confirma uno cercano; confirmar y descartar usan id_bloqueo."""
+
+    accion: Literal["reportar", "confirmar", "descartar"] = "reportar"
+    id_bloqueo: int | None = None
+    lat: Latitud | None = None
+    lon: Longitud | None = None
+    tipo: TipoBloqueo = TipoBloqueo.otro
+    alcance: AlcanceBloqueo = AlcanceBloqueo.total
+    # Quién reporta: id_anonimo del celular, o "equipo-<n>" si es una brigada
+    reportante: str = Field(min_length=3, max_length=36)
+    origen: Literal["app", "brigada", "operador"] = "app"
+
+    @model_validator(mode="after")
+    def _coherente(self) -> BloqueoEntrada:
+        if self.accion == "reportar" and (self.lat is None or self.lon is None):
+            raise ValueError("Reportar un bloqueo requiere lat y lon")
+        if self.accion != "reportar" and self.id_bloqueo is None:
+            raise ValueError("Confirmar o descartar requiere id_bloqueo")
+        return self
+
+
+class BloqueoSalida(_Salida):
+    id: int
+    lat: float
+    lon: float
+    tipo: TipoBloqueo
+    alcance: AlcanceBloqueo
+    confirmaciones: int
+    estado: EstadoBloqueo
+    confirmado_por_brigada: bool
+    hora: datetime
+    actualizado: datetime
+    # False si el punto está lejos de toda calle: no cambia ninguna ruta
+    afecta_rutas: bool = False
+
+
+class CambioBloqueoSalida(BaseModel):
+    bloqueo: BloqueoSalida
+    rutas_recalculadas: int
+
+
+class UbicacionEquipoEntrada(_Entrada):
+    lat: Latitud
+    lon: Longitud

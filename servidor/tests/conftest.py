@@ -11,6 +11,8 @@ from app.activacion.firma import Firmador
 from app.api.dependencias import obtener_firmador, reloj
 from app.db import crear_motor, crear_tablas, obtener_sesion
 from app.main import app
+from app.rutas.grafo import GrafoCalles
+from app.rutas.servicio import obtener_red
 from tests.ciudad_prueba import HORA, poblar_ciudad
 
 
@@ -39,6 +41,10 @@ class Entorno:
     firmador: Firmador
     fabrica: sessionmaker[Session]
 
+    def usar_red(self, red: GrafoCalles | None) -> None:
+        """Por defecto no hay grafo de calles (línea recta); las pruebas de rutas ponen uno."""
+        app.dependency_overrides[obtener_red] = lambda: red
+
 
 @pytest.fixture
 def entorno(tmp_path: Path) -> Iterator[Entorno]:
@@ -59,6 +65,7 @@ def entorno(tmp_path: Path) -> Iterator[Entorno]:
     app.dependency_overrides[obtener_sesion] = sesion_de_prueba
     app.dependency_overrides[reloj] = lambda: controlado.ahora
     app.dependency_overrides[obtener_firmador] = lambda: firmador
+    app.dependency_overrides[obtener_red] = lambda: None
     try:
         yield Entorno(TestClient(app), controlado, firmador, fabrica)
     finally:

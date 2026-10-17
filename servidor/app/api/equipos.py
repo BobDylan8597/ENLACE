@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import select
 
 from app.api.dependencias import Admin, SesionDep
-from app.modelos.esquemas import EquipoEntrada, EquipoSalida
+from app.modelos.esquemas import EquipoEntrada, EquipoSalida, UbicacionEquipoEntrada
 from app.modelos.tablas import Equipo
 
 router = APIRouter(tags=["equipos"], dependencies=[Admin])
@@ -28,5 +28,19 @@ def registrar(entrada: EquipoEntrada, sesion: SesionDep) -> Equipo:
         estado=entrada.estado,
     )
     sesion.add(equipo)
+    sesion.commit()
+    return equipo
+
+
+@router.post("/equipos/{id_equipo}/ubicacion", response_model=EquipoSalida)
+def actualizar_ubicacion(
+    id_equipo: int, entrada: UbicacionEquipoEntrada, sesion: SesionDep
+) -> Equipo:
+    """La unidad informa dónde está mientras navega (B5), para recalcular desde ahí.
+    Solo equipos de respuesta: a los ciudadanos nunca se los rastrea (sección 13)."""
+    equipo = sesion.get(Equipo, id_equipo)
+    if equipo is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Equipo no encontrado")
+    equipo.lat, equipo.lon = entrada.lat, entrada.lon
     sesion.commit()
     return equipo

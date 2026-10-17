@@ -6,6 +6,7 @@ disponible, con la capacidad necesaria, que llega antes. Cada propuesta lleva un
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from typing import Protocol
 
@@ -126,6 +127,11 @@ def recomendar(
             sin_cubrir.append(pendiente)
             continue
         tiempos = {e.id: estimador.minutos(e.ubicacion, pendiente.destino) for e in aptos}
+        # Sin camino posible (calles cortadas por bloqueos): ese equipo no puede llegar
+        aptos = [e for e in aptos if math.isfinite(tiempos[e.id])]
+        if not aptos:
+            sin_cubrir.append(pendiente)
+            continue
         elegido = min(aptos, key=lambda e: (tiempos[e.id], e.id))
         libres.remove(elegido)
         minutos = tiempos[elegido.id]
