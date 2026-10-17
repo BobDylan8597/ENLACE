@@ -10,13 +10,16 @@ Rutas REST y WebSocket. La lista completa está en `/docs` con el servidor corri
 | `asignaciones.py` | Recomendaciones, decisión humana, zona atendida |
 | `equipos.py` | Consulta y registro de equipos, posición de la unidad |
 | `rutas.py` | Bloqueos (reportar, confirmar, descartar) y `GET /rutas` |
+| `ubicaciones.py` | Puntos exactos consentidos del evento activo (brigada y admin) |
 | `tiempo_real.py` | `/ws/admin` y `/ws/movil/{id}` |
 
 ## Reglas que se aplican aquí
 
 - **Lotes de mulas de datos:** cada reporte se valida por separado. La respuesta separa
   `aceptados`, `repetidos` (ya recibidos: no es un error) y `rechazados` (con el motivo).
-- **Privacidad:** el check-in no admite coordenadas. Un reporte con lat/lon se reduce a su celda,
+- **Privacidad:** el check-in lleva la celda y conteos anónimos del hogar (`personas`,
+  `vulnerables`). Solo admite un punto (`ubicacion`) si la persona eligió compartirlo durante
+  emergencias; se guarda aparte y nunca aparece en `/celdas`. Un reporte con lat/lon se reduce a su celda,
   salvo los pedidos de ayuda, cuyo punto exacto y datos de contacto se guardan en `Identidad`.
 - **SMS:** `formato_sms.py` interpreta `ENL <lat>,<lon> P<n> A<n> H<n> <RMWF>`. El mismo SMS
   reenviado dos veces genera el mismo `id_mensaje` y se descarta.

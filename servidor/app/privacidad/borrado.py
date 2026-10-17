@@ -3,6 +3,8 @@
 - Al cerrar un evento, cada Identidad del evento recibe fecha_borrado = cierre + plazo.
 - Una Identidad creada sin evento activo recibe un plazo provisional desde su creación;
   si luego se emite una alerta, pasa al evento y se borra al cerrarlo.
+- Los puntos exactos compartidos al llegar la alerta (UbicacionAlerta) se borran al cerrar
+  el evento (o tras `dias_borrado_ubicaciones`).
 - Los agregados anónimos (celdas, reportes sin identidad, check-ins por celda) se conservan.
 """
 
@@ -18,7 +20,7 @@ from sqlalchemy.orm import Session
 
 from app.config import ConfigPrivacidad
 from app.modelos.enums import EstadoEvento
-from app.modelos.tablas import Evento, Identidad
+from app.modelos.tablas import Evento, Identidad, UbicacionAlerta
 
 log = logging.getLogger(__name__)
 
@@ -38,6 +40,13 @@ def cerrar_evento(
         .where(Identidad.id_evento == evento.id)
         .values(fecha_borrado=plazo_borrado(ahora, config))
     )
+    puntos = select(UbicacionAlerta).where(UbicacionAlerta.id_evento == evento.id)
+    if config.dias_borrado_ubicaciones == 0:
+        sesion.execute(delete(UbicacionAlerta).where(UbicacionAlerta.id_evento == evento.id))
+    else:
+        limite = ahora + timedelta(days=config.dias_borrado_ubicaciones)
+        for punto in sesion.scalars(puntos):
+            punto.fecha_borrado = limite
     sesion.flush()
     return resultado.rowcount or 0
 
@@ -46,6 +55,11 @@ def borrar_vencidos(sesion: Session, ahora: datetime) -> int:
     resultado = sesion.execute(
         delete(Identidad).where(
             Identidad.fecha_borrado.is_not(None), Identidad.fecha_borrado <= ahora
+        )
+    )
+    sesion.execute(
+        delete(UbicacionAlerta).where(
+            UbicacionAlerta.fecha_borrado.is_not(None), UbicacionAlerta.fecha_borrado <= ahora
         )
     )
     sesion.flush()

@@ -14,7 +14,7 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 import h3
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.config import Configuracion
@@ -24,6 +24,7 @@ from app.modelos.enums import (
     DecisionAsignacion,
     EstadoEquipo,
     EstadoEvento,
+    EstadoCheckIn,
     EstadoReporte,
     TipoReporte,
 )
@@ -41,7 +42,13 @@ from app.motor.asignacion import (
 from app.motor.fusion import CAMPOS_CONTEO, estimar_celda, informacion_nueva, preparar_evidencia
 from app.motor.geo import centro_celda
 from app.motor.impacto import fraccion_inicial, ocupantes
-from app.motor.prioridad import Prioridad, clasificar, prioridad_celda, prioridad_reporte
+from app.motor.prioridad import (
+    Prioridad,
+    clasificar,
+    prioridad_celda,
+    prioridad_reporte,
+    vulnerabilidad_efectiva,
+)
 from app.motor.tipos import DatosCelda, DatosCheckIn, DatosEvento, DatosReporte, EstadoCelda
 
 DECISIONES_EN_CURSO = (DecisionAsignacion.aceptada, DecisionAsignacion.modificada)
@@ -133,6 +140,20 @@ def _checkins_de_celda(sesion: Session, id_h3: str, id_evento: int) -> list[Dato
     return [DatosCheckIn(c.id_anonimo, c.id_h3, c.estado) for c in sesion.scalars(consulta)]
 
 
+def poblacion_critica(sesion: Session, id_h3: str, id_evento: int) -> int:
+    """Personas vulnerables de la celda que no respondieron o pidieron ayuda (check-ins)."""
+    return (
+        sesion.scalar(
+            select(func.coalesce(func.sum(CheckIn.vulnerables), 0)).where(
+                CheckIn.id_h3 == id_h3,
+                CheckIn.id_evento == id_evento,
+                CheckIn.estado != EstadoCheckIn.bien,
+            )
+        )
+        or 0
+    )
+
+
 # ── Actualizar celdas ──────────────────────────────────────
 
 
@@ -173,7 +194,11 @@ def recalcular_celda(
     categoria = clasificar(estado.impacto_estimado, estado.certeza, config.clasificacion)
     prioridad = prioridad_celda(
         estado.impacto_estimado,
-        celda.vulnerabilidad,
+        vulnerabilidad_efectiva(
+            celda.vulnerabilidad,
+            poblacion_critica(sesion, celda.id_h3, evento.id),
+            config.prioridad.celda,
+        ),
         evento.hora,
         celda.ultima_atencion,
         ahora,
@@ -447,6 +472,10 @@ def ingresar_checkin(
         existente.id_h3 = checkin.id_h3
         existente.estado = checkin.estado
         existente.hora = checkin.hora
+        if checkin.personas is not None:
+            existente.personas = checkin.personas
+        if checkin.vulnerables is not None:
+            existente.vulnerables = checkin.vulnerables
     obtener_o_crear_celda(sesion, checkin.id_h3, config)
     sesion.flush()
     for id_h3 in sorted(celdas):

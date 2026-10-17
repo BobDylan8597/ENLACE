@@ -107,7 +107,14 @@ def test_checkins_llenan_los_totales_por_celda(entorno: Entorno) -> None:
         )
         assert respuesta.status_code == 202
     celdas = {c["id_h3"]: c for c in entorno.cliente.get("/celdas").json()}
-    assert celdas[EPICENTRO]["checkins"] == {"sin_respuesta": 0, "bien": 2, "ayuda": 1}
+    assert celdas[EPICENTRO]["checkins"] == {
+        "sin_respuesta": 0,
+        "bien": 2,
+        "ayuda": 1,
+        "personas": 3,
+        "vulnerables": 0,
+        "criticos": 0,
+    }
 
 
 # ── Reportes ───────────────────────────────────────────────

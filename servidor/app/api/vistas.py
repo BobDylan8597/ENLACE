@@ -23,14 +23,25 @@ def totales_checkin(sesion: Session, evento: Evento | None) -> dict[str, Totales
     if evento is None:
         return {}
     filas = sesion.execute(
-        select(CheckIn.id_h3, CheckIn.estado, func.count())
+        select(
+            CheckIn.id_h3,
+            CheckIn.estado,
+            func.count(),
+            func.sum(CheckIn.personas),
+            func.sum(CheckIn.vulnerables),
+        )
         .where(CheckIn.id_evento == evento.id)
         .group_by(CheckIn.id_h3, CheckIn.estado)
     ).all()
     totales: dict[str, TotalesCheckIn] = {}
-    for id_h3, estado, cantidad in filas:
+    for id_h3, estado, cantidad, personas, vulnerables in filas:
         actual = totales.setdefault(id_h3, TotalesCheckIn())
-        setattr(actual, EstadoCheckIn(estado).value, cantidad)
+        estado = EstadoCheckIn(estado)
+        setattr(actual, estado.value, cantidad)
+        actual.personas += personas or 0
+        actual.vulnerables += vulnerables or 0
+        if estado is not EstadoCheckIn.bien:
+            actual.criticos += vulnerables or 0
     return totales
 
 

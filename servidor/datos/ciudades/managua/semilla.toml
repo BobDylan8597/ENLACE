@@ -206,5 +206,7 @@ lon = -86.268
 
 [demo]
 checkins = 300
+# Fracción de check-ins con punto exacto (opción de consentimiento "ubicación exacta")
+fraccion_ubicacion_exacta = 0.4
 # Nombres ficticios para los pedidos de ayuda de la demo
 nombres = ["María López", "José Martínez", "Ana Gutiérrez", "Carlos Rivera", "Rosa Hernández", "Luis Castillo", "Carmen Rodríguez", "Pedro Mendoza"]

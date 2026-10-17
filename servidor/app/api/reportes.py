@@ -47,6 +47,7 @@ from app.modelos.esquemas import (
     SmsEntrante,
 )
 from app.modelos.tablas import Asignacion, Celda, CheckIn, Evento, Identidad, Reporte
+from app.privacidad.ubicaciones import guardar_ubicacion
 from app.motor.pipeline import (
     a_datos_reporte,
     es_celda_valida,
@@ -319,7 +320,8 @@ def recibir_checkin(
     config: ConfigDep,
     ciudad: CiudadDep,
 ) -> dict[str, list[str]]:
-    """Check-in anónimo: solo la celda h3, nunca coordenadas (el esquema no las admite)."""
+    """Check-in anónimo: la celda h3 y los conteos del hogar. El punto exacto solo llega si la
+    persona eligió compartirlo durante emergencias, y se guarda aparte (UbicacionAlerta)."""
     evento = sesion.get(Evento, entrada.id_evento)
     if evento is None or evento.estado is not EstadoEvento.activo:
         raise HTTPException(status.HTTP_409_CONFLICT, "El evento no está activo")
@@ -330,8 +332,11 @@ def recibir_checkin(
         id_h3=entrada.id_h3,
         estado=entrada.estado,
         hora=entrada.hora or ahora,
+        personas=entrada.personas,
+        vulnerables=entrada.vulnerables,
     )
     celdas = ingresar_checkin(sesion, checkin, evento, ahora, config, ciudad.zona)
+    guardar_ubicacion(sesion, entrada, evento, checkin.hora)
     sesion.commit()
     bus.publicar(Tema.checkin_recibido, {"id_evento": evento.id, "celdas": celdas})
     bus.publicar(

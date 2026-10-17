@@ -95,6 +95,7 @@ class ConfigPrioridadCelda(_Seccion):
     escala_impacto_personas: float = Field(gt=0)
     horas_urgencia_max: float = Field(gt=0)
     horas_espera_max: float = Field(gt=0)
+    escala_poblacion_critica: float = Field(gt=0)
 
     @model_validator(mode="after")
     def _pesos_suman_uno(self) -> ConfigPrioridadCelda:
@@ -169,6 +170,7 @@ class ConfigNearby(_Seccion):
 
 class ConfigPrivacidad(_Seccion):
     dias_borrado: float = Field(gt=0)
+    dias_borrado_ubicaciones: float = Field(ge=0)
     intervalo_revision_min: float = Field(gt=0)
 
 

@@ -85,6 +85,10 @@ peso_espera = 0.15
 escala_impacto_personas = 300.0
 horas_urgencia_max = 72.0
 horas_espera_max = 6.0
+# Personas vulnerables (adulto mayor, niños, embarazo, discapacidad…) que no respondieron o
+# pidieron ayuda en la celda: con esta cantidad la vulnerabilidad de la celda sube 63 %
+# de lo que le falta para llegar a 1
+escala_poblacion_critica = 10.0
 
 [prioridad.reporte]
 # Los pesos deben sumar 1
@@ -131,6 +135,9 @@ saltos_max = 10
 [privacidad]
 # Días tras cerrar el evento para borrar los datos personales (Identidad)
 dias_borrado = 30
+# Días tras cerrar el evento para borrar los puntos exactos compartidos al llegar la alerta.
+# 0 = se borran al cerrar: terminada la emergencia ya no hace falta saber dónde estaba cada uno
+dias_borrado_ubicaciones = 0
 # Cada cuánto el servidor revisa si hay datos personales vencidos
 intervalo_revision_min = 60
 

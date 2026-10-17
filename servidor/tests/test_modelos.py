@@ -18,6 +18,7 @@ TABLAS_ESPERADAS = {
     "celdas",
     "reportes",
     "checkins",
+    "ubicaciones_alerta",
     "identidades",
     "equipos",
     "asignaciones",

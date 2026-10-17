@@ -19,6 +19,7 @@ from app.api import (
     rutas,
     seguimiento,
     tiempo_real,
+    ubicaciones,
 )
 from app.api.dependencias import reloj
 from app.ciudad import obtener_ciudad
@@ -55,6 +56,7 @@ for modulo in (
     tiempo_real,
     ciudad,
     seguimiento,
+    ubicaciones,
 ):
     app.include_router(modulo.router)
 

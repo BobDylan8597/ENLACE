@@ -124,6 +124,11 @@ class TotalesCheckIn(BaseModel):
     sin_respuesta: int = 0
     bien: int = 0
     ayuda: int = 0
+    # Población que informaron los check-ins (anónima) y la crítica: vulnerables que no
+    # respondieron o pidieron ayuda
+    personas: int = 0
+    vulnerables: int = 0
+    criticos: int = 0
 
 
 class CeldaResumen(_Salida):
@@ -247,12 +252,40 @@ class ReporteDetalle(ReporteSalida):
 # ── Check-ins y SMS ────────────────────────────────────────
 
 
+class PuntoExacto(_Entrada):
+    lat: Latitud
+    lon: Longitud
+
+
 class CheckInEntrada(_Entrada):
     id_anonimo: str = Field(min_length=8, max_length=36)
     id_evento: int
     id_h3: str
     estado: EstadoCheckIn = EstadoCheckIn.sin_respuesta
     hora: AwareDatetime | None = None
+    personas: int = Field(default=1, ge=1, le=50)
+    vulnerables: int = Field(default=0, ge=0, le=50)
+    # Solo si la persona eligió compartir su ubicación exacta durante emergencias
+    ubicacion: PuntoExacto | None = None
+
+    @model_validator(mode="after")
+    def _coherente(self) -> CheckInEntrada:
+        if self.vulnerables > self.personas:
+            raise ValueError("vulnerables no puede superar a personas")
+        return self
+
+
+class UbicacionSalida(BaseModel):
+    """Punto de una persona en el mapa: sin nombre ni teléfono."""
+
+    id: int
+    lat: float
+    lon: float
+    id_h3: str
+    estado: EstadoCheckIn
+    personas: int
+    vulnerables: int
+    hora: datetime
 
 
 class SmsEntrante(_Entrada):

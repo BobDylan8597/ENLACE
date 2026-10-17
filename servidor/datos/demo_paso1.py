@@ -111,22 +111,33 @@ def main() -> None:
     # 2. Check-ins ──────────────────────────────────────────
     _titulo("2. Check-ins anónimos")
     pesos = [c["impacto_estimado"] + 5 for c in celdas]
+    con_punto = 0
     for _ in range(semilla["demo"]["checkins"]):
         celda = azar.choices(celdas, weights=pesos)[0]
         riesgo = celda["impacto_estimado"] / (celda["impacto_estimado"] + 150)
         estado = azar.choices(
             ["ayuda", "sin_respuesta", "bien"], weights=[riesgo, 0.2, 1 - riesgo]
         )[0]
-        cliente.post(
-            "/checkins",
-            {
-                "id_anonimo": _id(),
-                "id_evento": evento["id"],
-                "id_h3": celda["id_h3"],
-                "estado": estado,
-            },
-        )
-    print(f"{semilla['demo']['checkins']} check-ins enviados (solo la celda h3, sin coordenadas)")
+        personas = azar.choice([1, 2, 3, 4, 5])
+        checkin: dict[str, Any] = {
+            "id_anonimo": _id(),
+            "id_evento": evento["id"],
+            "id_h3": celda["id_h3"],
+            "estado": estado,
+            "personas": personas,
+            # Adulto mayor, niños pequeños, embarazo, discapacidad… (del perfil del celular)
+            "vulnerables": min(personas, azar.choices([0, 1, 2], weights=[0.55, 0.3, 0.15])[0]),
+        }
+        # Parte de las personas eligió compartir su ubicación exacta durante emergencias
+        if azar.random() < semilla["demo"]["fraccion_ubicacion_exacta"]:
+            lat, lon = _punto_en(celda["id_h3"], azar)
+            checkin["ubicacion"] = {"lat": lat, "lon": lon}
+            con_punto += 1
+        cliente.post("/checkins", checkin)
+    print(
+        f"{semilla['demo']['checkins']} check-ins enviados: celda h3 y conteos del hogar; "
+        f"{con_punto} con ubicación exacta (eligieron compartirla)"
+    )
 
     # 3. Reportes ───────────────────────────────────────────
     _titulo("3. Reportes desde el terreno")

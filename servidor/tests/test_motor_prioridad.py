@@ -4,7 +4,12 @@ import pytest
 
 from app.config import obtener_config
 from app.modelos.enums import CategoriaCelda, OrigenReporte, TipoReporte
-from app.motor.prioridad import clasificar, prioridad_celda, prioridad_reporte
+from app.motor.prioridad import (
+    clasificar,
+    prioridad_celda,
+    prioridad_reporte,
+    vulnerabilidad_efectiva,
+)
 from app.motor.tipos import DatosReporte
 
 HORA = datetime(2026, 10, 16, 14, 0, tzinfo=UTC)
@@ -79,3 +84,10 @@ def test_prioridad_distingue_impactos_del_rango_realista() -> None:
     ]
     assert componentes == sorted(componentes)
     assert componentes[-1] - componentes[-2] > 0.05
+
+
+def test_poblacion_critica_acerca_la_vulnerabilidad_a_1() -> None:
+    c = CONFIG.prioridad.celda
+    assert vulnerabilidad_efectiva(0.3, 0, c) == pytest.approx(0.3)
+    medio = vulnerabilidad_efectiva(0.3, int(c.escala_poblacion_critica), c)
+    assert 0.3 < medio < vulnerabilidad_efectiva(0.3, 100, c) <= 1.0

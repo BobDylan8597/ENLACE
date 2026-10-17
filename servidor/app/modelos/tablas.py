@@ -1,8 +1,9 @@
 """Tablas SQLite (sección 7 de CLAUDE.md).
 
 Privacidad (sección 13): `CheckIn` y `Reporte` solo guardan la celda h3, nunca coordenadas.
-Las coordenadas exactas y los datos personales viven únicamente en `Identidad`,
-que solo existe si la persona pidió ayuda y se borra tras cerrar el evento.
+Las coordenadas exactas viven únicamente en dos tablas que se borran al cerrar el evento:
+`Identidad` (solo si la persona pidió ayuda) y `UbicacionAlerta` (solo si la persona eligió
+compartir su ubicación exacta durante emergencias).
 """
 
 from __future__ import annotations
@@ -133,6 +134,26 @@ class CheckIn(Base):
     estado: Mapped[EstadoCheckIn] = mapped_column(
         _enum(EstadoCheckIn), default=EstadoCheckIn.sin_respuesta
     )
+    # Conteos anónimos del hogar (del perfil guardado en el celular): población crítica
+    personas: Mapped[int] = mapped_column(Integer, default=1, server_default="1")
+    vulnerables: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+
+
+class UbicacionAlerta(Base):
+    """Punto exacto de quien eligió compartirlo durante emergencias: una vez por alerta (y al
+    avisar que está bien), nunca rastreo continuo. Separado del check-in para que los agregados
+    que se conservan no tengan coordenadas. Se borra al cerrar el evento."""
+
+    __tablename__ = "ubicaciones_alerta"
+    __table_args__ = (UniqueConstraint("id_anonimo", "id_evento"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id_anonimo: Mapped[str] = mapped_column(String(36))
+    id_evento: Mapped[int] = mapped_column(ForeignKey("eventos.id"))
+    lat: Mapped[float] = mapped_column(Float)
+    lon: Mapped[float] = mapped_column(Float)
+    hora: Mapped[datetime] = mapped_column(FechaUTC, default=ahora)
+    fecha_borrado: Mapped[datetime | None] = mapped_column(FechaUTC)
 
 
 class Identidad(Base):

@@ -7,7 +7,7 @@ from datetime import UTC, datetime
 from functools import lru_cache
 from typing import Any
 
-from sqlalchemy import DateTime, Engine, create_engine, event
+from sqlalchemy import DateTime, Engine, create_engine, event, inspect, text
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 from sqlalchemy.types import TypeDecorator
@@ -64,6 +64,30 @@ def crear_tablas(motor: Engine) -> None:
     import app.modelos.tablas  # noqa: F401  (registra las tablas en Base.metadata)
 
     Base.metadata.create_all(motor)
+    _agregar_columnas_nuevas(motor)
+
+
+def _agregar_columnas_nuevas(motor: Engine) -> None:
+    """create_all no modifica tablas existentes: agrega las columnas que se sumaron al modelo
+    para no perder la base de la demo. En producción esto lo hace una migración (Alembic)."""
+    revisor = inspect(motor)
+    with motor.begin() as conexion:
+        for tabla in Base.metadata.sorted_tables:
+            existentes = {c["name"] for c in revisor.get_columns(tabla.name)}
+            for columna in tabla.columns:
+                if columna.name in existentes:
+                    continue
+                tipo = columna.type.compile(motor.dialect)
+                por_defecto = (
+                    f" DEFAULT {columna.server_default.arg}"
+                    if columna.server_default is not None
+                    else ""
+                )
+                conexion.execute(
+                    text(
+                        f'ALTER TABLE "{tabla.name}" ADD COLUMN "{columna.name}" {tipo}{por_defecto}'
+                    )
+                )
 
 
 @lru_cache

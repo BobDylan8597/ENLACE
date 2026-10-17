@@ -13,8 +13,8 @@ from app.api.vistas import resumen_celdas, totales_checkin
 from app.modelos.esquemas import CeldaDetalle, CeldaResumen, TotalesCheckIn
 from app.modelos.tablas import Celda, Reporte
 from app.motor.geo import celdas_en_radio
-from app.motor.pipeline import evento_activo
-from app.motor.prioridad import prioridad_celda
+from app.motor.pipeline import evento_activo, poblacion_critica
+from app.motor.prioridad import prioridad_celda, vulnerabilidad_efectiva
 
 router = APIRouter(tags=["celdas"])
 
@@ -51,7 +51,11 @@ def detalle(id_h3: str, sesion: SesionDep, ahora: AhoraDep, config: ConfigDep) -
     if evento is not None:
         componentes = prioridad_celda(
             celda.impacto_estimado,
-            celda.vulnerabilidad,
+            vulnerabilidad_efectiva(
+                celda.vulnerabilidad,
+                poblacion_critica(sesion, id_h3, evento.id),
+                config.prioridad.celda,
+            ),
             evento.hora,
             celda.ultima_atencion,
             ahora,

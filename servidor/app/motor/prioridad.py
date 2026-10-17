@@ -39,6 +39,15 @@ def clasificar(impacto: float, certeza: float, config: ConfigClasificacion) -> C
     return CategoriaCelda.estable if certeza_alta else CategoriaCelda.explorar_despues
 
 
+def vulnerabilidad_efectiva(
+    vulnerabilidad: float, poblacion_critica: int, config: ConfigPrioridadCelda
+) -> float:
+    """La vulnerabilidad de la celda (datos previos) sube con las personas vulnerables que los
+    check-ins muestran sin responder o pidiendo ayuda: lo que falta hasta 1 se reduce."""
+    base = min(max(vulnerabilidad, 0.0), 1.0)
+    return base + (1 - base) * _saturar(poblacion_critica, config.escala_poblacion_critica)
+
+
 def prioridad_celda(
     impacto: float,
     vulnerabilidad: float,

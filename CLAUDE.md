@@ -112,7 +112,9 @@ enlace/
   tipo (bien|ayuda|evaluacion), personas, atrapados, heridos, vulnerables, necesidades (lista),
   nivel_dano (solo brigada), confiabilidad, saltos_nearby, hora, estado (sin_asignar|asignado|atendido|descartado),
   id_reporte_padre (si fue fusionado como duplicado).
-- **CheckIn**: id_anonimo, id_h3, id_evento, hora, estado (sin_respuesta|bien|ayuda).
+- **CheckIn**: id_anonimo, id_h3, id_evento, hora, estado (sin_respuesta|bien|ayuda), personas, vulnerables.
+- **UbicacionAlerta**: id_anonimo, id_evento, lat, lon, hora, fecha_borrado. SOLO si la persona eligió
+  compartir su ubicación exacta durante emergencias.
 - **Identidad**: id_anonimo, nombre, telefono, lat, lon, condiciones, id_evento, fecha_borrado.
   SOLO existe si la persona pidió ayuda.
 - **Equipo**: id, nombre, organismo, capacidades (rescate|medico|agua|reconocimiento|maquinaria),
@@ -129,7 +131,8 @@ enlace/
 |---|---|---|
 | POST | /eventos | Emitir alerta (manual o desde fuente) |
 | POST | /eventos/{id}/cerrar | Cerrar evento e iniciar plazo de borrado |
-| GET | /celdas | Celdas con prioridad, categoría y totales de check-in |
+| GET | /celdas | Celdas con prioridad, categoría y totales de check-in (incluye población crítica) |
+| GET | /ubicaciones | Puntos exactos consentidos del evento activo (solo brigada y admin) |
 | GET | /celdas/{id_h3} | Detalle de celda |
 | POST | /reportes | Uno o varios reportes (lotes para mulas de datos) |
 | GET | /reportes | Bandeja ordenada por prioridad, con filtros |
@@ -186,11 +189,16 @@ enlace/
 
 ## 13. Privacidad (reglas obligatorias)
 
-- Consentimiento en pantalla propia (no en términos y condiciones): automático | con confirmación | no compartir.
-- **Nunca rastreo continuo.** La ubicación se pide (última conocida) solo al recibir una alerta válida.
-- El servidor guarda del check-in **solo la celda h3**, nunca coordenadas exactas.
-- Perfil del usuario guardado solo en el celular. Identidad y ubicación exacta se envían **solo** al pedir ayuda.
-- La web muestra totales por celda; puntos exactos solo para pedidos de ayuda.
+- Consentimiento en pantalla propia (no en términos y condiciones): ubicación exacta | automático |
+  con confirmación | no compartir.
+- **Nunca rastreo continuo.** La ubicación se pide (última conocida) solo al recibir una alerta válida
+  (y una vez más si la persona avisa "Estoy bien").
+- El check-in guarda la celda h3 y conteos anónimos del hogar (personas, vulnerables), nunca nombre ni teléfono.
+- **Ubicación exacta durante emergencias:** solo si la persona eligió esa opción. El punto va en una tabla
+  aparte (`UbicacionAlerta`), lo ven solo brigadas y administradores, y se borra al cerrar el evento
+  (`dias_borrado_ubicaciones`, por defecto 0). Si la persona cambia de opción, su punto se borra.
+- Perfil del usuario guardado solo en el celular. Identidad (nombre, teléfono, condiciones) se envía **solo** al pedir ayuda.
+- La web muestra totales por celda; puntos exactos solo para pedidos de ayuda y para quienes eligieron compartirlos.
 - Al cerrar el evento, los datos personales (Identidad) se borran tras un plazo configurable (por defecto 30 días).
   Los agregados anónimos se conservan.
 - La app ciudadana NO usa permiso SEND_SMS: abre la app de mensajes con el texto prellenado (ACTION_SENDTO).
