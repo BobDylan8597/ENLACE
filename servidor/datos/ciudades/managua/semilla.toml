@@ -1,0 +1,210 @@
+# Datos sintéticos de demostración para Managua.
+# En el paso 6 los scripts de preparación/ reemplazan la población y la vulnerabilidad
+# sintéticas por datos reales (OSM, censo). Para otra ciudad, copiar y ajustar este archivo.
+
+semilla_aleatoria = 2026
+
+[poblacion]
+# Personas por celda h3 (resolución 8, ~0,74 km²) de noche en el centro del área
+noche_max = 4500.0
+# Cuánto cae la población del centro al borde (0 = uniforme, 1 = vacía en el borde)
+caida_al_borde = 0.6
+variacion = 0.3
+# Factor de ocupación de día (8 a 18 h) respecto de la noche, por tipo de zona
+factor_dia = { residencial = 0.6, comercial = 1.8, mixta = 1.0 }
+factor_noche = { residencial = 1.0, comercial = 0.3, mixta = 0.9 }
+hora_inicio_dia = 8
+hora_fin_dia = 18
+
+[zonas]
+# Fracción del radio considerada centro (más comercio y construcción antigua)
+radio_centro = 0.3
+probabilidad_comercial_centro = 0.6
+probabilidad_mixta = 0.25
+
+# Mezcla de construcción por tipo de zona (se normaliza y varía por celda)
+[zonas.construccion.residencial]
+precaria = 0.15
+adobe_taquezal = 0.15
+mamposteria_no_reforzada = 0.2
+mamposteria_confinada = 0.4
+concreto_reforzado = 0.1
+
+[zonas.construccion.comercial]
+adobe_taquezal = 0.25
+mamposteria_no_reforzada = 0.2
+mamposteria_confinada = 0.25
+concreto_reforzado = 0.3
+
+[zonas.construccion.mixta]
+precaria = 0.05
+adobe_taquezal = 0.2
+mamposteria_no_reforzada = 0.25
+mamposteria_confinada = 0.35
+concreto_reforzado = 0.15
+
+[zonas.vulnerabilidad]
+residencial = [0.3, 0.8]
+comercial = [0.2, 0.5]
+mixta = [0.25, 0.65]
+
+[infraestructura]
+# Probabilidad de que una celda tenga cada tipo de infraestructura crítica
+hospital = 0.04
+escuela = 0.2
+albergue = 0.06
+
+# Nombres de zona: cada celda toma el del barrio más cercano. Coordenadas aproximadas.
+[[barrios]]
+nombre = "Centro Histórico"
+lat = 12.156
+lon = -86.271
+
+[[barrios]]
+nombre = "Bolonia"
+lat = 12.142
+lon = -86.278
+
+[[barrios]]
+nombre = "Martha Quezada"
+lat = 12.148
+lon = -86.284
+
+[[barrios]]
+nombre = "Monseñor Lezcano"
+lat = 12.143
+lon = -86.296
+
+[[barrios]]
+nombre = "Altamira"
+lat = 12.124
+lon = -86.262
+
+[[barrios]]
+nombre = "Los Robles"
+lat = 12.119
+lon = -86.255
+
+[[barrios]]
+nombre = "Mercado Oriental"
+lat = 12.149
+lon = -86.257
+
+[[barrios]]
+nombre = "Ciudad Jardín"
+lat = 12.143
+lon = -86.241
+
+[[barrios]]
+nombre = "Colonia Centroamérica"
+lat = 12.129
+lon = -86.238
+
+[[barrios]]
+nombre = "Villa Fontana"
+lat = 12.104
+lon = -86.255
+
+[[barrios]]
+nombre = "San Judas"
+lat = 12.113
+lon = -86.289
+
+[[barrios]]
+nombre = "Linda Vista"
+lat = 12.139
+lon = -86.305
+
+[[barrios]]
+nombre = "Barrio Larreynaga"
+lat = 12.135
+lon = -86.268
+
+[[barrios]]
+nombre = "Villa Libertad"
+lat = 12.125
+lon = -86.210
+
+# Equipos de respuesta de la demo (8)
+[[equipos]]
+nombre = "Bomberos Estación Central"
+organismo = "Bomberos"
+capacidades = ["rescate", "maquinaria"]
+lat = 12.150
+lon = -86.268
+
+[[equipos]]
+nombre = "Bomberos Estación Sur"
+organismo = "Bomberos"
+capacidades = ["rescate"]
+lat = 12.110
+lon = -86.262
+
+[[equipos]]
+nombre = "Cruz Roja Unidad 1"
+organismo = "Cruz Roja"
+capacidades = ["medico"]
+lat = 12.138
+lon = -86.272
+
+[[equipos]]
+nombre = "Cruz Roja Unidad 2"
+organismo = "Cruz Roja"
+capacidades = ["medico", "rescate"]
+lat = 12.127
+lon = -86.235
+
+[[equipos]]
+nombre = "Brigada de Salud Oriental"
+organismo = "Ministerio de Salud"
+capacidades = ["medico"]
+lat = 12.147
+lon = -86.250
+
+[[equipos]]
+nombre = "Defensa Civil Reconocimiento 1"
+organismo = "Defensa Civil"
+capacidades = ["reconocimiento"]
+lat = 12.131
+lon = -86.280
+
+[[equipos]]
+nombre = "Defensa Civil Reconocimiento 2"
+organismo = "Defensa Civil"
+capacidades = ["reconocimiento", "rescate"]
+lat = 12.118
+lon = -86.240
+
+[[equipos]]
+nombre = "Cisterna Municipal"
+organismo = "Alcaldía"
+capacidades = ["agua"]
+lat = 12.140
+lon = -86.258
+
+# Zonas sin población (agua, cerros...). Contorno aproximado de la orilla sur del lago
+# Xolotlán; en el paso 6 se reemplaza por los polígonos de agua de OSM.
+[[zonas_sin_poblacion]]
+nombre = "Lago Xolotlán"
+contorno = [
+    [12.168, -86.36],
+    [12.160, -86.30],
+    [12.159, -86.27],
+    [12.158, -86.24],
+    [12.160, -86.20],
+    [12.30, -86.20],
+    [12.30, -86.36],
+]
+
+# Evento de prueba para la demo (inspirado en el sismo de Managua de 1972)
+[evento_prueba]
+tipo = "sismo"
+magnitud = 6.2
+profundidad_km = 8.0
+lat = 12.145
+lon = -86.268
+
+[demo]
+checkins = 300
+# Nombres ficticios para los pedidos de ayuda de la demo
+nombres = ["María López", "José Martínez", "Ana Gutiérrez", "Carlos Rivera", "Rosa Hernández", "Luis Castillo", "Carmen Rodríguez", "Pedro Mendoza"]

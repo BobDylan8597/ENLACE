@@ -9,15 +9,17 @@ from app.motor.tipos import DatosReporte
 
 HORA = datetime(2026, 10, 16, 14, 0, tzinfo=UTC)
 CONFIG = obtener_config()
+ALTO = CONFIG.clasificacion.umbral_impacto_personas * 2
+BAJO = CONFIG.clasificacion.umbral_impacto_personas / 2
 
 
 @pytest.mark.parametrize(
     ("impacto", "certeza", "esperada"),
     [
-        (100, 0.9, CategoriaCelda.actuar),
-        (100, 0.1, CategoriaCelda.explorar),
-        (1, 0.9, CategoriaCelda.estable),
-        (1, 0.1, CategoriaCelda.explorar_despues),
+        (ALTO, 0.9, CategoriaCelda.actuar),
+        (ALTO, 0.1, CategoriaCelda.explorar),
+        (BAJO, 0.9, CategoriaCelda.estable),
+        (BAJO, 0.1, CategoriaCelda.explorar_despues),
     ],
 )
 def test_clasificacion_en_cuatro_categorias(
@@ -66,3 +68,14 @@ def test_personas_vulnerables_suben_la_prioridad() -> None:
     con = prioridad_reporte(_reporte(personas=2, vulnerables=2), 50, 0.1, HORA, c)
     sin = prioridad_reporte(_reporte(personas=2), 50, 0.1, HORA, c)
     assert con.valor > sin.valor
+
+
+def test_prioridad_distingue_impactos_del_rango_realista() -> None:
+    # Una celda de resolución 8 puede tener cientos de afectados: el componente no debe saturarse
+    c = CONFIG.prioridad.celda
+    componentes = [
+        prioridad_celda(impacto, 0.3, HORA, None, HORA, c).componentes["impacto"]
+        for impacto in (100, 300, 500, 850)
+    ]
+    assert componentes == sorted(componentes)
+    assert componentes[-1] - componentes[-2] > 0.05

@@ -69,7 +69,8 @@ grave = 0.3
 colapso = 0.6
 
 [clasificacion]
-umbral_impacto_personas = 20.0
+# Personas afectadas estimadas en una celda (res. 8) a partir de las cuales el impacto es alto
+umbral_impacto_personas = 150.0
 umbral_certeza = 0.5
 
 [prioridad.celda]
@@ -78,7 +79,8 @@ peso_impacto = 0.5
 peso_urgencia = 0.15
 peso_vulnerabilidad = 0.2
 peso_espera = 0.15
-escala_impacto_personas = 50.0
+# Impacto en el que el componente vale 63 % (1 − 1/e); por encima sigue creciendo, más lento
+escala_impacto_personas = 300.0
 horas_urgencia_max = 72.0
 horas_espera_max = 6.0
 
