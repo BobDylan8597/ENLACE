@@ -142,7 +142,8 @@ async def ws_movil(
     alerta = firmador.firmar(contenido_alerta(evento)).como_dict() if evento else None
     # Y una unidad que estuvo desconectada recibe la asignación que tiene en curso
     en_curso = None
-    if evento is not None and id_movil.startswith(PREFIJO_EQUIPO):
+    es_unidad = id_movil.startswith(PREFIJO_EQUIPO)
+    if evento is not None and es_unidad:
         id_equipo = id_movil.removeprefix(PREFIJO_EQUIPO)
         asignacion = asignacion_en_curso(sesion, int(id_equipo)) if id_equipo.isdigit() else None
         if asignacion is not None:
@@ -162,6 +163,9 @@ async def ws_movil(
             await ws.send_json({"tipo": "sin_alerta_activa", "datos": {}})
         if en_curso is not None:
             await ws.send_json({"tipo": "asignacion", "datos": en_curso})
+        elif es_unidad:
+            # La unidad que estuvo desconectada deja de mostrar una asignación ya cerrada
+            await ws.send_json({"tipo": "sin_asignacion", "datos": {}})
         await _mantener_abierta(ws)
     except WebSocketDisconnect:
         pass

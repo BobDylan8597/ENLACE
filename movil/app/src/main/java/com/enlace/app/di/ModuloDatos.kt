@@ -7,12 +7,14 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.Room
 import com.enlace.app.datos.ConexionRepositorioImpl
 import com.enlace.app.datos.ReportesRepositorioImpl
+import com.enlace.app.datos.UnidadRepositorioImpl
 import com.enlace.app.datos.local.BaseLocal
 import com.enlace.app.datos.local.OutboxDao
 import com.enlace.app.datos.local.MIGRACION_1_2
 import com.enlace.app.datos.local.PedidosDao
 import com.enlace.app.datos.local.VistosDao
 import com.enlace.app.dominio.ReportesRepositorio
+import com.enlace.app.dominio.UnidadRepositorio
 import com.enlace.app.datos.local.AjustesRepositorioImpl
 import com.enlace.app.datos.remoto.MonitorConexionImpl
 import com.enlace.app.dominio.AjustesRepositorio
@@ -82,4 +84,7 @@ abstract class ModuloRepositorios {
 
     @Binds
     abstract fun reportes(implementacion: ReportesRepositorioImpl): ReportesRepositorio
+
+    @Binds
+    abstract fun unidad(implementacion: UnidadRepositorioImpl): UnidadRepositorio
 }

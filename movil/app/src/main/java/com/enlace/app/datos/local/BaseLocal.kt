@@ -65,6 +65,9 @@ interface OutboxDao {
     @Query("SELECT * FROM outbox WHERE idMensaje = :id")
     fun observar(id: String): Flow<MensajeSaliente?>
 
+    @Query("SELECT COUNT(*) FROM outbox WHERE estado = 'PENDIENTE'")
+    fun contarPendientes(): Flow<Int>
+
     @Query("SELECT COUNT(*) FROM outbox WHERE idMensaje = :id")
     suspend fun existe(id: String): Int
 

@@ -52,13 +52,11 @@ fun PantallaModo(alElegir: (Modo) -> Unit, viewModel: ModoViewModel = hiltViewMo
                 elegida = modo == Modo.USUARIO,
                 alElegir = { modo = Modo.USUARIO },
             )
-            // El modo unidad se habilita en el paso 4.7 (asignaciones, rutas, mula de datos)
             OpcionElegible(
                 titulo = stringResource(R.string.modo_unidad),
                 detalle = stringResource(R.string.modo_unidad_detalle),
                 elegida = modo == Modo.UNIDAD,
                 alElegir = { modo = Modo.UNIDAD },
-                habilitada = false,
             )
             BotonPrincipal(stringResource(R.string.continuar), { viewModel.elegir(modo) { alElegir(modo) } })
         }

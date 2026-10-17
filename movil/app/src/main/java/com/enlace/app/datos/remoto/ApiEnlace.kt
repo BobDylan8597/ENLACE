@@ -2,8 +2,10 @@ package com.enlace.app.datos.remoto
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonObject
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.Path
 
@@ -24,8 +26,29 @@ interface ApiEnlace {
     @POST("checkins")
     suspend fun checkin(@Body checkin: CheckInDto)
 
+    /** La clave de brigada (o null) habilita los reportes con origen "brigada". */
     @POST("reportes")
-    suspend fun reportes(@Body reportes: List<ReporteDto>): ResultadoReportesDto
+    suspend fun reportes(
+        @Body reportes: List<ReporteDto>,
+        @Header("X-Clave-Brigada") claveBrigada: String?,
+    ): ResultadoReportesDto
+
+    // ── Modo unidad (clave de brigada) ──
+
+    @GET("equipos")
+    suspend fun equipos(@Header("X-Clave-Brigada") clave: String): List<EquipoDto>
+
+    @POST("asignaciones/{id}/atendida")
+    suspend fun atendida(@Path("id") idAsignacion: Int, @Header("X-Clave-Brigada") clave: String)
+
+    @GET("celdas")
+    suspend fun celdas(): List<CeldaResumenDto>
+
+    @GET("ubicaciones")
+    suspend fun ubicaciones(@Header("X-Clave-Brigada") clave: String): List<UbicacionDto>
+
+    @GET("pedidos")
+    suspend fun pedidos(@Header("X-Clave-Brigada") clave: String): List<PedidoMapaDto>
 
     @POST("bloqueos")
     suspend fun bloqueo(@Body bloqueo: BloqueoDto): CambioBloqueoDto
@@ -92,6 +115,8 @@ data class ReporteDto(
     val vulnerables: Int = 0,
     val necesidades: List<String> = emptyList(),
     @SerialName("saltos_nearby") val saltosNearby: Int = 0,
+    /** Solo en la evaluación de una brigada (B8). */
+    @SerialName("nivel_dano") val nivelDano: String? = null,
     val hora: String,
     val identidad: IdentidadDto? = null,
 )
@@ -122,3 +147,83 @@ data class EstadoBloqueoDto(val id: Int, val estado: String, val confirmaciones:
 
 @Serializable
 data class CambioBloqueoDto(val bloqueo: EstadoBloqueoDto, @SerialName("rutas_recalculadas") val rutasRecalculadas: Int)
+
+// ── Modo unidad ──
+
+@Serializable
+data class EquipoDto(
+    val id: Int,
+    val nombre: String,
+    val organismo: String,
+    val capacidades: List<String> = emptyList(),
+    val estado: String = "",
+)
+
+@Serializable
+data class TotalesCheckInDto(
+    val personas: Int = 0,
+    val vulnerables: Int = 0,
+    val criticos: Int = 0,
+)
+
+@Serializable
+data class CeldaResumenDto(
+    @SerialName("id_h3") val idH3: String,
+    @SerialName("nombre_zona") val nombreZona: String,
+    val checkins: TotalesCheckInDto = TotalesCheckInDto(),
+)
+
+@Serializable
+data class UbicacionDto(
+    val lat: Double,
+    val lon: Double,
+    val estado: String,
+    val personas: Int,
+    val vulnerables: Int,
+)
+
+@Serializable
+data class PedidoMapaDto(
+    @SerialName("id_mensaje") val idMensaje: String,
+    val lat: Double,
+    val lon: Double,
+    @SerialName("nombre_zona") val nombreZona: String = "",
+    val estado: String,
+    val personas: Int = 0,
+    val atrapados: Int = 0,
+    val heridos: Int = 0,
+    val vulnerables: Int = 0,
+    val necesidades: List<String> = emptyList(),
+)
+
+/** Aviso de asignación por WebSocket (servidor: vistas.aviso_asignacion). */
+@Serializable
+data class AvisoAsignacionDto(
+    val asignacion: AsignacionDto,
+    val destino: PuntoDto,
+    @SerialName("nombre_zona") val nombreZona: String = "",
+    val pedido: AtenderDto? = null,
+    val contacto: IdentidadDto? = null,
+)
+
+@Serializable
+data class AsignacionDto(
+    val id: Int,
+    @SerialName("id_equipo") val idEquipo: Int,
+    @SerialName("id_reporte") val idReporte: String? = null,
+    @SerialName("id_h3") val idH3: String,
+    val motivo: String,
+    @SerialName("tiempo_estimado_min") val tiempoEstimadoMin: Double,
+    val decision: String,
+    @SerialName("hora_fin") val horaFin: String? = null,
+    val ruta: JsonObject? = null,
+)
+
+@Serializable
+data class AtenderDto(
+    val personas: Int = 0,
+    val atrapados: Int = 0,
+    val heridos: Int = 0,
+    val vulnerables: Int = 0,
+    val necesidades: List<String> = emptyList(),
+)

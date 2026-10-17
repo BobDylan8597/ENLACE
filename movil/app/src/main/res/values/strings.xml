@@ -23,7 +23,7 @@
     <string name="modo_usuario">Soy una persona de la comunidad</string>
     <string name="modo_usuario_detalle">Recibe alertas, pide ayuda y avisa de calles bloqueadas.</string>
     <string name="modo_unidad">Soy parte de un equipo de respuesta</string>
-    <string name="modo_unidad_detalle">Disponible pronto: recibe asignaciones y rutas.</string>
+    <string name="modo_unidad_detalle">Recibe asignaciones, evalúa zonas y lleva reportes de la red cercana. Necesitas la clave de brigada.</string>
 
     <string name="consentimiento_titulo">Tu ubicación durante una emergencia</string>
     <string name="consentimiento_explicacion">Cuando llegue una alerta oficial, ENLACE puede avisar al centro de coordinación dónde estás, para saber dónde hay personas que rescatar. Tú eliges cuánto compartir. ENLACE no te sigue: solo consulta tu ubicación al recibir una alerta.</string>
@@ -154,4 +154,94 @@
         <item quantity="one">Enviado a %1$d celular cercano</item>
         <item quantity="other">Enviado a %1$d celulares cercanos</item>
     </plurals>
+
+    <!-- Modo unidad -->
+    <string name="unidad_activar_titulo">Activar modo unidad</string>
+    <string name="unidad_activar_explicacion">Escribe la clave de brigada que te dio el centro de coordinación y elige tu equipo.</string>
+    <string name="unidad_clave">Clave de brigada</string>
+    <string name="unidad_comprobar">Comprobar clave</string>
+    <string name="unidad_clave_invalida">La clave de brigada no es correcta</string>
+    <string name="unidad_elegir_equipo">¿Con qué equipo trabajas?</string>
+    <string name="unidad_activar">Activar modo unidad</string>
+    <string name="unidad_modo">Modo unidad</string>
+    <string name="inicio_modo_unidad">Soy de un equipo de respuesta</string>
+    <string name="unidad_disponible">Disponible</string>
+    <string name="unidad_en_ruta">En ruta a una asignación</string>
+    <string name="unidad_salir">Salir del modo unidad</string>
+
+    <string name="canal_asignaciones">Asignaciones del equipo</string>
+    <string name="asignacion_nueva">Nueva asignación</string>
+    <string name="asignacion_notificacion">%1$s · llegas en unos %2$d min</string>
+    <string name="asignacion_en_curso">Asignación en curso</string>
+    <string name="asignacion_resumen">%1$s · unos %2$d min</string>
+    <string name="asignacion_llegada">Llegas en unos %1$d min</string>
+    <string name="asignacion_atender">Qué hay que atender</string>
+    <string name="asignacion_contacto">Persona que pidió ayuda</string>
+    <string name="asignacion_llamar">Llamar al %1$s</string>
+    <string name="asignacion_motivo">Por qué se eligió a tu equipo</string>
+    <string name="asignacion_ninguna">No tienes una asignación en curso</string>
+
+    <string name="mula_vacia">No llevas mensajes pendientes</string>
+    <plurals name="mula_mensajes">
+        <item quantity="one">Llevas %1$d mensaje para entregar</item>
+        <item quantity="other">Llevas %1$d mensajes para entregar</item>
+    </plurals>
+
+    <string name="panorama_titulo">Cerca de ti</string>
+    <string name="panorama_actualizar">Actualizar</string>
+    <string name="panorama_cargando">Actualizando…</string>
+    <string name="panorama_error">No se pudo actualizar. Revisa la conexión.</string>
+    <string name="panorama_vacio">Nada por ahora</string>
+    <string name="panorama_zonas">Zonas con más población crítica</string>
+    <string name="panorama_personas">Personas que no confirmaron que están bien</string>
+    <string name="panorama_pedidos">Pedidos de ayuda pendientes</string>
+    <string name="persona_ayuda">Pidió ayuda</string>
+    <string name="persona_sin_respuesta">Sin respuesta</string>
+    <plurals name="panorama_criticos">
+        <item quantity="one">%1$d persona vulnerable sin responder</item>
+        <item quantity="other">%1$d personas vulnerables sin responder</item>
+    </plurals>
+    <plurals name="panorama_personas_hogar">
+        <item quantity="one">%1$d persona</item>
+        <item quantity="other">%1$d personas</item>
+    </plurals>
+    <plurals name="panorama_vulnerables">
+        <item quantity="one">%1$d con atención especial</item>
+        <item quantity="other">%1$d con atención especial</item>
+    </plurals>
+    <plurals name="atender_atrapados">
+        <item quantity="one">%1$d atrapada</item>
+        <item quantity="other">%1$d atrapadas</item>
+    </plurals>
+    <plurals name="atender_heridos">
+        <item quantity="one">%1$d herida</item>
+        <item quantity="other">%1$d heridas</item>
+    </plurals>
+
+    <string name="evaluacion_boton">Evaluar la zona</string>
+    <string name="evaluacion_titulo">Evaluación de la zona</string>
+    <string name="evaluacion_nivel">¿Cuánto daño hay?</string>
+    <string name="evaluacion_personas">Personas afectadas</string>
+    <string name="evaluacion_falta_nivel">Elige el nivel de daño para enviar</string>
+    <string name="evaluacion_enviar">Enviar evaluación</string>
+    <string name="evaluacion_ok">Evaluación enviada</string>
+    <string name="evaluacion_ok_detalle">El centro de coordinación ajusta la prioridad de la zona con tu evaluación.</string>
+    <string name="dano_ninguno">Sin daño</string>
+    <string name="dano_ninguno_detalle">Las construcciones están en pie y sin grietas.</string>
+    <string name="dano_leve">Leve</string>
+    <string name="dano_leve_detalle">Grietas pequeñas, vidrios rotos.</string>
+    <string name="dano_moderado">Moderado</string>
+    <string name="dano_moderado_detalle">Paredes dañadas, algunas casas inseguras.</string>
+    <string name="dano_grave">Grave</string>
+    <string name="dano_grave_detalle">Muchas casas inhabitables o en riesgo de caer.</string>
+    <string name="dano_colapso">Colapso</string>
+    <string name="dano_colapso_detalle">Construcciones caídas, posibles personas atrapadas.</string>
+
+    <string name="atendida_boton">Marcar zona atendida</string>
+    <string name="atendida_pregunta">¿Terminaste en esta zona?</string>
+    <string name="atendida_explicacion">Tu equipo quedará disponible para una nueva asignación y el centro recalculará las prioridades.</string>
+    <string name="atendida_confirmar">Sí, zona atendida</string>
+    <string name="atendida_sin_conexion">No hay conexión con el centro. Intenta de nuevo en un momento.</string>
+    <string name="atendida_ok">Zona atendida</string>
+    <string name="atendida_ok_detalle">Tu equipo quedó disponible.</string>
 </resources>

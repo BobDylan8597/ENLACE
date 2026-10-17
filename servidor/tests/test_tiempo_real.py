@@ -147,7 +147,7 @@ def test_unidad_que_se_reconecta_recibe_su_asignacion_en_curso(entorno: Entorno)
     )
     with entorno.cliente.websocket_connect(unidad) as ws:
         assert ws.receive_json()["tipo"] == "alerta"
-        ws.close()
+        assert ws.receive_json() == {"tipo": "sin_asignacion", "datos": {}}
 
 
 def test_mapa_de_la_brigada_sin_datos_personales(entorno: Entorno) -> None:

@@ -10,14 +10,19 @@ import android.os.Build
 import android.os.IBinder
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
+import com.enlace.app.datos.CredencialesBrigada
 import com.enlace.app.datos.GestorAlertas
 import com.enlace.app.datos.ID_NOTIFICACION_SERVICIO
 import com.enlace.app.datos.NotificadorAlertas
 import com.enlace.app.datos.Outbox
 import com.enlace.app.datos.Seguimiento
+import com.enlace.app.datos.UnidadRepositorioImpl
 import com.enlace.app.datos.nearby.RedCercana
+import com.enlace.app.datos.remoto.AvisoAsignacionDto
+import com.enlace.app.dominio.AjustesRepositorio
 import com.enlace.app.dominio.AlertaFirmada
 import com.enlace.app.dominio.ConexionRepositorio
+import com.enlace.app.dominio.Modo
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -41,6 +46,7 @@ import okhttp3.Request
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
+import java.net.URLEncoder
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -63,6 +69,9 @@ class ServicioAlertas : Service() {
     @Inject lateinit var outbox: Outbox
     @Inject lateinit var seguimiento: Seguimiento
     @Inject lateinit var red: RedCercana
+    @Inject lateinit var ajustes: AjustesRepositorio
+    @Inject lateinit var unidad: UnidadRepositorioImpl
+    @Inject lateinit var credenciales: CredencialesBrigada
     @Inject lateinit var http: OkHttpClient
     @Inject lateinit var json: Json
 
@@ -104,13 +113,26 @@ class ServicioAlertas : Service() {
                 conexion.prepararDatosLocales(direccion)
             }
             if (direccion != null && conexion.clavePublica() != null) {
-                val url = "${direccion}ws/movil/${conexion.idAnonimo()}"
+                val url = "${direccion}ws/movil/${idMovil()}"
                 val conecto = conectar(cliente, url)
                 if (conecto) espera = ESPERA_INICIAL_MS
             }
             delay(espera)
             espera = (espera * 2).coerceAtMost(ESPERA_MAXIMA_MS)
         }
+    }
+
+    /**
+     * En modo unidad, "equipo-<n>?clave=…": recibe además sus asignaciones y rutas.
+     * En modo usuario, el id anónimo: recibe el aviso de ayuda en camino.
+     */
+    private suspend fun idMovil(): String {
+        val equipo = credenciales.equipo.first()
+        val clave = credenciales.clave()
+        if (ajustes.modo.first() == Modo.UNIDAD && equipo != null && clave != null) {
+            return "equipo-${equipo.id}?clave=${URLEncoder.encode(clave, Charsets.UTF_8.name())}"
+        }
+        return conexion.idAnonimo()
     }
 
     /** Escucha hasta que la conexión se corta; devuelve true si llegó a abrirse. */
@@ -154,6 +176,13 @@ class ServicioAlertas : Service() {
                 .getOrNull()?.let { gestor.recibir(it) }
             "evento_cerrado" -> mensaje.datos["id_evento"]?.jsonPrimitive?.int?.let { gestor.cerrar(it) }
             "sin_alerta_activa" -> gestor.cerrarVigente()
+            "asignacion" -> runCatching { json.decodeFromJsonElement<AvisoAsignacionDto>(mensaje.datos) }
+                .getOrNull()?.let { aviso ->
+                    unidad.recibirAviso(aviso)?.let { nueva -> notificador.mostrarAsignacion(nueva) }
+                }
+            "sin_asignacion" -> unidad.sinAsignacion()
+            "ruta_recalculada" -> runCatching { json.decodeFromJsonElement<AvisoAsignacionDto>(mensaje.datos) }
+                .getOrNull()?.let { unidad.actualizarRuta(it) }
             "ayuda_en_camino" -> {
                 val idReporte = mensaje.datos["id_reporte"]?.jsonPrimitive?.contentOrNull ?: return
                 val equipo = mensaje.datos["equipo"]?.jsonPrimitive?.contentOrNull ?: return
@@ -171,6 +200,12 @@ class ServicioAlertas : Service() {
     companion object {
         fun iniciar(contexto: Context) {
             ContextCompat.startForegroundService(contexto, Intent(contexto, ServicioAlertas::class.java))
+        }
+
+        /** Al cambiar de modo o de equipo, la conexión se rehace con la nueva identidad. */
+        fun reiniciar(contexto: Context) {
+            contexto.stopService(Intent(contexto, ServicioAlertas::class.java))
+            iniciar(contexto)
         }
     }
 }

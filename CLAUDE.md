@@ -197,7 +197,8 @@ enlace/
 - **Ubicación exacta durante emergencias:** solo si la persona eligió esa opción. El punto va en una tabla
   aparte (`UbicacionAlerta`), lo ven solo brigadas y administradores, y se borra al cerrar el evento
   (`dias_borrado_ubicaciones`, por defecto 0). Si la persona cambia de opción, su punto se borra.
-- Perfil del usuario guardado solo en el celular. Identidad (nombre, teléfono, condiciones) se envía **solo** al pedir ayuda.
+- Perfil del usuario guardado solo en el celular. Identidad (nombre, teléfono, condiciones) se envía **solo** al pedir ayuda,
+  y del servidor solo llega al centro de coordinación y a la unidad asignada a ese pedido (para encontrar y llamar a la persona).
 - La web muestra totales por celda; puntos exactos solo para pedidos de ayuda y para quienes eligieron compartirlos.
 - Al cerrar el evento, los datos personales (Identidad) se borran tras un plazo configurable (por defecto 30 días).
   Los agregados anónimos se conservan.

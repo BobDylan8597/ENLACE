@@ -33,9 +33,22 @@ local (`res/xml/seguridad_red.xml`); en producción, solo `https`.
 | `dominio/` | Reglas puras, sin Android: probadas con JUnit |
 | `datos/remoto/` | API del servidor (Retrofit) |
 | `datos/local/` | Datos que solo viven en el celular |
-| `datos/nearby/`, `datos/canales/` | Red cercana y canales de envío (pendientes) |
+| `datos/nearby/` | Red cercana (Nearby Connections, gossip) |
 | `presentacion/` | Pantallas Compose, una por archivo, con su ViewModel |
-| `ubicacion/` | Ubicación, solo al recibir una alerta válida (pendiente) |
+| `presentacion/unidad/` | Modo unidad: activar (clave de brigada y equipo), B2 inicio, B3 asignación, B8 evaluación, B9 zona atendida |
+| `ubicacion/` | Ubicación: una sola consulta al recibir una alerta válida o al pedir ayuda |
 | `di/` | Módulos de Hilt |
+
+## Modo unidad (brigada)
+
+- Se activa desde el inicio ("Soy de un equipo de respuesta") con la **clave de brigada**, distinta
+  de la del administrador, y eligiendo el equipo.
+- El servicio en primer plano se conecta a `/ws/movil/equipo-<n>?clave=…` y recibe la asignación
+  (B3, a pantalla completa aunque el celular esté bloqueado), las rutas recalculadas y, al
+  reconectarse, la asignación en curso o el aviso de que no tiene ninguna.
+- B2 muestra lo más urgente cerca: zonas con población crítica, personas que no confirmaron que
+  están bien y pedidos pendientes. El mapa con estas capas llega en el paso 4.8.
+- **Mula de datos:** lo que llega por la red cercana entra al Outbox y se entrega en lote apenas
+  hay conexión; B2 muestra cuántos mensajes lleva.
 
 Las versiones están en `gradle/libs.versions.toml`.

@@ -40,6 +40,7 @@ class Outbox @Inject constructor(
     private val dao: OutboxDao,
     private val conexion: ConexionRepositorio,
     private val fabricaApi: FabricaApi,
+    private val credenciales: CredencialesBrigada,
     private val json: Json,
 ) {
     private val cerrojo = Mutex()
@@ -50,6 +51,9 @@ class Outbox @Inject constructor(
     }
 
     fun observar(id: String) = dao.observar(id)
+
+    /** Cuántos mensajes esperan ser entregados (para la unidad: los que lleva como mula). */
+    fun pendientes() = dao.contarPendientes()
 
     /** Envía todo lo pendiente. Devuelve true si no quedó nada por enviar. */
     suspend fun enviarPendientes(): Boolean = cerrojo.withLock {
@@ -63,7 +67,8 @@ class Outbox @Inject constructor(
         val reportes = pendientes.filter { it.tipo == TipoMensaje.REPORTE }
         if (reportes.isNotEmpty()) {
             runCatching {
-                api.reportes(reportes.map { json.decodeFromString<ReporteDto>(it.cuerpo) })
+                // En modo unidad, con la clave: las evaluaciones de la brigada se aceptan como tales
+                api.reportes(reportes.map { json.decodeFromString<ReporteDto>(it.cuerpo) }, credenciales.clave())
             }.onSuccess { r ->
                 val estados = estadosDelLote(
                     reportes.map { it.idMensaje },

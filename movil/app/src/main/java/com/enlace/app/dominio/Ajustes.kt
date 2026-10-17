@@ -65,13 +65,18 @@ interface AjustesRepositorio {
 }
 
 /** Pantalla con la que abre la app según lo que ya está configurado. */
-enum class Destino { CONFIGURACION, MODO, CONSENTIMIENTO, INICIO_USUARIO }
+enum class Destino { CONFIGURACION, MODO, CONSENTIMIENTO, INICIO_USUARIO, ACTIVAR_UNIDAD, INICIO_UNIDAD }
 
-fun destinoInicial(direccion: String?, modo: Modo?, consentimiento: Consentimiento?): Destino = when {
+fun destinoInicial(
+    direccion: String?,
+    modo: Modo?,
+    consentimiento: Consentimiento?,
+    unidadActiva: Boolean = false,
+): Destino = when {
     direccion == null -> Destino.CONFIGURACION
     modo == null -> Destino.MODO
-    // El modo unidad se habilita en el paso 4.7; mientras tanto se elige de nuevo
-    modo == Modo.UNIDAD -> Destino.MODO
+    // La unidad necesita la clave de brigada y su equipo; el consentimiento es del modo usuario
+    modo == Modo.UNIDAD -> if (unidadActiva) Destino.INICIO_UNIDAD else Destino.ACTIVAR_UNIDAD
     consentimiento == null -> Destino.CONSENTIMIENTO
     else -> Destino.INICIO_USUARIO
 }

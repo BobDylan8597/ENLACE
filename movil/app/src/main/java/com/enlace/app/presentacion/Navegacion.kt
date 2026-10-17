@@ -22,11 +22,18 @@ import com.enlace.app.datos.GestorAlertas
 import com.enlace.app.dominio.AjustesRepositorio
 import com.enlace.app.dominio.ConexionRepositorio
 import com.enlace.app.dominio.Destino
+import com.enlace.app.dominio.Modo
+import com.enlace.app.dominio.UnidadRepositorio
 import com.enlace.app.dominio.destinoInicial
 import com.enlace.app.presentacion.configuracion.PantallaConfiguracion
 import com.enlace.app.presentacion.consentimiento.PantallaConsentimiento
 import com.enlace.app.presentacion.modo.PantallaModo
 import com.enlace.app.presentacion.tema.TemaEnlace
+import com.enlace.app.presentacion.unidad.PantallaActivarUnidad
+import com.enlace.app.presentacion.unidad.PantallaAsignacion
+import com.enlace.app.presentacion.unidad.PantallaAtendida
+import com.enlace.app.presentacion.unidad.PantallaEvaluacion
+import com.enlace.app.presentacion.unidad.PantallaInicioUnidad
 import com.enlace.app.presentacion.usuario.PantallaAlerta
 import com.enlace.app.presentacion.usuario.PantallaBloqueo
 import com.enlace.app.presentacion.usuario.PantallaInicio
@@ -54,12 +61,18 @@ import javax.inject.Inject
 @Serializable private data object RutaPedirAyuda
 @Serializable private data object RutaBloqueo
 @Serializable private data object RutaSeguimiento
+@Serializable private data object RutaActivarUnidad
+@Serializable private data object RutaInicioUnidad
+@Serializable private data object RutaAsignacion
+@Serializable private data object RutaEvaluacion
+@Serializable private data object RutaAtendida
 
 @HiltViewModel
 class ArranqueViewModel @Inject constructor(
     conexion: ConexionRepositorio,
     ajustes: AjustesRepositorio,
     gestor: GestorAlertas,
+    unidad: UnidadRepositorio,
 ) : ViewModel() {
     private val _destino = MutableStateFlow<Destino?>(null)
     val destino: StateFlow<Destino?> = _destino.asStateFlow()
@@ -68,12 +81,18 @@ class ArranqueViewModel @Inject constructor(
     val eventoActivo: StateFlow<Int?> =
         gestor.vigente.map { it?.alerta?.idEvento }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
+    /** Asignación de la unidad que todavía no se abrió: abre B3 al llegar. */
+    val asignacionNueva: StateFlow<Int?> = unidad.asignacion
+        .map { a -> a?.takeIf { !it.vista }?.id }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
     init {
         viewModelScope.launch {
             _destino.value = destinoInicial(
                 conexion.direccion.first(),
                 ajustes.modo.first(),
                 ajustes.consentimiento.first(),
+                unidadActiva = unidad.equipo.first() != null,
             )
         }
     }
@@ -84,6 +103,8 @@ private fun ruta(destino: Destino): Any = when (destino) {
     Destino.MODO -> RutaModo
     Destino.CONSENTIMIENTO -> RutaConsentimiento
     Destino.INICIO_USUARIO -> RutaInicio
+    Destino.ACTIVAR_UNIDAD -> RutaActivarUnidad
+    Destino.INICIO_UNIDAD -> RutaInicioUnidad
 }
 
 /** Avanza y borra el historial: no se vuelve atrás a un paso de configuración ya hecho. */
@@ -95,6 +116,7 @@ private fun NavHostController.avanzarA(destino: Any) = navigate(destino) {
 fun NavegacionEnlace(arranque: ArranqueViewModel = hiltViewModel()) {
     val destino by arranque.destino.collectAsStateWithLifecycle()
     val eventoActivo by arranque.eventoActivo.collectAsStateWithLifecycle()
+    val asignacionNueva by arranque.asignacionNueva.collectAsStateWithLifecycle()
 
     // Modo oscuro por defecto durante una alerta (sección 16)
     TemaEnlace(oscuro = eventoActivo != null || isSystemInDarkTheme()) {
@@ -109,6 +131,11 @@ fun NavegacionEnlace(arranque: ArranqueViewModel = hiltViewModel()) {
             val enInicio = nav.currentBackStackEntry?.destination?.hasRoute<RutaInicio>() == true
             if (eventoActivo != null && enInicio) nav.navigate(RutaAlerta)
         }
+        // Una asignación nueva abre B3 en el celular de la unidad
+        LaunchedEffect(asignacionNueva) {
+            val enInicioUnidad = nav.currentBackStackEntry?.destination?.hasRoute<RutaInicioUnidad>() == true
+            if (asignacionNueva != null && enInicioUnidad) nav.navigate(RutaAsignacion)
+        }
 
         NavHost(navController = nav, startDestination = ruta(inicial)) {
             composable<RutaConfiguracion> {
@@ -116,7 +143,9 @@ fun NavegacionEnlace(arranque: ArranqueViewModel = hiltViewModel()) {
                 PantallaConfiguracion(alContinuar = { if (!nav.popBackStack()) nav.avanzarA(RutaModo) })
             }
             composable<RutaModo> {
-                PantallaModo(alElegir = { nav.avanzarA(RutaConsentimiento) })
+                PantallaModo(alElegir = { modo ->
+                    nav.avanzarA(if (modo == Modo.UNIDAD) RutaActivarUnidad else RutaConsentimiento)
+                })
             }
             composable<RutaConsentimiento> {
                 PantallaConsentimiento(alGuardar = {
@@ -133,6 +162,7 @@ fun NavegacionEnlace(arranque: ArranqueViewModel = hiltViewModel()) {
                     alPedirAyuda = { nav.navigate(RutaPedirAyuda) },
                     alReportarBloqueo = { nav.navigate(RutaBloqueo) },
                     alVerSeguimiento = { nav.navigate(RutaSeguimiento) },
+                    alModoUnidad = { nav.navigate(RutaActivarUnidad) },
                 )
             }
             composable<RutaPerfil> {
@@ -157,6 +187,39 @@ fun NavegacionEnlace(arranque: ArranqueViewModel = hiltViewModel()) {
             }
             composable<RutaBloqueo> {
                 PantallaBloqueo(alVolver = { nav.popBackStack(RutaInicio, inclusive = false) })
+            }
+
+            // ── Modo unidad ──
+            composable<RutaActivarUnidad> {
+                PantallaActivarUnidad(
+                    alActivar = { nav.avanzarA(RutaInicioUnidad) },
+                    // Desde el inicio ciudadano se vuelve atrás; en la primera configuración, al modo
+                    alVolver = { if (!nav.popBackStack()) nav.avanzarA(RutaModo) },
+                )
+            }
+            composable<RutaInicioUnidad> {
+                PantallaInicioUnidad(
+                    alAbrirAsignacion = { nav.navigate(RutaAsignacion) },
+                    alEvaluar = { nav.navigate(RutaEvaluacion) },
+                    alAbrirConexion = { nav.navigate(RutaConfiguracion) },
+                    alSalir = { nav.avanzarA(RutaModo) },
+                )
+            }
+            composable<RutaAsignacion> {
+                PantallaAsignacion(
+                    alEvaluar = { nav.navigate(RutaEvaluacion) },
+                    alMarcarAtendida = { nav.navigate(RutaAtendida) },
+                    alVolver = { nav.popBackStack(RutaInicioUnidad, inclusive = false) },
+                )
+            }
+            composable<RutaEvaluacion> {
+                PantallaEvaluacion(alVolver = { nav.popBackStack() })
+            }
+            composable<RutaAtendida> {
+                PantallaAtendida(
+                    alVolver = { nav.popBackStack() },
+                    alTerminar = { nav.popBackStack(RutaInicioUnidad, inclusive = false) },
+                )
             }
         }
     }

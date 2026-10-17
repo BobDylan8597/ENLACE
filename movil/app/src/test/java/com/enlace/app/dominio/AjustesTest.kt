@@ -26,6 +26,12 @@ class AjustesTest {
     }
 
     @Test
+    fun `el modo unidad pide la clave hasta activarse y no pide consentimiento`() {
+        assertEquals(Destino.ACTIVAR_UNIDAD, destinoInicial(servidor, Modo.UNIDAD, null))
+        assertEquals(Destino.INICIO_UNIDAD, destinoInicial(servidor, Modo.UNIDAD, null, unidadActiva = true))
+    }
+
+    @Test
     fun `el perfil por defecto no tiene datos personales`() {
         val perfil = Perfil()
         assertEquals("", perfil.nombre)
