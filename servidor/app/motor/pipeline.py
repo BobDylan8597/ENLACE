@@ -38,7 +38,7 @@ from app.motor.asignacion import (
     describir_reporte,
     recomendar,
 )
-from app.motor.fusion import estimar_celda, preparar_evidencia
+from app.motor.fusion import CAMPOS_CONTEO, estimar_celda, informacion_nueva, preparar_evidencia
 from app.motor.geo import centro_celda
 from app.motor.impacto import fraccion_inicial, ocupantes
 from app.motor.prioridad import Prioridad, clasificar, prioridad_celda, prioridad_reporte
@@ -151,9 +151,14 @@ def recalcular_celda(
 
     reportes = _reportes_de_celda(sesion, celda.id_h3, evento.id)
     preparada = preparar_evidencia([a_datos_reporte(r) for r in reportes], config.fusion)
-    pesos = {e.reporte.id_mensaje: e.peso for e in preparada.principales}
     for reporte in reportes:
         reporte.id_reporte_padre = preparada.duplicados.get(reporte.id_mensaje)
+    actualizados = _combinar_reenvios(reportes, ahora)
+    if actualizados:
+        # La evidencia se vuelve a preparar con la información nueva de los pedidos originales
+        preparada = preparar_evidencia([a_datos_reporte(r) for r in reportes], config.fusion)
+    pesos = {e.reporte.id_mensaje: e.peso for e in preparada.principales}
+    for reporte in reportes:
         if reporte.id_mensaje in pesos:
             reporte.confiabilidad = pesos[reporte.id_mensaje]
 
@@ -180,7 +185,39 @@ def recalcular_celda(
     celda.suma_pesos = estado.suma_pesos
     celda.categoria = categoria
     celda.prioridad = prioridad.valor
-    return dataclasses.replace(estado, categoria=categoria)
+    return dataclasses.replace(estado, categoria=categoria, actualizados=tuple(actualizados))
+
+
+def _campos(reporte: Reporte) -> dict[str, object]:
+    """Conteos y necesidades tal como llegaron (sin el ajuste de los ya atendidos)."""
+    campos: dict[str, object] = {c: getattr(reporte, c) for c in CAMPOS_CONTEO}
+    campos["necesidades"] = list(reporte.necesidades)
+    return campos
+
+
+def _combinar_reenvios(reportes: list[Reporte], ahora: datetime) -> list[str]:
+    """Un reenvío de la misma persona con información nueva actualiza el pedido original
+    (si no, quedaría oculto como duplicado y nadie vería, por ejemplo, que ahora hay un herido).
+    Devuelve los pedidos originales que cambiaron."""
+    por_id = {r.id_mensaje: r for r in reportes}
+    reenvios: dict[str, list[Reporte]] = {}
+    for reporte in reportes:
+        if reporte.id_reporte_padre in por_id:
+            reenvios.setdefault(reporte.id_reporte_padre, []).append(reporte)
+    actualizados = []
+    for id_original, hijos in reenvios.items():
+        original = por_id[id_original]
+        cambios = informacion_nueva(_campos(original), [_campos(h) for h in hijos])
+        if not cambios:
+            continue
+        for campo, valor in cambios.items():
+            setattr(original, campo, valor)
+        original.actualizado_en = ahora
+        if original.estado is EstadoReporte.atendido:
+            # Ya se había atendido, pero la persona avisa que sigue necesitando ayuda
+            original.estado = EstadoReporte.sin_asignar
+        actualizados.append(id_original)
+    return actualizados
 
 
 def recalcular_todas(
@@ -346,6 +383,8 @@ class ResultadoIngreso:
     # id_mensaje ya recibidos antes (por otra vía o por otra mula de datos): se ignoran
     repetidos: list[str]
     celdas_actualizadas: list[str]
+    # Pedidos originales a los que un reenvío agregó información nueva
+    reportes_actualizados: list[str] = dataclasses.field(default_factory=list)
 
 
 def ingresar_reportes(
@@ -375,10 +414,14 @@ def ingresar_reportes(
     sesion.flush()
 
     celdas = sorted({r.id_h3 for r in nuevos})
+    actualizados: list[str] = []
     if evento is not None:
         for id_h3 in celdas:
-            recalcular_celda(sesion, sesion.get_one(Celda, id_h3), evento, ahora, config, zona)
-    return ResultadoIngreso(nuevos, repetidos, celdas)
+            estado = recalcular_celda(
+                sesion, sesion.get_one(Celda, id_h3), evento, ahora, config, zona
+            )
+            actualizados += estado.actualizados
+    return ResultadoIngreso(nuevos, repetidos, celdas, actualizados)
 
 
 def ingresar_checkin(

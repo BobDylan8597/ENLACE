@@ -1,6 +1,7 @@
 """Pruebas de la API de punta a punta, siguiendo el flujo de la demostración (sección 17)."""
 
 import uuid
+from datetime import timedelta
 from typing import Any
 
 import h3
@@ -382,3 +383,71 @@ def test_seguimiento_del_pedido_sin_datos_personales(entorno: Entorno) -> None:
     assert despues["estado"] == "asignado" and despues["equipo"] == recomendacion["nombre_equipo"]
     assert despues["tiempo_estimado_min"] > 0
     assert set(despues) == {"estado", "equipo", "tiempo_estimado_min"}
+
+
+# ── Reenvíos con información nueva ─────────────────────────
+
+
+def _segundo_pedido(primero: dict[str, Any], **campos: Any) -> dict[str, Any]:
+    """Misma persona y celda, 5 minutos después, con otros datos."""
+    return {
+        **primero,
+        "id_mensaje": _id(),
+        "hora": (HORA + timedelta(minutes=5)).isoformat(),
+        "atrapados": 0,
+        "heridos": 0,
+        "necesidades": [],
+        **campos,
+    }
+
+
+def test_reenvio_con_necesidad_nueva_actualiza_el_pedido_asignado(entorno: Entorno) -> None:
+    _emitir(entorno)
+    primero = _ayuda(id_h3=LEJANA, atrapados=2, necesidades=["rescate"])
+    entorno.cliente.post("/reportes", json=primero)
+    recomendacion = _recomendacion_para(entorno, primero["id_mensaje"])
+    entorno.cliente.post(
+        f"/asignaciones/{recomendacion['id']}/decision",
+        json={"decision": "aceptada", "decidido_por": "Coordinadora"},
+        headers=ADMIN,
+    )
+    with entorno.cliente.websocket_connect(f"/ws/admin?clave={ADMIN['X-Clave-Admin']}") as ws:
+        entorno.cliente.post(
+            "/reportes", json=_segundo_pedido(primero, atrapados=1, necesidades=["medico"])
+        )
+        from tests.test_tiempo_real import _esperar
+
+        assert _esperar(ws, "reporte_actualizado")["ids"] == [primero["id_mensaje"]]
+
+    (pedido,) = entorno.cliente.get("/reportes", headers=ADMIN).json()
+    # Nada se pierde: siguen los 2 atrapados y ahora también hace falta atención médica
+    assert pedido["atrapados"] == 2 and pedido["necesidades"] == ["rescate", "medico"]
+    assert pedido["actualizado_en"] is not None and pedido["duplicados"] == 1
+    assert pedido["estado"] == "asignado"
+
+
+def test_reenvio_identico_no_marca_actualizacion(entorno: Entorno) -> None:
+    _emitir(entorno)
+    primero = _ayuda(id_h3=LEJANA, atrapados=1, necesidades=["rescate"])
+    entorno.cliente.post("/reportes", json=primero)
+    entorno.cliente.post("/reportes", json={**primero, "id_mensaje": _id()})
+    (pedido,) = entorno.cliente.get("/reportes", headers=ADMIN).json()
+    assert pedido["actualizado_en"] is None and pedido["duplicados"] == 1
+
+
+def test_pedido_atendido_que_trae_informacion_nueva_vuelve_a_la_bandeja(entorno: Entorno) -> None:
+    _emitir(entorno)
+    primero = _ayuda(id_h3=LEJANA, atrapados=1, necesidades=["rescate"])
+    entorno.cliente.post("/reportes", json=primero)
+    recomendacion = _recomendacion_para(entorno, primero["id_mensaje"])
+    entorno.cliente.post(
+        f"/asignaciones/{recomendacion['id']}/decision",
+        json={"decision": "aceptada", "decidido_por": "Coordinadora"},
+        headers=ADMIN,
+    )
+    entorno.cliente.post(f"/asignaciones/{recomendacion['id']}/atendida", headers=ADMIN)
+    entorno.cliente.post(
+        "/reportes", json=_segundo_pedido(primero, heridos=1, necesidades=["medico"])
+    )
+    (pedido,) = entorno.cliente.get("/reportes", headers=ADMIN).json()
+    assert pedido["estado"] == "sin_asignar" and pedido["heridos"] == 1

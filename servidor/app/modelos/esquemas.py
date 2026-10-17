@@ -227,6 +227,8 @@ class ReporteSalida(_Salida):
     prioridad: float = 0.0
     componentes_prioridad: dict[str, float] = {}
     duplicados: int = 0
+    # Un reenvío agregó información nueva (más personas o necesidades nuevas)
+    actualizado_en: datetime | None = None
     # Punto exacto: solo existe para pedidos de ayuda
     ubicacion: Ubicacion | None = None
 

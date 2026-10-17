@@ -194,6 +194,8 @@ def procesar_reportes(
                 ]
             },
         )
+    if resultado.reportes_actualizados:
+        bus.publicar(Tema.reporte_actualizado, {"ids": resultado.reportes_actualizados})
     for propuesta in propuestas:
         bus.publicar(
             Tema.propuesta_comunitaria,

@@ -1,11 +1,12 @@
 import math
+from typing import Any
 from datetime import UTC, datetime, timedelta
 
 import pytest
 
 from app.config import ConfigFusion, obtener_config
 from app.modelos.enums import EstadoCheckIn, NivelDano, OrigenReporte, TipoReporte
-from app.motor.fusion import Evidencia, estimar_celda, preparar_evidencia
+from app.motor.fusion import Evidencia, estimar_celda, informacion_nueva, preparar_evidencia
 from app.motor.tipos import DatosCheckIn, DatosReporte
 
 H3 = "88283082bffffff"
@@ -115,3 +116,23 @@ def test_checkins_de_bien_bajan_la_estimacion(config: ConfigFusion) -> None:
     checkins = [DatosCheckIn(f"c{i}", H3, EstadoCheckIn.bien) for i in range(40)]
     estado = _estimar(config, [], checkins)
     assert estado.impacto_estimado < estado.impacto_inicial
+
+
+def _campos(**valores: Any) -> dict[str, Any]:
+    base = {"personas": 1, "atrapados": 0, "heridos": 0, "vulnerables": 0, "necesidades": []}
+    return {**base, **valores}
+
+
+def test_reenvio_identico_no_cambia_nada() -> None:
+    original = _campos(atrapados=2, necesidades=["rescate"])
+    assert informacion_nueva(original, [dict(original)]) == {}
+
+
+def test_reenvio_con_informacion_nueva_actualiza_el_original() -> None:
+    original = _campos(personas=3, atrapados=2, necesidades=["rescate"])
+    reenvio = _campos(personas=3, atrapados=1, heridos=1, necesidades=["medico"])
+    # El mayor de cada conteo (no se pierden los 2 atrapados) y todas las necesidades
+    assert informacion_nueva(original, [reenvio]) == {
+        "heridos": 1,
+        "necesidades": ["rescate", "medico"],
+    }

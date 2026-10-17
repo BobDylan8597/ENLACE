@@ -101,6 +101,7 @@ const es = {
     vulnerables: (n) => `${n} en situación vulnerable`,
     duplicados: (n) => `+${n} ${n === 1 ? 'reenvío' : 'reenvíos'}`,
     puntoExacto: 'Ubicación exacta',
+    actualizado: 'Información nueva',
     seleccionar: 'Elige un reporte para ver el detalle',
   },
 
@@ -127,6 +128,8 @@ const es = {
     confirmarCambio: 'Asignar este equipo',
     rechazar: 'Rechazar sugerencia',
     sinSugerencia: 'No hay un equipo disponible con la capacidad necesaria',
+    actualizadoTrasAsignar:
+      'La persona envió información nueva después de la asignación: revisa si el equipo sigue siendo el adecuado.',
     llegaEn: (min) => `Llega en unos ${Math.round(min)} min`,
     historial: 'Asignaciones',
     marcarAtendido: 'Marcar atendido',

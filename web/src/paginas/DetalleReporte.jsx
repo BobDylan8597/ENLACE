@@ -10,7 +10,12 @@ import { t } from '../textos/index.js'
 import { distancia, resumenReporte, tiempoRelativo } from '../util/formato.js'
 import { navegar } from '../util/useRutaHash.js'
 
-const ACTUALIZAR_CON = ['reporte_recibido', 'asignacion_cambiada', 'recomendaciones_actualizadas']
+const ACTUALIZAR_CON = [
+  'reporte_recibido',
+  'reporte_actualizado',
+  'asignacion_cambiada',
+  'recomendaciones_actualizadas',
+]
 
 // A3: detalle del reporte, por qué tiene esa prioridad y a quién asignarlo
 export default function DetalleReporte({ id }) {
@@ -85,6 +90,13 @@ export default function DetalleReporte({ id }) {
             </p>
           )}
         </section>
+      )}
+
+      {enCurso && r.actualizado_en && new Date(r.actualizado_en) > new Date(enCurso.hora) && (
+        <p className="flex items-start gap-2 rounded-lg bg-explorar-suave p-3 text-explorar" role="alert">
+          <Icono nombre="alerta" className="mt-0.5 size-5 shrink-0" />
+          {t.detalle.actualizadoTrasAsignar}
+        </p>
       )}
 
       {r.estado === 'sin_asignar' && r.tipo === 'ayuda' && (

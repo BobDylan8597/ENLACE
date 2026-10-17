@@ -22,6 +22,7 @@ export default function CentroReportes({ evento, seleccionado }) {
   const clave = JSON.stringify(filtros)
   const bandeja = useDatos(() => api.reportes(filtros), [clave, evento?.id], [
     'reporte_recibido',
+    'reporte_actualizado',
     'asignacion_cambiada',
     'celda_actualizada',
   ])

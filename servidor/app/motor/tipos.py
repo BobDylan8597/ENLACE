@@ -71,3 +71,5 @@ class EstadoCelda:
     suma_pesos: float
     conteo_confirmado: int
     categoria: CategoriaCelda = CategoriaCelda.explorar_despues
+    # Pedidos originales que un reenvío actualizó con información nueva
+    actualizados: tuple[str, ...] = ()

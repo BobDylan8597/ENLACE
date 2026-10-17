@@ -25,6 +25,7 @@ class Tema(StrEnum):
     evento_emitido = "evento_emitido"
     evento_cerrado = "evento_cerrado"
     reporte_recibido = "reporte_recibido"
+    reporte_actualizado = "reporte_actualizado"
     checkin_recibido = "checkin_recibido"
     celda_actualizada = "celda_actualizada"
     recomendaciones_actualizadas = "recomendaciones_actualizadas"

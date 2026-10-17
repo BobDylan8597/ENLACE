@@ -117,6 +117,8 @@ class Reporte(Base):
         _enum(EstadoReporte), default=EstadoReporte.sin_asignar
     )
     id_reporte_padre: Mapped[str | None] = mapped_column(ForeignKey("reportes.id_mensaje"))
+    # Extensión al modelo: cuándo un reenvío de la misma persona agregó información nueva
+    actualizado_en: Mapped[datetime | None] = mapped_column(FechaUTC)
 
 
 class CheckIn(Base):

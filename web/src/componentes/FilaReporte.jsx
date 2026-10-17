@@ -28,6 +28,12 @@ export default function FilaReporte({ reporte, seleccionado, ahora, alElegir }) 
             <span className="rounded bg-gray-100 px-1.5 py-0.5 text-gray-700">
               {t.estadoReporte[reporte.estado]}
             </span>
+            {reporte.actualizado_en && (
+              <span className="inline-flex items-center gap-0.5 rounded bg-explorar-suave px-1.5 py-0.5 font-medium text-explorar">
+                <Icono nombre="alerta" className="size-3.5" />
+                {t.reportes.actualizado}
+              </span>
+            )}
             {reporte.duplicados > 0 && (
               <span className="rounded bg-gray-100 px-1.5 py-0.5 text-gray-700">
                 {t.reportes.duplicados(reporte.duplicados)}

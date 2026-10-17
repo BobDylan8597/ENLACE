@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from typing import Any
 from datetime import timedelta
 
 from app.config import ConfigFusion
@@ -136,3 +137,26 @@ def estimar_celda(
         suma_pesos=suma_pesos,
         conteo_confirmado=conteo_confirmado,
     )
+
+
+CAMPOS_CONTEO = ("personas", "atrapados", "heridos", "vulnerables")
+
+
+def informacion_nueva(original: dict[str, Any], reenvios: list[dict[str, Any]]) -> dict[str, Any]:
+    """Lo que los reenvíos de una misma persona agregan al pedido original.
+
+    Un reenvío idéntico no cambia nada. Uno con más personas atrapadas o heridas, o con
+    necesidades nuevas, actualiza el original: el mayor de cada conteo y todas las necesidades.
+    Devuelve solo los campos que cambian.
+    """
+    cambios: dict[str, Any] = {}
+    for campo in CAMPOS_CONTEO:
+        mayor = max([original[campo], *(r[campo] for r in reenvios)])
+        if mayor != original[campo]:
+            cambios[campo] = mayor
+    necesidades = list(original["necesidades"])
+    for reenvio in reenvios:
+        necesidades += [n for n in reenvio["necesidades"] if n not in necesidades]
+    if necesidades != list(original["necesidades"]):
+        cambios["necesidades"] = necesidades
+    return cambios
