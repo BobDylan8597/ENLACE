@@ -358,3 +358,26 @@ def test_geometria_permite_ubicar_la_celda_sin_enviar_coordenadas(entorno: Entor
         if Polygon([(lo, la) for la, lo in c["contorno"]]).contains(Point(lon, lat))
     ]
     assert dentro == [h3.latlng_to_cell(lat, lon, geometria["resolucion"])]
+
+
+# ── Seguimiento del pedido (U12) ───────────────────────────
+
+
+def test_seguimiento_del_pedido_sin_datos_personales(entorno: Entorno) -> None:
+    _emitir(entorno)
+    pedido = _ayuda(id_h3=LEJANA, atrapados=2, identidad=None)
+    assert entorno.cliente.get(f"/seguimiento/{_id()}").status_code == 404
+    entorno.cliente.post("/reportes", json=pedido)
+    antes = entorno.cliente.get(f"/seguimiento/{pedido['id_mensaje']}").json()
+    assert antes == {"estado": "sin_asignar", "equipo": None, "tiempo_estimado_min": None}
+
+    recomendacion = _recomendacion_para(entorno, pedido["id_mensaje"])
+    entorno.cliente.post(
+        f"/asignaciones/{recomendacion['id']}/decision",
+        json={"decision": "aceptada", "decidido_por": "Coordinadora"},
+        headers=ADMIN,
+    )
+    despues = entorno.cliente.get(f"/seguimiento/{pedido['id_mensaje']}").json()
+    assert despues["estado"] == "asignado" and despues["equipo"] == recomendacion["nombre_equipo"]
+    assert despues["tiempo_estimado_min"] > 0
+    assert set(despues) == {"estado", "equipo", "tiempo_estimado_min"}

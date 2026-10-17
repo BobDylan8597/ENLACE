@@ -17,6 +17,7 @@ from app.api import (
     eventos,
     reportes,
     rutas,
+    seguimiento,
     tiempo_real,
 )
 from app.api.dependencias import reloj
@@ -44,7 +45,17 @@ async def ciclo_de_vida(_app: FastAPI) -> AsyncIterator[None]:
 
 app = FastAPI(title="ENLACE", version="0.1.0", lifespan=ciclo_de_vida)
 tiempo_real.suscribir(bus)
-for modulo in (eventos, celdas, reportes, asignaciones, equipos, rutas, tiempo_real, ciudad):
+for modulo in (
+    eventos,
+    celdas,
+    reportes,
+    asignaciones,
+    equipos,
+    rutas,
+    tiempo_real,
+    ciudad,
+    seguimiento,
+):
     app.include_router(modulo.router)
 
 
