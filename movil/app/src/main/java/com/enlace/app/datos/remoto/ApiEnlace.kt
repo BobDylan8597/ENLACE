@@ -63,7 +63,14 @@ data class CheckInDto(
     @SerialName("id_evento") val idEvento: Int,
     @SerialName("id_h3") val idH3: String,
     val estado: String,
+    val personas: Int,
+    val vulnerables: Int,
+    /** Solo con el consentimiento "ubicación exacta"; si es null no se envía. */
+    val ubicacion: PuntoDto? = null,
 )
+
+@Serializable
+data class PuntoDto(val lat: Double, val lon: Double)
 
 @Serializable
 data class IdentidadDto(val nombre: String?, val telefono: String?, val condiciones: String?)

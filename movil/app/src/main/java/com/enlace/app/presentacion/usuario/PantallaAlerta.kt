@@ -62,6 +62,7 @@ class AlertaViewModel @Inject constructor(private val gestor: GestorAlertas) : V
 private val TEXTO_ZONA = mapOf(
     EnvioZona.ENVIANDO to R.string.zona_enviando,
     EnvioZona.ENVIADA to R.string.zona_enviada,
+    EnvioZona.UBICACION_ENVIADA to R.string.zona_ubicacion_enviada,
     EnvioZona.NO_COMPARTIDA to R.string.zona_no_compartida,
     EnvioZona.SIN_UBICACION to R.string.zona_sin_ubicacion,
     EnvioZona.FUERA_DE_ZONA to R.string.zona_fuera,

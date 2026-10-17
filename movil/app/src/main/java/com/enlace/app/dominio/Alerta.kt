@@ -29,6 +29,9 @@ enum class EnvioZona {
     PENDIENTE_CONFIRMACION,
     ENVIANDO,
     ENVIADA,
+
+    /** Se envió la zona y el punto exacto (consentimiento "ubicación exacta"). */
+    UBICACION_ENVIADA,
     NO_COMPARTIDA,
     SIN_UBICACION,
     FUERA_DE_ZONA,
@@ -46,10 +49,14 @@ data class AlertaVigente(
 
 /** Qué hacer con la zona al recibir una alerta válida, según el consentimiento (sección 13). */
 fun envioInicial(consentimiento: Consentimiento?): EnvioZona? = when (consentimiento) {
-    Consentimiento.AUTOMATICO -> null // se envía ya mismo
+    Consentimiento.UBICACION_EXACTA, Consentimiento.AUTOMATICO -> null // se envía ya mismo
     Consentimiento.CON_CONFIRMACION -> EnvioZona.PENDIENTE_CONFIRMACION
     Consentimiento.NO_COMPARTIR, null -> EnvioZona.NO_COMPARTIDA
 }
+
+/** Solo con esta opción el punto exacto sale del celular junto con la zona. */
+fun compartePuntoExacto(consentimiento: Consentimiento?): Boolean =
+    consentimiento == Consentimiento.UBICACION_EXACTA
 
 fun interface VerificadorFirma {
     fun esValida(contenido: String, firmaBase64: String): Boolean

@@ -153,6 +153,7 @@ class ServicioAlertas : Service() {
             "alerta" -> runCatching { json.decodeFromJsonElement<AlertaFirmada>(mensaje.datos) }
                 .getOrNull()?.let { gestor.recibir(it) }
             "evento_cerrado" -> mensaje.datos["id_evento"]?.jsonPrimitive?.int?.let { gestor.cerrar(it) }
+            "sin_alerta_activa" -> gestor.cerrarVigente()
             "ayuda_en_camino" -> {
                 val idReporte = mensaje.datos["id_reporte"]?.jsonPrimitive?.contentOrNull ?: return
                 val equipo = mensaje.datos["equipo"]?.jsonPrimitive?.contentOrNull ?: return

@@ -49,6 +49,7 @@ class ConsentimientoViewModel @Inject constructor(private val ajustes: AjustesRe
 }
 
 private val OPCIONES = listOf(
+    Triple(Consentimiento.UBICACION_EXACTA, R.string.consentimiento_exacta, R.string.consentimiento_exacta_detalle),
     Triple(Consentimiento.AUTOMATICO, R.string.consentimiento_automatico, R.string.consentimiento_automatico_detalle),
     Triple(
         Consentimiento.CON_CONFIRMACION,

@@ -34,7 +34,9 @@ import com.enlace.app.TEXTO_CONDICION
 import com.enlace.app.dominio.AjustesRepositorio
 import com.enlace.app.dominio.Condicion
 import com.enlace.app.dominio.Perfil
+import com.enlace.app.dominio.conteoHogar
 import com.enlace.app.presentacion.componentes.BotonPrincipal
+import com.enlace.app.presentacion.componentes.Contador
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -125,6 +127,16 @@ fun PantallaPerfil(alVolver: () -> Unit, viewModel: PerfilViewModel = hiltViewMo
                     Checkbox(checked = marcada, onCheckedChange = null)
                     Text(stringResource(texto), style = MaterialTheme.typography.bodyLarge)
                 }
+            }
+            if (perfil.condiciones.isNotEmpty()) {
+                // Cuántas personas, no quiénes: el conteo viaja anónimo con la alerta
+                Contador(
+                    etiqueta = stringResource(R.string.perfil_vulnerables),
+                    valor = perfil.conteoHogar().vulnerables,
+                    alCambiar = { n -> viewModel.cambiar { it.copy(personasVulnerables = n) } },
+                    minimo = 1,
+                    maximo = perfil.conteoHogar().personas,
+                )
             }
             BotonPrincipal(stringResource(R.string.guardar), { viewModel.guardar(alVolver) })
             TextButton(onClick = alVolver, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {

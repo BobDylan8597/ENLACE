@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import com.enlace.app.datos.nearby.RedCercana
 import com.enlace.app.datos.nearby.idAlerta
 import com.enlace.app.datos.remoto.CheckInDto
+import com.enlace.app.datos.remoto.PuntoDto
 import com.enlace.app.datos.seguridad.VerificadorEd25519
 import com.enlace.app.dominio.AjustesRepositorio
 import com.enlace.app.dominio.AlertaFirmada
@@ -16,6 +17,8 @@ import com.enlace.app.dominio.EnvioZona
 import com.enlace.app.dominio.EstadoEnvio
 import com.enlace.app.dominio.TipoMensaje
 import com.enlace.app.dominio.TipoMensajeRed
+import com.enlace.app.dominio.compartePuntoExacto
+import com.enlace.app.dominio.conteoHogar
 import com.enlace.app.dominio.idCheckin
 import com.enlace.app.dominio.LectorAlertas
 import com.enlace.app.dominio.LocalizadorCelda
@@ -36,7 +39,8 @@ private const val ESTADO_BIEN = "bien"
 
 /**
  * Recibe las alertas, descarta las que no tienen firma válida, guarda la vigente y, según el
- * consentimiento, envía la zona del celular (solo la celda h3, nunca coordenadas).
+ * consentimiento, envía la zona del celular (celda h3 y conteos anónimos del hogar). El punto
+ * exacto solo sale si la persona eligió "ubicación exacta durante emergencias".
  */
 @Singleton
 class GestorAlertas @Inject constructor(
@@ -89,6 +93,11 @@ class GestorAlertas @Inject constructor(
         if (actual.envioZona != EnvioZona.NO_COMPARTIDA) enviarZonaSinCerrojo(ESTADO_BIEN)
     }
 
+    /** El servidor no tiene ninguna alerta activa: la que quedó guardada ya terminó. */
+    suspend fun cerrarVigente() {
+        vigente.first()?.let { cerrar(it.alerta.idEvento) }
+    }
+
     suspend fun cerrar(idEvento: Int): Unit = cerrojo.withLock {
         if (vigente.first()?.alerta?.idEvento == idEvento) {
             preferencias.edit { it.remove(CLAVE_VIGENTE) }
@@ -107,14 +116,27 @@ class GestorAlertas @Inject constructor(
     private suspend fun enviar(actual: AlertaVigente, estado: String): EnvioZona {
         val (lat, lon) = ubicacion.unaVez() ?: return EnvioZona.SIN_UBICACION
         val celda = LocalizadorCelda(conexion.celdas()).celdaDe(lat, lon) ?: return EnvioZona.FUERA_DE_ZONA
-        val checkin = CheckInDto(conexion.idAnonimo(), actual.alerta.idEvento, celda, estado)
+        val hogar = ajustes.perfil.first().conteoHogar()
+        val exacto = compartePuntoExacto(ajustes.consentimiento.first())
+        val checkin = CheckInDto(
+            idAnonimo = conexion.idAnonimo(),
+            idEvento = actual.alerta.idEvento,
+            idH3 = celda,
+            estado = estado,
+            personas = hogar.personas,
+            vulnerables = hogar.vulnerables,
+            ubicacion = if (exacto) PuntoDto(lat, lon) else null,
+        )
         val id = idCheckin(actual.alerta.idEvento, checkin.idAnonimo)
         val cuerpo = json.encodeToString(CheckInDto.serializer(), checkin)
         outbox.guardar(id, TipoMensaje.CHECKIN, cuerpo)
         outbox.enviarPendientes()
         if (outbox.observar(id).first()?.estado != EstadoEnvio.ENVIADO) red.publicar(TipoMensajeRed.CHECKIN, id, cuerpo)
-        return if (outbox.observar(id).first()?.estado == EstadoEnvio.ENVIADO) EnvioZona.ENVIADA
-        else EnvioZona.SIN_CONEXION
+        return when {
+            outbox.observar(id).first()?.estado != EstadoEnvio.ENVIADO -> EnvioZona.SIN_CONEXION
+            exacto -> EnvioZona.UBICACION_ENVIADA
+            else -> EnvioZona.ENVIADA
+        }
     }
 
     private suspend fun guardar(vigente: AlertaVigente) {

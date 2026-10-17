@@ -26,9 +26,11 @@
     <string name="modo_unidad_detalle">Disponible pronto: recibe asignaciones y rutas.</string>
 
     <string name="consentimiento_titulo">Tu ubicación durante una emergencia</string>
-    <string name="consentimiento_explicacion">Cuando llegue una alerta oficial, ENLACE puede avisar al centro de coordinación en qué zona estás, para saber dónde hay personas. Solo se envía la zona aproximada, nunca tu ubicación exacta. ENLACE no te sigue: solo consulta tu ubicación al recibir una alerta.</string>
-    <string name="consentimiento_automatico">Enviar mi zona automáticamente</string>
-    <string name="consentimiento_automatico_detalle">Recomendado: ayuda a encontrar a quienes no pueden responder.</string>
+    <string name="consentimiento_explicacion">Cuando llegue una alerta oficial, ENLACE puede avisar al centro de coordinación dónde estás, para saber dónde hay personas que rescatar. Tú eliges cuánto compartir. ENLACE no te sigue: solo consulta tu ubicación al recibir una alerta.</string>
+    <string name="consentimiento_exacta">Compartir mi ubicación exacta durante emergencias</string>
+    <string name="consentimiento_exacta_detalle">Los equipos de rescate ven el punto donde estás. Se borra al terminar la emergencia.</string>
+    <string name="consentimiento_automatico">Enviar solo mi zona automáticamente</string>
+    <string name="consentimiento_automatico_detalle">Se envía el barrio aproximado, nunca el punto exacto.</string>
     <string name="consentimiento_confirmacion">Preguntarme antes de enviar</string>
     <string name="consentimiento_confirmacion_detalle">Verás un aviso con cada alerta.</string>
     <string name="consentimiento_no_compartir">No compartir mi zona</string>
@@ -36,7 +38,8 @@
     <string name="consentimiento_nota">Puedes cambiarlo cuando quieras desde Privacidad.</string>
 
     <string name="perfil_titulo">Mi perfil</string>
-    <string name="perfil_explicacion">Se guarda solo en este celular. Se envía únicamente si pides ayuda, para que el equipo sepa a quién busca.</string>
+    <string name="perfil_explicacion">Se guarda solo en este celular. Tu nombre y teléfono se envían únicamente si pides ayuda. Con una alerta solo se envía cuántas personas hay en tu hogar, sin nombres.</string>
+    <string name="perfil_vulnerables">¿Cuántas personas?</string>
     <string name="perfil_nombre">Nombre</string>
     <string name="perfil_telefono">Teléfono</string>
     <string name="perfil_personas">Personas en tu hogar</string>
@@ -79,6 +82,7 @@
     <string name="alerta_no_enviar_zona">No enviar</string>
     <string name="zona_enviando">Enviando tu zona…</string>
     <string name="zona_enviada">Tu zona aproximada fue enviada</string>
+    <string name="zona_ubicacion_enviada">Tu ubicación fue enviada a los equipos de rescate</string>
     <string name="zona_no_compartida">No se comparte tu zona</string>
     <string name="zona_sin_ubicacion">No se pudo saber tu ubicación</string>
     <string name="zona_fuera">Estás fuera de la zona de la alerta</string>
