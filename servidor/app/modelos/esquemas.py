@@ -244,6 +244,24 @@ class IdentidadSalida(_Salida):
     condiciones: str | None
 
 
+class PedidoMapa(BaseModel):
+    """Pedido de ayuda pendiente para el mapa de la brigada: el punto y qué se necesita,
+    sin nombre ni teléfono (esos solo los recibe la unidad asignada)."""
+
+    id_mensaje: str
+    lat: float
+    lon: float
+    id_h3: str
+    nombre_zona: str
+    estado: EstadoReporte
+    personas: int
+    atrapados: int
+    heridos: int
+    vulnerables: int
+    necesidades: list[Necesidad]
+    hora: datetime
+
+
 class ReporteDetalle(ReporteSalida):
     identidad: IdentidadSalida | None = None
     asignaciones: list[AsignacionSalida] = []

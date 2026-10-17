@@ -83,3 +83,81 @@ def test_websocket_de_unidad_exige_clave_de_brigada(entorno: Entorno) -> None:
             ws.receive_json()
     with entorno.cliente.websocket_connect(f"/ws/movil/equipo-1?clave={CLAVE_BRIGADA}"):
         pass
+
+
+def _pedido_asignado(entorno: Entorno) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Pedido con contacto, y la recomendación del motor para él (todavía sin decidir)."""
+    entorno.cliente.post("/eventos", json=SISMO, headers=ADMIN)
+    pedido = _ayuda(
+        id_h3=None,
+        lat=12.74,
+        lon=-86.25,
+        atrapados=2,
+        vulnerables=1,
+        necesidades=["rescate", "medico"],
+        identidad={"nombre": "Ana", "telefono": "+50588880000", "condiciones": "Adulto mayor"},
+    )
+    entorno.cliente.post("/reportes", json=pedido)
+    recomendacion = next(
+        r
+        for r in entorno.cliente.get("/recomendaciones", headers=ADMIN).json()
+        if r["id_reporte"] == pedido["id_mensaje"]
+    )
+    return pedido, recomendacion
+
+
+def _aceptar(entorno: Entorno, recomendacion: dict[str, Any]) -> None:
+    entorno.cliente.post(
+        f"/asignaciones/{recomendacion['id']}/decision",
+        json={"decision": "aceptada", "decidido_por": "Coordinadora"},
+        headers=ADMIN,
+    )
+
+
+def test_la_unidad_recibe_que_atender_y_el_contacto(entorno: Entorno) -> None:
+    pedido, recomendacion = _pedido_asignado(entorno)
+    unidad = f"/ws/movil/equipo-{recomendacion['id_equipo']}?clave={CLAVE_BRIGADA}"
+    with entorno.cliente.websocket_connect(unidad) as ws:
+        _aceptar(entorno, recomendacion)
+        aviso = _esperar(ws, "asignacion")
+    assert aviso["pedido"]["atrapados"] == 2 and aviso["pedido"]["vulnerables"] == 1
+    assert aviso["pedido"]["necesidades"] == ["rescate", "medico"]
+    assert aviso["contacto"] == {
+        "nombre": "Ana",
+        "telefono": "+50588880000",
+        "condiciones": "Adulto mayor",
+    }
+    assert aviso["nombre_zona"]
+    # El identificador de la persona no le hace falta a la unidad
+    assert "id_anonimo" not in aviso
+
+
+def test_unidad_que_se_reconecta_recibe_su_asignacion_en_curso(entorno: Entorno) -> None:
+    pedido, recomendacion = _pedido_asignado(entorno)
+    _aceptar(entorno, recomendacion)
+    unidad = f"/ws/movil/equipo-{recomendacion['id_equipo']}?clave={CLAVE_BRIGADA}"
+    with entorno.cliente.websocket_connect(unidad) as ws:
+        aviso = _esperar(ws, "asignacion")
+    assert aviso["asignacion"]["id"] == recomendacion["id"]
+    assert aviso["asignacion"]["id_reporte"] == pedido["id_mensaje"]
+    # Terminada la asignación, al reconectarse ya no la recibe
+    entorno.cliente.post(
+        f"/asignaciones/{recomendacion['id']}/atendida",
+        headers={"X-Clave-Brigada": CLAVE_BRIGADA},
+    )
+    with entorno.cliente.websocket_connect(unidad) as ws:
+        assert ws.receive_json()["tipo"] == "alerta"
+        ws.close()
+
+
+def test_mapa_de_la_brigada_sin_datos_personales(entorno: Entorno) -> None:
+    pedido, _ = _pedido_asignado(entorno)
+    brigada = {"X-Clave-Brigada": CLAVE_BRIGADA}
+    assert entorno.cliente.get("/pedidos").status_code == 401
+    (punto,) = entorno.cliente.get("/pedidos", headers=brigada).json()
+    assert punto["id_mensaje"] == pedido["id_mensaje"]
+    assert (punto["lat"], punto["lon"], punto["atrapados"]) == (12.74, -86.25, 2)
+    assert not {"nombre", "telefono", "condiciones", "id_anonimo"} & set(punto)
+    # La brigada puede elegir su equipo
+    assert entorno.cliente.get("/equipos", headers=brigada).status_code == 200
+    assert entorno.cliente.get("/equipos").status_code == 401

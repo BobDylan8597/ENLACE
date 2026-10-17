@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+from typing import Any
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -100,6 +101,43 @@ def reporte_salida(
             "ubicacion": Ubicacion(lat=identidad.lat, lon=identidad.lon) if identidad else None,
         }
     )
+
+
+def aviso_asignacion(
+    sesion: Session, asignacion: Asignacion, destino: tuple[float, float]
+) -> dict[str, Any]:
+    """Lo que recibe la unidad asignada: destino, qué hay que atender y, si es un pedido de
+    ayuda, el contacto de la persona (solo para esa unidad: para encontrarla y llamarla).
+    `id_anonimo` sirve para avisar al ciudadano y no se reenvía a la unidad."""
+    reporte = sesion.get(Reporte, asignacion.id_reporte) if asignacion.id_reporte else None
+    celda = sesion.get(Celda, asignacion.id_h3)
+    pedido = contacto = None
+    if reporte is not None:
+        pedido = {
+            "tipo": reporte.tipo.value,
+            "personas": reporte.personas,
+            "atrapados": reporte.atrapados,
+            "heridos": reporte.heridos,
+            "vulnerables": reporte.vulnerables,
+            "necesidades": list(reporte.necesidades),
+        }
+        identidad = identidades_de_ayuda(sesion, [reporte]).get(
+            (reporte.id_anonimo, reporte.id_evento)
+        )
+        if identidad is not None:
+            contacto = {
+                "nombre": identidad.nombre,
+                "telefono": identidad.telefono,
+                "condiciones": identidad.condiciones,
+            }
+    return {
+        "asignacion": asignacion_salida(sesion, asignacion).model_dump(mode="json"),
+        "destino": {"lat": destino[0], "lon": destino[1]},
+        "nombre_zona": celda.nombre_zona if celda else "",
+        "pedido": pedido,
+        "contacto": contacto,
+        "id_anonimo": reporte.id_anonimo if reporte else None,
+    }
 
 
 def asignacion_salida(sesion: Session, asignacion: Asignacion) -> AsignacionSalida:

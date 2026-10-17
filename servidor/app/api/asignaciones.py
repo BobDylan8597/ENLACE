@@ -15,7 +15,7 @@ from app.api.dependencias import (
     RedDep,
     SesionDep,
 )
-from app.api.vistas import asignacion_salida, resumen_celdas
+from app.api.vistas import asignacion_salida, aviso_asignacion, resumen_celdas
 from app.eventos.bus import Tema, bus
 from app.modelos.enums import DecisionAsignacion, EstadoEquipo, EstadoReporte
 from app.modelos.esquemas import AsignacionSalida, DecisionEntrada
@@ -48,18 +48,24 @@ def _asignacion_o_404(sesion: Session, id_asignacion: int) -> Asignacion:
 def _publicar_asignacion(sesion: Session, asignacion: Asignacion) -> AsignacionSalida:
     """Para la unidad: destino (el punto exacto si es un pedido de ayuda) y su ruta.
     Para el ciudadano (por su id_anonimo): el aviso de ayuda en camino."""
-    salida = asignacion_salida(sesion, asignacion)
-    lat, lon = destino_de(sesion, asignacion)
-    reporte = sesion.get(Reporte, asignacion.id_reporte) if asignacion.id_reporte else None
     bus.publicar(
         Tema.asignacion_cambiada,
-        {
-            "asignacion": salida.model_dump(mode="json"),
-            "destino": {"lat": lat, "lon": lon},
-            "id_anonimo": reporte.id_anonimo if reporte else None,
-        },
+        aviso_asignacion(sesion, asignacion, destino_de(sesion, asignacion)),
     )
-    return salida
+    return asignacion_salida(sesion, asignacion)
+
+
+def asignacion_en_curso(sesion: Session, id_equipo: int) -> Asignacion | None:
+    """La asignación que el equipo está atendiendo ahora, si tiene una."""
+    return sesion.scalars(
+        select(Asignacion)
+        .where(
+            Asignacion.id_equipo == id_equipo,
+            Asignacion.decision.in_(DECISIONES_EN_CURSO),
+            Asignacion.hora_fin.is_(None),
+        )
+        .order_by(Asignacion.hora.desc())
+    ).first()
 
 
 def _publicar_recomendaciones(sesion: Session, recomendaciones: list[Asignacion]) -> None:

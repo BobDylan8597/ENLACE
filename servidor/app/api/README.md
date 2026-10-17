@@ -10,7 +10,7 @@ Rutas REST y WebSocket. La lista completa está en `/docs` con el servidor corri
 | `asignaciones.py` | Recomendaciones, decisión humana, zona atendida |
 | `equipos.py` | Consulta y registro de equipos, posición de la unidad |
 | `rutas.py` | Bloqueos (reportar, confirmar, descartar) y `GET /rutas` |
-| `ubicaciones.py` | Puntos exactos consentidos del evento activo (brigada y admin) |
+| `ubicaciones.py` | Mapa de la brigada: puntos consentidos (`/ubicaciones`) y pedidos pendientes sin datos personales (`/pedidos`) |
 | `tiempo_real.py` | `/ws/admin` y `/ws/movil/{id}` |
 
 ## Reglas que se aplican aquí
@@ -32,8 +32,11 @@ Rutas REST y WebSocket. La lista completa está en `/docs` con el servidor corri
   reporte_recibido, recomendaciones_actualizadas, asignacion_cambiada, propuesta_comunitaria…).
 - `/ws/movil/{id}`:
   - `alerta`: para todos, al emitirse y al conectarse si ya hay una activa;
-  - `asignacion`: para `equipo-<n>`, con el destino (el punto exacto si es un pedido de ayuda)
-    y la ruta en GeoJSON con instrucciones paso a paso;
+  - `asignacion`: para `equipo-<n>`, con el destino (el punto exacto si es un pedido de ayuda),
+    la ruta en GeoJSON con instrucciones paso a paso, qué hay que atender (`pedido`) y el
+    contacto de quien pidió ayuda (`contacto`, solo para la unidad asignada). Una unidad que se
+    conecta con una asignación en curso la recibe de nuevo;
+  - `sin_alerta_activa`: al conectarse, si no hay evento activo (borra una alerta vieja);
   - `ruta_recalculada`: para `equipo-<n>`, cuando un bloqueo cambia su ruta;
   - `ayuda_en_camino`: para el `id_anonimo` de quien pidió ayuda;
   - `evento_cerrado`: para todos.

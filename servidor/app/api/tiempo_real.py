@@ -19,11 +19,14 @@ from typing import Any
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, status
 
 from app.activacion.emisor import contenido_alerta
+from app.api.asignaciones import asignacion_en_curso
 from app.api.dependencias import FirmadorDep, SesionDep, es_brigada
+from app.api.vistas import aviso_asignacion
 from app.config import obtener_config
 from app.eventos.bus import BusEventos, Datos, Tema, bus
 from app.modelos.enums import DecisionAsignacion
 from app.motor.pipeline import evento_activo
+from app.rutas.servicio import destino_de
 
 log = logging.getLogger(__name__)
 router = APIRouter(tags=["tiempo real"])
@@ -77,7 +80,10 @@ def suscribir(bus: BusEventos) -> None:
         asignacion = datos["asignacion"]
         if asignacion["decision"] not in DECISIONES_NOTIFICADAS:
             return
-        await gestor.a_movil(f"{PREFIJO_EQUIPO}{asignacion['id_equipo']}", "asignacion", datos)
+        para_unidad = {k: v for k, v in datos.items() if k != "id_anonimo"}
+        await gestor.a_movil(
+            f"{PREFIJO_EQUIPO}{asignacion['id_equipo']}", "asignacion", para_unidad
+        )
         if datos.get("id_anonimo"):
             await gestor.a_movil(
                 datos["id_anonimo"],
@@ -134,6 +140,14 @@ async def ws_movil(
     # La app que se conecta tarde recibe igual la alerta firmada vigente
     evento = evento_activo(sesion)
     alerta = firmador.firmar(contenido_alerta(evento)).como_dict() if evento else None
+    # Y una unidad que estuvo desconectada recibe la asignación que tiene en curso
+    en_curso = None
+    if evento is not None and id_movil.startswith(PREFIJO_EQUIPO):
+        id_equipo = id_movil.removeprefix(PREFIJO_EQUIPO)
+        asignacion = asignacion_en_curso(sesion, int(id_equipo)) if id_equipo.isdigit() else None
+        if asignacion is not None:
+            aviso = aviso_asignacion(sesion, asignacion, destino_de(sesion, asignacion))
+            en_curso = {k: v for k, v in aviso.items() if k != "id_anonimo"}
     sesion.close()  # no retener la base mientras la conexión siga abierta
 
     _vincular()
@@ -146,6 +160,8 @@ async def ws_movil(
             # Un celular que estuvo desconectado al cerrarse el evento no recibió el aviso:
             # así deja de mostrar una alerta que ya terminó
             await ws.send_json({"tipo": "sin_alerta_activa", "datos": {}})
+        if en_curso is not None:
+            await ws.send_json({"tipo": "asignacion", "datos": en_curso})
         await _mantener_abierta(ws)
     except WebSocketDisconnect:
         pass

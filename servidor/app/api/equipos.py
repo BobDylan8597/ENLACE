@@ -12,7 +12,8 @@ from app.modelos.tablas import Equipo
 router = APIRouter(tags=["equipos"])
 
 
-@router.get("/equipos", dependencies=[Admin], response_model=list[EquipoSalida])
+# La brigada elige con cuál equipo trabaja al activar el modo unidad
+@router.get("/equipos", dependencies=[Brigada], response_model=list[EquipoSalida])
 def listar(sesion: SesionDep) -> list[Equipo]:
     return list(sesion.scalars(select(Equipo).order_by(Equipo.nombre)))
 
