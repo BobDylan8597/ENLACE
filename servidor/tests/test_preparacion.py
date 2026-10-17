@@ -1,5 +1,6 @@
 """Reglas puras de los scripts de preparación de ciudades (preparacion/datos_ciudad.py)."""
 
+import math
 import sys
 from pathlib import Path
 
@@ -15,6 +16,15 @@ from datos_ciudad import (  # noqa: E402
     indice_vulnerabilidad,
     nombre_mas_cercano,
     tipos_de_zona,
+)
+
+from validacion import (  # noqa: E402
+    Metricas,
+    Observacion,
+    ajustar_a_y_c,
+    exposicion,
+    grado_mmi,
+    por_banda,
 )
 
 from app.config import obtener_config  # noqa: E402
@@ -100,3 +110,42 @@ def test_la_semilla_usa_los_datos_reales_si_existen() -> None:
     # Con población real, una celda sin datos de Kontur no tiene habitantes
     otra = next(c for c in reales if c.id_h3 != una)
     assert max(otra.poblacion_por_hora) == 0.0
+
+
+def _obs(distancia: float, observada: float, estimada: float) -> Observacion:
+    return Observacion("dyfi", distancia, 7.0, observada, estimada)
+
+
+def test_metricas_de_la_validacion() -> None:
+    m = Metricas.de([_obs(10, 5, 6), _obs(10, 5, 4), _obs(10, 5, 7.5)])
+    assert m is not None
+    assert m.n == 3
+    assert m.sesgo == pytest.approx(2.5 / 3)  # (+1 − 1 + 2,5) / 3
+    assert m.rmse == pytest.approx(((1 + 1 + 6.25) / 3) ** 0.5)
+    assert m.dentro_de_1 == pytest.approx(2 / 3)
+    assert Metricas.de([]) is None
+
+
+def test_metricas_por_banda_de_distancia() -> None:
+    bandas = por_banda([_obs(20, 5, 5), _obs(100, 5, 6), _obs(500, 3, 3)])
+    assert list(bandas) == ["0–50 km", "50–150 km", "más de 300 km"]
+
+
+def test_el_ajuste_recupera_los_coeficientes_de_datos_sinteticos() -> None:
+    a, b, c = 4.0, 1.17, 3.5
+    datos = [
+        Observacion("estacion", r, m, a + b * m - c * math.log10(r), 0.0)
+        for r in (20, 60, 150, 400)
+        for m in (6.0, 7.0)
+    ]
+    ajuste = ajustar_a_y_c(datos, b)
+    assert ajuste is not None
+    assert ajuste[0] == pytest.approx(a) and ajuste[1] == pytest.approx(c)
+    assert ajustar_a_y_c(datos[:2], b) is None
+
+
+def test_exposicion_por_grado_de_intensidad() -> None:
+    assert (
+        grado_mmi(5.4) == 5 and grado_mmi(5.6) == 6 and grado_mmi(12) == 10 and grado_mmi(0.2) == 1
+    )
+    assert exposicion([(100, 5.4), (50, 4.6), (10, 6.2)]) == {5: 150, 6: 10}

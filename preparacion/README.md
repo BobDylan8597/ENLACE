@@ -63,4 +63,22 @@ usa los datos reales; sin estos archivos, la semilla sigue siendo sintética.
 Las respuestas de Overpass y el archivo de Kontur quedan en `.cache_datos/`: volver a correr los
 scripts no repite descargas (los servidores públicos de Overpass limitan las consultas seguidas).
 
-Pendiente del paso 6: `validar_evento.py`.
+## validar_evento.py — validación retrospectiva
+
+```bash
+servidor/.venv/Scripts/python preparacion/validar_evento.py                       # sismos por defecto
+servidor/.venv/Scripts/python preparacion/validar_evento.py --evento us2000ar20 --evento usd0003cqx:NI
+```
+
+Compara la intensidad que ENLACE estima desde el primer minuto (el mismo modelo del motor, solo
+con magnitud, epicentro y profundidad) con lo observado en sismos reales del catálogo del USGS:
+reportes de la gente («¿Lo sintió?», DYFI) y estaciones sísmicas del ShakeMap. Con `id:PAIS`
+compara también la población expuesta (Kontur) con PAGER del USGS. Propone coeficientes
+regionales, pero no cambia la configuración.
+
+Resultado en [`resultados/validacion_sismos.md`](resultados/validacion_sismos.md). Con los sismos
+por defecto (Costa Rica 2012 M7.6, México 2017 M7.1 y Managua 2014 M6.1):
+
+- 210 observaciones: sesgo +0,22 grados, error típico 0,87, **72 % dentro de ±1 grado**.
+- Managua 2014: el modelo sobrestima cerca del epicentro (pone la ciudad en VI; el USGS, en V).
+  La estimación inicial es conservadora y por eso arranca con certeza baja.

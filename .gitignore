@@ -87,3 +87,4 @@ servidor/datos/ciudades/*/.cache_osm/
 servidor/datos/ciudades/*/.cache_datos/
 servidor/datos/ciudades/*/poblacion.json
 servidor/datos/ciudades/*/vulnerabilidad.json
+preparacion/.cache_validacion/
